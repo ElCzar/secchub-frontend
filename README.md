@@ -1,0 +1,1 @@
+# secchub-frontend
