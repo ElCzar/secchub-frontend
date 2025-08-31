@@ -1,0 +1,35 @@
+.brand {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  img { width: 40px; height: 40px; object-fit: contain; }
+  h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2d3d; }
+}
+
+form { display: grid; gap: 10px; }
+
+label { font-weight: 600; color: #334; font-size: .92rem; }
+
+input {
+  width: 100%;
+  border: 1px solid #cfd6e4; border-radius: 8px;
+  padding: 10px 12px; font-size: .98rem; outline: none; background: #fff;
+  &:focus { border-color: #2c67ff; box-shadow: 0 0 0 3px rgba(44,103,255,.15); }
+}
+
+.password-field {
+  position: relative;
+  .eye {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    border: 0; background: transparent; cursor: pointer; font-size: .85rem; color: #2c67ff;
+  }
+}
+
+.link {
+  text-decoration: none; color: #2c67ff; font-weight: 600; font-size: .9rem;
+  margin: 2px 0 8px;
+}
+
+.primary {
+  width: 100%;
+  border: 0; border-radius: 20px; padding: 10px 16px;
+  background: #2c67ff; color: #fff; font-weight: 700; cursor: pointer;
+}
