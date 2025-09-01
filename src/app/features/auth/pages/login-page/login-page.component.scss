@@ -1,21 +1,24 @@
 .login-bg {
   position: relative;
   min-height: 100dvh;
-  background: url('/assets/bg-campus.jpg') center/cover no-repeat fixed; // pon tu imagen
+  background: url('/assets/bg-campus.png') center/cover no-repeat fixed;
 }
+
 .overlay {
   position: absolute; inset: 0;
   background: rgba(0, 16, 32, 0.45);
   backdrop-filter: blur(1px);
 }
+
 .card {
   position: relative; z-index: 1;
-  width: min(92vw, 520px);
+  width: min(92vw, 560px);
   margin: 0 auto;
   top: 50%; transform: translateY(-50%);
   background: #fff;
-  border-radius: 14px;
-  padding: clamp(20px, 4vw, 36px);
+  border-radius: 12px;
+  padding: 28px 32px;
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
+
 
