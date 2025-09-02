@@ -1,0 +1,43 @@
+<app-header></app-header>
+
+<div class="page-container">
+  <header class="page-head">
+    <h1 class="titulo-pagina">Formulario para Programas</h1>
+    <div class="hr-line"></div>
+
+    <!-- Contexto cargado desde backend -->
+    <ng-container *ngIf="context$ | async as ctx; else ctxLoading">
+      <div class="meta">
+        <span><strong>ID Carrera:</strong> {{ ctx.careerId }}</span>
+        <span><strong>Carrera:</strong> {{ ctx.careerName }}</span>
+        <span><strong>Semestre:</strong> {{ ctx.semester }}</span>
+      </div>
+    </ng-container>
+
+    <!-- Placeholder mientras carga -->
+    <ng-template #ctxLoading>
+      <div class="meta">
+        <span><strong>ID Carrera:</strong> …</span>
+        <span><strong>Carrera:</strong> …</span>
+        <span><strong>Semestre:</strong> …</span>
+      </div>
+    </ng-template>
+
+    <!-- Contador de clases (solo front) -->
+    <div class="meta">
+      <span><strong>Número total de clases a inscribir:</strong> {{ totalCount }}</span>
+    </div>
+
+    <!-- Botón que carga semestre anterior -->
+    <div class="actions">
+      <button type="button" class="btn btn--primary" (click)="loadPrevious()">
+        Solicitud del semestre anterior
+      </button>
+    </div>
+  </header>
+
+  <section class="tabla-placeholder">
+    (Aquí irá la tabla editable de clases y el bloque “Añadir Horarios”)
+    <div class="text-muted mt-8">Filas cargadas: {{ rows.length }}</div>
+  </section>
+</div>

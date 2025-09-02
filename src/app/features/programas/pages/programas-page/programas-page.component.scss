@@ -1,0 +1,50 @@
+/* Layout principal de la página de Programas */
+.page-container {
+  margin-left: 120px;     /* mueve el bloque */
+  max-width: 1000px;      /* controla ancho máximo del contenido */
+  padding-right: 16px;    /* respiración a la derecha */
+}
+
+.page-head {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Bloques de metadatos (ID/Carrera/Semestre y total) */
+.meta {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  color: var(--text-700);
+
+  strong {
+    color: var(--text-900);
+  }
+}
+
+.actions { margin-top: 8px; }
+
+/* Placeholder del contenedor donde irá la tabla */
+.tabla-placeholder {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 20px;
+  color: var(--text-500);
+}
+
+/* ---------------------------
+   Responsivo
+   - En pantallas pequeñas, reducimos el desplazamiento hacia la derecha
+   --------------------------- */
+@media (max-width: 992px) {
+  .page-container { margin-left: 60px; max-width: 920px; }
+}
+
+@media (max-width: 768px) {
+  .page-container { margin-left: 24px; max-width: none; padding-right: 12px; }
+  .meta { gap: 16px; }
+}
