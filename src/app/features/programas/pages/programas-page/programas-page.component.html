@@ -36,8 +36,13 @@
     </div>
   </header>
 
-  <section class="tabla-placeholder">
-    (Aquí irá la tabla editable de clases y el bloque “Añadir Horarios”)
-    <div class="text-muted mt-8">Filas cargadas: {{ rows.length }}</div>
-  </section>
+  <section class="tabla-placeholder"> 
+    <app-classes-table
+    [rows]="rows"
+    (add)="addRow()"
+    (remove)="removeRow($event)"
+    (patch)="onPatch($event)">
+  </app-classes-table>
+</section>
+
 </div>

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { ProgramaContextDto } from '../../models/context.models';
 import { ProgramaRowDto, ProgramasService } from '../../services/programas.service';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
-
+import { ClassesTableComponent } from "../../components/classes-table/classes-table.component";
 
 
 type RowState = 'new' | 'existing' | 'deleted';
@@ -16,73 +16,86 @@ interface ClaseRow extends ProgramaRowDto {
 @Component({
   selector: 'app-programas-page',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, ClassesTableComponent],
   templateUrl: './programas-page.component.html',
   styleUrls: ['./programas-page.component.scss'],
 })
 export class ProgramasPageComponent implements OnInit {
 
-  // Contexto general del backend (id carrera, carrera, semestre…)
   context$!: Observable<ProgramaContextDto>;
-
-  // Filas locales (se cargan desde el backend y se manipulan en el front)
   rows: ClaseRow[] = [];
 
   constructor(private programas: ProgramasService) {}
 
   ngOnInit(): void {
     this.context$ = this.programas.getContext();
+    // Siempre iniciar con una fila vacía
+    this.ensureAtLeastOneRow();
   }
 
-  /** Contador calculado siempre en el front */
   get totalCount(): number {
+    // Cuenta filas visibles (no eliminadas). Si quieres que NO cuente la vacía,
+    // aquí podrías filtrar por las que tengan courseId o courseName llenos.
     return this.rows.filter(r => r._state !== 'deleted').length;
   }
 
-  /** Cargar clases del semestre anterior */
   loadPrevious(): void {
     this.programas.getPreviousSemesterClasses().subscribe({
       next: (list: ProgramaRowDto[]) => {
-        this.rows = list.map(r => ({ ...r, _state: 'existing' }));
+        const mapped = list.map(r => ({ ...r, _state: 'existing' as RowState }));
+        this.rows = mapped.length > 0 ? mapped : [this.emptyRow()];
       },
       error: (e) => {
         console.error('Error al cargar semestre anterior', e);
-        // TODO: mostrar mensaje de error en UI (toast/snackbar)
+        // Si falla, aseguramos al menos una fila vacía
+        this.ensureAtLeastOneRow();
       }
     });
   }
 
-  /** Agregar fila manualmente */
   addRow(): void {
     this.rows.push(this.emptyRow());
   }
 
-  /** Quitar fila */
   removeRow(index: number): void {
+    if (this.rows.length === 1) {
+      // Si es la única fila, la reseteamos en vez de eliminarla
+      this.rows[0] = this.emptyRow();
+      return;
+    }
+
     const row = this.rows[index];
     if (!row) return;
 
     if (row._state === 'new') {
-      // Si la fila es nueva y no existe en backend, se borra de una
       this.rows.splice(index, 1);
     } else {
-      // Si viene del backend, se marca como eliminada
       this.rows[index]._state = 'deleted';
     }
   }
 
-  /** Plantilla de fila vacía */
+  onPatch(e: { index: number; data: Partial<ClaseRow> }) {
+    Object.assign(this.rows[e.index], e.data);
+  }
+
   private emptyRow(): ClaseRow {
-    return {
-      courseId: '',
-      courseName: '',
-      section: '',
-      roomType: '',
-      seats: 0,
-      startDate: '',
-      endDate: '',
-      weeks: 0,
-      _state: 'new',
-    };
+  return {
+    courseId: '',
+    courseName: '',
+    section: '',
+    seats: 0,
+    startDate: '',
+    endDate: '',
+    weeks: 0,
+    roomType: '',   // si aún existe en tu modelo original, si no elimínalo
+    _state: 'new',
+  };
+}
+
+
+  private ensureAtLeastOneRow(): void {
+    if (this.rows.length === 0) {
+      this.rows.push(this.emptyRow());
+    }
   }
 }

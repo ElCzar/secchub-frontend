@@ -17,6 +17,11 @@ export interface ProgramaRowDto {
   weeks: number;
 }
 
+// models de apoyo
+export interface CourseOption {
+  id: string;
+  name: string;
+}
 
 
 @Injectable({ providedIn: 'root' })
@@ -34,7 +39,18 @@ export class ProgramasService {
     // Ajusta la URL al endpoint real cuando te lo confirmen
     return this.http.get<ProgramaRowDto[]>(`${this.baseUrl}/api/programas/previous-semester`);
   }
+
+  searchCourses(q: string) {
+    // Busca por id o nombre (el backend decide cómo filtra)
+    return this.http.get<CourseOption[]>(`${this.baseUrl}/api/courses/search`, { params: { q }});
+  }
+
+  getDefaultSection(courseId: string) {
+    // O si el backend devuelve una lista de secciones, cambia el tipo a string[]
+    return this.http.get<string>(`${this.baseUrl}/api/courses/${courseId}/section`);
+  }
 }
+
 
 
 

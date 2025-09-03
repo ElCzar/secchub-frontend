@@ -1,7 +1,7 @@
 /* Layout principal de la página de Programas */
 .page-container {
   margin-left: 120px;     /* mueve el bloque */
-  max-width: 1000px;      /* controla ancho máximo del contenido */
+  max-width: 1300px;      /* controla ancho máximo del contenido */
   padding-right: 16px;    /* respiración a la derecha */
 }
 
@@ -32,7 +32,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: #fff;
-  padding: 20px;
+  padding: 20px; 
   color: var(--text-500);
 }
 

@@ -1,0 +1,159 @@
+/* ==============================
+   Anchos por columna (ajústalos si lo necesitas)
+   ============================== */
+:host {
+  --col-actions: 72px;
+  --col-id: 160px;
+  --col-name: 320px;
+  --col-section: 120px;
+  --col-seats: 160px;
+  --col-start: 150px;
+  --col-end: 150px;
+  --col-weeks: 110px;
+}
+
+/* ==============================
+   Contenedor con borde y radios
+   (el borde ya NO va en la tabla)
+   ============================== */
+.tabla-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto; 
+  background: #fff;
+}
+
+/* ==============================
+   Tabla (borde colapsado para alinear líneas)
+   ============================== */
+.tabla {
+  width: 100%;
+  min-width: 1200px; 
+  border-collapse: collapse; /* línea divisoria pareja */
+  table-layout: fixed;       /* respeta colgroup */
+
+  thead th {
+    /* Altura consistente en header */
+    height: 44px;
+    line-height: 44px;        /* centra el texto verticalmente */
+    padding: 0 12px;          /* el alto lo define height */
+    background: var(--muted);
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody td {
+    /* Altura consistente en filas de datos */
+    height: 44px;
+    padding: 0 12px;          /* el alto lo define height */
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr.is-deleted {
+    opacity: 0.5;
+  }
+}
+
+/* ==============================
+   Colgroup: aplica anchos fijos
+   ============================== */
+.tabla col.c-actions { width: var(--col-actions); }
+.tabla col.c-id      { width: var(--col-id); }
+.tabla col.c-name    { width: var(--col-name); }
+.tabla col.c-section { width: var(--col-section); }
+.tabla col.c-seats   { width: var(--col-seats); }
+.tabla col.c-start   { width: var(--col-start); }
+.tabla col.c-end     { width: var(--col-end); }
+.tabla col.c-weeks   { width: var(--col-weeks); }
+
+/* ==============================
+   Acciones (+ / -)
+   ============================== */
+.acciones {
+  display: flex;
+  align-items: center;    /* centra verticalmente */
+  justify-content: center;
+  gap: 8px;
+  height: 100%;           /* ocupa toda la celda */
+}
+
+.acciones .btn-icon {
+  width: 36px;            /* = altura de inputs */
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  display: inline-flex;   /* centra símbolo */
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;              /* evita desplazar la línea */
+  padding: 0;
+  transition: background .15s ease;
+}
+.acciones .btn-icon:hover { background: var(--muted); }
+
+/* ==============================
+   Inputs generales
+   ============================== */
+.input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 10px;
+  font: inherit;
+  outline: none;
+  background: #fff;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44, 86, 151, 0.15);
+  }
+}
+
+input[type="date"].input { padding: 0 8px; }
+
+input[readonly].input {
+  background: #f8fafc;
+  color: var(--text-500);
+}
+
+/* ==============================
+   Autocomplete (ID / Nombre materia)
+   ============================== */
+.cell-autocomplete { position: relative; }
+
+.suggest {
+  position: absolute;
+  left: 0; right: 0; top: calc(100% + 4px);
+  max-height: 220px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 10;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+
+  li {
+    display: grid;
+    grid-template-columns: 100px 1fr; /* ID | Nombre */
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+
+    &:hover { background: var(--muted); }
+
+    .id   { color: var(--text-700); font-weight: 600; }
+    .name { color: var(--text-700); }
+  }
+}
