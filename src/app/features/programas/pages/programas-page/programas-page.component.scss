@@ -1,17 +1,28 @@
+
+/* =====================================================
+   Estilos para la página principal del módulo Programas
+   Archivo: programas-page.component.scss
+   Descripción: Define la disposición general, bloques de
+   metadatos, acciones y responsividad de la página.
+   ===================================================== */
+
 /* Layout principal de la página de Programas */
 .page-container {
-  margin-left: 120px;     /* mueve el bloque */
-  max-width: 1300px;      /* controla ancho máximo del contenido */
-  padding-right: 16px;    /* respiración a la derecha */
+  margin-left: 120px;     /* Desplaza el bloque principal hacia la derecha */
+  max-width: 1600px;      /* Controla el ancho máximo del contenido */
+  padding-right: 20px;    /* Espacio de respiración a la derecha */
 }
 
+
+/* Encabezado de la página (título y controles principales) */
 .page-head {
   display: grid;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-/* Bloques de metadatos (ID/Carrera/Semestre y total) */
+
+/* Bloques de metadatos (ID, Carrera, Semestre, Total, etc.) */
 .meta {
   margin-top: 24px;
   display: flex;
@@ -24,9 +35,12 @@
   }
 }
 
+
+/* Sección de acciones (botones principales) */
 .actions { margin-top: 8px; }
 
-/* Placeholder del contenedor donde irá la tabla */
+
+/* Contenedor de placeholder para la tabla de clases */
 .tabla-placeholder {
   margin-top: 16px;
   border: 1px solid var(--border);
@@ -36,9 +50,10 @@
   color: var(--text-500);
 }
 
+
 /* ---------------------------
    Responsivo
-   - En pantallas pequeñas, reducimos el desplazamiento hacia la derecha
+   - En pantallas medianas y pequeñas, se ajusta el margen y el ancho
    --------------------------- */
 @media (max-width: 992px) {
   .page-container { margin-left: 60px; max-width: 920px; }

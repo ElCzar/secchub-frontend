@@ -5,12 +5,15 @@ import { ProgramaContextDto } from '../../models/context.models';
 import { ProgramaRowDto, ProgramasService } from '../../services/programas.service';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { ClassesTableComponent } from "../../components/classes-table/classes-table.component";
+import { ScheduleRow } from '../../models/schedule.models';
 
 
 type RowState = 'new' | 'existing' | 'deleted';
 
 interface ClaseRow extends ProgramaRowDto {
   _state: RowState;
+  schedules: ScheduleRow[];
+  _open?: boolean; 
 }
 
 @Component({
@@ -42,7 +45,12 @@ export class ProgramasPageComponent implements OnInit {
   loadPrevious(): void {
     this.programas.getPreviousSemesterClasses().subscribe({
       next: (list: ProgramaRowDto[]) => {
-        const mapped = list.map(r => ({ ...r, _state: 'existing' as RowState }));
+        const mapped = list.map(r => ({
+          ...r, 
+          _state: 'existing' as RowState, 
+          schedules: [], 
+          _open: false
+        }));
         this.rows = mapped.length > 0 ? mapped : [this.emptyRow()];
       },
       error: (e) => {
@@ -89,6 +97,8 @@ export class ProgramasPageComponent implements OnInit {
     weeks: 0,
     roomType: '',   // si aún existe en tu modelo original, si no elimínalo
     _state: 'new',
+    schedules: [],
+    _open: false,
   };
 }
 

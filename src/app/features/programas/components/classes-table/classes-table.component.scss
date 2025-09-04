@@ -1,8 +1,15 @@
+/* =====================================================
+  Estilos para la tabla de clases del módulo Programas
+  Archivo: classes-table.component.scss
+  Descripción: Define la apariencia y disposición de la
+  tabla de clases, acciones, autocompletado y horarios.
+  ===================================================== */
+
 /* ==============================
-   Anchos por columna (ajústalos si lo necesitas)
-   ============================== */
+  Anchos de columnas
+  ============================== */
 :host {
-  --col-actions: 72px;
+  --col-actions:100px;   /* un poco más ancho para que quepa el toggle */
   --col-id: 160px;
   --col-name: 320px;
   --col-section: 120px;
@@ -13,30 +20,30 @@
 }
 
 /* ==============================
-   Contenedor con borde y radios
-   (el borde ya NO va en la tabla)
-   ============================== */
+  Contenedor principal de la tabla
+  ============================== */
 .tabla-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow-x: auto; 
   background: #fff;
+  /* NO barras verticales internas; sólo horizontal si hiciera falta */
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* ==============================
-   Tabla (borde colapsado para alinear líneas)
-   ============================== */
+  Estilos de la tabla principal
+  ============================== */
 .tabla {
   width: 100%;
-  min-width: 1200px; 
-  border-collapse: collapse; /* línea divisoria pareja */
-  table-layout: fixed;       /* respeta colgroup */
+  min-width: 1200px;
+  border-collapse: collapse;
+  table-layout: fixed;
 
   thead th {
-    /* Altura consistente en header */
     height: 44px;
-    line-height: 44px;        /* centra el texto verticalmente */
-    padding: 0 12px;          /* el alto lo define height */
+    line-height: 44px;
+    padding: 0 12px;
     background: var(--muted);
     text-align: left;
     font-weight: 700;
@@ -45,21 +52,16 @@
   }
 
   tbody td {
-    /* Altura consistente en filas de datos */
-    height: 44px;
-    padding: 0 12px;          /* el alto lo define height */
+    /* Altura automática para permitir varias líneas en acciones */
+    padding: 8px 12px;
     vertical-align: middle;
     border-bottom: 1px solid var(--border);
   }
 
-  tbody tr.is-deleted {
-    opacity: 0.5;
-  }
+  /* Fila marcada como eliminada se muestra atenuada */
+  tbody tr.is-deleted { opacity: .5; }
 }
 
-/* ==============================
-   Colgroup: aplica anchos fijos
-   ============================== */
 .tabla col.c-actions { width: var(--col-actions); }
 .tabla col.c-id      { width: var(--col-id); }
 .tabla col.c-name    { width: var(--col-name); }
@@ -70,67 +72,59 @@
 .tabla col.c-weeks   { width: var(--col-weeks); }
 
 /* ==============================
-   Acciones (+ / -)
-   ============================== */
+  Sección de acciones (botones y toggles)
+  ============================== */
 .acciones {
   display: flex;
-  align-items: center;    /* centra verticalmente */
-  justify-content: center;
-  gap: 8px;
-  height: 100%;           /* ocupa toda la celda */
+  flex-direction: row;      /* botones arriba, toggle debajo */
+  align-items: flex-start;
+  gap: 6px;
 }
 
-.acciones .btn-icon {
-  width: 36px;            /* = altura de inputs */
+.acciones .btns {
+  display: flex;
+  gap: 8px;
+}
+//
+
+/* Botón circular para acciones rápidas */
+.btn-icon {
+  width: 36px;
   height: 36px;
   border-radius: 50%;
   border: 1px solid var(--border);
-  background: #fff;
+  background:var(--brand-azul);
   font-weight: 700;
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-
-  display: inline-flex;   /* centra símbolo */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  margin: 0;              /* evita desplazar la línea */
   padding: 0;
+  color: #fff;
   transition: background .15s ease;
 }
-.acciones .btn-icon:hover { background: var(--muted); }
+
+.btn-icon:hover { background: var(--muted); }
+
+/* Toggle “Horarios” en estilo link para expandir/cerrar sub-horarios */
+.toggle-sched {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 600;
+  color: #820A1E;              /* rojo de subtítulos */
+  cursor: pointer;
+}
+.toggle-sched .arrow { font-size: 14px; }
 
 /* ==============================
-   Inputs generales
-   ============================== */
-.input {
-  width: 100%;
-  height: 36px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0 10px;
-  font: inherit;
-  outline: none;
-  background: #fff;
-  box-sizing: border-box;
-
-  &:focus {
-    border-color: var(--brand-azul);
-    box-shadow: 0 0 0 2px rgba(44, 86, 151, 0.15);
-  }
-}
-
-input[type="date"].input { padding: 0 8px; }
-
-input[readonly].input {
-  background: #f8fafc;
-  color: var(--text-500);
-}
-
-/* ==============================
-   Autocomplete (ID / Nombre materia)
-   ============================== */
+  Autocompletado de cursos (sugerencias)
+  ============================== */
 .cell-autocomplete { position: relative; }
 
 .suggest {
@@ -146,7 +140,7 @@ input[readonly].input {
 
   li {
     display: grid;
-    grid-template-columns: 100px 1fr; /* ID | Nombre */
+    grid-template-columns: 100px 1fr;
     gap: 8px;
     padding: 8px 10px;
     cursor: pointer;
@@ -156,4 +150,50 @@ input[readonly].input {
     .id   { color: var(--text-700); font-weight: 600; }
     .name { color: var(--text-700); }
   }
+}
+
+/* ==============================
+  Fila de sub-horarios (desplegable)
+  ============================== */
+
+/* Oculta la fila de sub-horarios cuando no está expandida */
+.sched-row.is-hidden { display: none; }
+
+
+/* Celda de sub-horarios con fondo diferenciado */
+.sched-cell {
+  padding: 12px;
+  background: #fafbfe;
+}
+
+/* Expander: botón para mostrar/ocultar sub-horarios bajo la fila principal */
+
+.expander-row td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+
+/* Botón expander con icono y texto */
+.expander {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-700);
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+
+/* Icono caret para indicar expansión de sub-horarios */
+.caret {
+  display: inline-block;
+  transition: transform .15s ease;
+}
+.caret.open {
+  transform: rotate(90deg);
 }
