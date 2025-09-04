@@ -1,0 +1,163 @@
+<app-header></app-header>
+
+<div class="container">
+  <!-- Título + hr, igual al resto de pantallas -->
+  <h1 class="titulo-pagina">Formulario para Monitores</h1>
+  <div class="hr-line"></div>
+
+  <div class="card-soft" style="max-width: 540px; margin: 0 auto; padding: 20px;">
+    <form class="monitor-form" autocomplete="off">
+      <!-- ID del estudiante -->
+      <div class="form-group mb-16">
+        <label for="studentId">ID del estudiante</label>
+        <input id="studentId" name="studentId" type="text" class="input" />
+      </div>
+
+      <!-- Número de documento (con tipo embebido a la izquierda) -->
+      <div class="form-group mb-16">
+        <label for="documentNumber">Número de documento</label>
+        <div class="doc-inline" style="display:flex; gap:8px; align-items:center;">
+          <!-- Select de tipo, sin label visible (como en el mockup) -->
+          <select id="documentType" name="documentType" class="input" aria-label="Tipo de documento" style="flex:0 0 120px;">
+            <option value="">Tipo</option>
+            <option value="CC">CC</option>
+            <option value="TI">TI</option>
+            <option value="NIT">NIT</option>
+            <option value="PP">PP</option>
+            <option value="RC">RC</option>
+            <option value="CE">CE</option>
+            <option value="TE">TE</option>
+          </select>
+
+          <!-- Número de documento (ocupa el resto) -->
+          <input id="documentNumber" name="documentNumber" type="text" class="input" style="flex:1;" />
+        </div>
+      </div>
+
+      <!-- Nombre y Apellido (2 columnas) -->
+      <div class="form-group mb-16" style="display:flex; gap:16px;">
+        <div style="flex:1;">
+          <label for="firstName">Nombre</label>
+          <input id="firstName" name="firstName" type="text" class="input" />
+        </div>
+        <div style="flex:1;">
+          <label for="lastName">Apellido</label>
+          <input id="lastName" name="lastName" type="text" class="input" />
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="form-group mb-16">
+        <label for="address">Dirección de residencia</label>
+        <input id="address" name="address" type="text" class="input" />
+      </div>
+
+      <!-- Correo institucional -->
+      <div class="form-group mb-16">
+        <label for="email">Correo Institucional</label>
+        <input id="email" name="email" type="email" class="input" />
+      </div>
+
+      <!-- Correo alterno -->
+      <div class="form-group mb-16">
+        <label for="altEmail">Correo Alterno</label>
+        <input id="altEmail" name="altEmail" type="email" class="input" />
+      </div>
+
+      <!-- Celular -->
+      <div class="form-group mb-16">
+        <label for="cellphone">Celular</label>
+        <input id="cellphone" name="cellphone" type="text" class="input" />
+      </div>
+
+      <!-- Teléfono alterno -->
+      <div class="form-group mb-16">
+        <label for="altPhone">Teléfono alterno</label>
+        <input id="altPhone" name="altPhone" type="text" class="input" />
+      </div>
+
+      <!-- Carrera -->
+      <div class="form-group mb-16">
+        <label for="career">Carrera a la que pertenece</label>
+        <input id="career" name="career" type="text" class="input" />
+      </div>
+
+      <!-- Semestre -->
+      <div class="form-group mb-16">
+        <label for="semester">Semestre que va a cursar</label>
+        <input id="semester" name="semester" type="text" class="input" />
+      </div>
+
+      <!-- Promedio -->
+      <div class="form-group mb-16">
+        <label for="average">Promedio acumulado</label>
+        <input id="average" name="average" type="text" class="input" />
+      </div>
+
+      <!-- ¿Ha sido monitor? (radios) -->
+      <div class="form-group mb-16">
+        <label>¿Ha sido monitor?</label>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:4px;">
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="hasBeenMonitor" value="true" />
+            <span>Sí</span>
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="hasBeenMonitor" value="false" />
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group mb-16">
+  <label>¿Cuál es su disponibilidad?</label>
+  <app-availability-table [(rows)]="availabilityRows"></app-availability-table>
+</div>
+
+      <!-- Asignatura -->
+      <div class="form-group mb-16">
+        <label for="subject">Asignatura</label>
+        <select id="subject" name="subject" class="input">
+          <option value="">Seleccione</option>
+        </select>
+      </div>
+
+      <!-- Nota -->
+      <div class="form-group mb-16">
+        <label for="subjectGrade">Nota obtenida en la asignatura seleccionada</label>
+        <input id="subjectGrade" name="subjectGrade" type="text" class="input" />
+      </div>
+
+      <!-- Profesor -->
+      <div class="form-group mb-16">
+        <label for="professor">Nombre del profesor con quien tomó la asignatura</label>
+        <input id="professor" name="professor" type="text" class="input" />
+      </div>
+
+      <!-- ¿Monitor administrativo? (radios) -->
+      <div class="form-group mb-16">
+        <label>¿Quiere ser monitor administrativo?</label>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:4px;">
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="adminMonitor" value="true" />
+            <span>Sí</span>
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="adminMonitor" value="false" />
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Seleccionar Sección -->
+      <div class="form-group mb-24">
+        <label for="section">Seleccionar Sección</label>
+        <select id="section" name="section" class="input">
+          <option value="">Seleccione</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="width:100%;">Enviar</button>
+    </form>
+  </div>
+</div>
