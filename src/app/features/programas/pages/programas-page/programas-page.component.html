@@ -28,8 +28,8 @@
       <span><strong>Número total de clases a inscribir:</strong> {{ totalCount }}</span>
     </div>
 
-    <!-- Botón que carga semestre anterior -->
-    <div class="actions">
+    <!-- Botones de acciones alineados a la derecha -->
+    <div class="actions actions--right">
       <button type="button" class="btn btn--primary" (click)="loadPrevious()">
         Solicitud del semestre anterior
       </button>
@@ -43,6 +43,25 @@
     (remove)="removeRow($event)"
     (patch)="onPatch($event)">
   </app-classes-table>
+
 </section>
+
+
+
+
+<!-- Botón Enviar al final del formulario -->
+<div class="actions actions--right actions--enviar">
+  <button type="button" class="btn btn--primary" (click)="showConfirm = true">
+    Enviar
+  </button>
+</div>
+
+<!-- Popup de confirmación reutilizable -->
+<app-confirm-send-popup
+  [visible]="showConfirm"
+  (confirm)="onConfirmSend()"
+  (decline)="showConfirm = false">
+</app-confirm-send-popup>
+
 
 </div>

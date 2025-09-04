@@ -1,11 +1,13 @@
+
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ProgramaContextDto } from '../../models/context.models';
-import { ProgramaRowDto, ProgramasService } from '../../services/programas.service';
+import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
-import { ClassesTableComponent } from "../../components/classes-table/classes-table.component";
+import { ClassesTableComponent } from '../../components/classes-table/classes-table.component';
+import { ProgramaRowDto, ProgramasService } from '../../services/programas.service';
 import { ScheduleRow } from '../../models/schedule.models';
+import { Component, OnInit } from '@angular/core';
+import { ProgramaContextDto } from '../../models/context.models';
+import { Observable } from 'rxjs';
 
 
 type RowState = 'new' | 'existing' | 'deleted';
@@ -19,14 +21,15 @@ interface ClaseRow extends ProgramaRowDto {
 @Component({
   selector: 'app-programas-page',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, ClassesTableComponent],
+  imports: [CommonModule, HeaderComponent, ClassesTableComponent, ConfirmSendPopupComponent],
   templateUrl: './programas-page.component.html',
   styleUrls: ['./programas-page.component.scss'],
 })
 export class ProgramasPageComponent implements OnInit {
-
   context$!: Observable<ProgramaContextDto>;
   rows: ClaseRow[] = [];
+
+  showConfirm = false;
 
   constructor(private programas: ProgramasService) {}
 
@@ -34,6 +37,15 @@ export class ProgramasPageComponent implements OnInit {
     this.context$ = this.programas.getContext();
     // Siempre iniciar con una fila vacía
     this.ensureAtLeastOneRow();
+  }
+
+  /**
+   * Acción al confirmar el popup de envío
+   */
+  onConfirmSend() {
+    this.showConfirm = false;
+    // Aquí va la lógica real de envío
+    alert('Formulario enviado correctamente.');
   }
 
   get totalCount(): number {

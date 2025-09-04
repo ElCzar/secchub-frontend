@@ -36,8 +36,21 @@
 }
 
 
+
 /* Sección de acciones (botones principales) */
-.actions { margin-top: 8px; }
+.actions {
+  margin-top: 8px;
+}
+
+/* Alinea los botones de acciones a la derecha */
+.actions--right {
+  text-align: right;
+}
+
+/* Espaciado extra para el botón Enviar al final */
+.actions--enviar {
+  margin-top: 32px;
+}
 
 
 /* Contenedor de placeholder para la tabla de clases */
@@ -63,3 +76,4 @@
   .page-container { margin-left: 24px; max-width: none; padding-right: 12px; }
   .meta { gap: 16px; }
 }
+
