@@ -17,18 +17,18 @@
       </div>
 
       <div>
-        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})">
+        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})" required>
           <option value="">Seleccione…</option>
           <option *ngFor="let d of days" [value]="d.v">{{ d.t }}</option>
         </select>
       </div>
 
       <div>
-        <input type="time" class="input" [ngModel]="r.start" (ngModelChange)="patch(i,{start:$event})">
+        <input type="time" class="input" [ngModel]="r.start" (ngModelChange)="patch(i,{start:$event})" required>
       </div>
 
       <div>
-        <input type="time" class="input" [ngModel]="r.end" (ngModelChange)="patch(i,{end:$event})">
+        <input type="time" class="input" [ngModel]="r.end" (ngModelChange)="patch(i,{end:$event})" required>
       </div>
 
       <div>

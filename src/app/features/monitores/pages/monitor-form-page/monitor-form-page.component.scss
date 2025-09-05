@@ -64,6 +64,17 @@
   }
 }
 
+/* Banner de error visible cuando falta información requerida */
+.form-error {
+  background: rgba(211, 47, 47, 0.06);
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  color: #8b1e1e;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
 /* ==========================================
    Número de documento con tipo embebido
    (select a la izquierda, sin label visible)
