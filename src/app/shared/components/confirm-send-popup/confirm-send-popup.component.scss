@@ -1,0 +1,69 @@
+/* Estilos para el popup de confirmación de envío */
+.popup-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-confirm {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  padding: 32px 28px 24px 28px;
+  min-width: 340px;
+  max-width: 95vw;
+  border: 3px solid #3331;
+  position: relative;
+}
+
+.popup-title {
+  text-align: center;
+  color: #820A1E;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.popup-divider {
+  border: none;
+  border-top: 2px solid #820A1E;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.popup-message {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.popup-warning {
+  font-size: 0.98rem;
+  color: #444;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.popup-actions .btn {
+  min-width: 110px;
+  font-size: 1rem;
+  border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+  .popup-confirm {
+    min-width: 0;
+    padding: 18px 6px 12px 6px;
+  }
+}
