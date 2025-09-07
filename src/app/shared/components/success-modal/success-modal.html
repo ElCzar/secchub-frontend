@@ -1,5 +1,5 @@
 <div *ngIf="visible" class="overlay" role="dialog" aria-modal="true" aria-label="{{title}}" (keydown)="$event.key === 'Escape' && onClose()" tabindex="-1">
-  <div class="overlay__backdrop" (click)="onClose()"></div>
+  <div class="overlay__backdrop" (click)="backdropClick()"></div>
   <div class="card" role="document">
     <h2 class="title">{{ title }}</h2>
     <div class="divider"></div>
