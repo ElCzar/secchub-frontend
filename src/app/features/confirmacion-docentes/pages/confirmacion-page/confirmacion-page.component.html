@@ -23,4 +23,11 @@
     <button class="btn btn--danger" [disabled]="!canSubmit" (click)="onReject()">Rechazar</button>
     <button class="btn btn--primary" [disabled]="!canSubmit" (click)="onAccept()">Aceptar</button>
   </div>
+
+  <!-- confirmation popup -->
+  <app-confirm-send-popup
+    [visible]="popupVisible"
+    (confirm)="onPopupConfirm()"
+    (decline)="onPopupDecline()"
+  ></app-confirm-send-popup>
 </div>
