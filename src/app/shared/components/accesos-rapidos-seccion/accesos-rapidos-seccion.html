@@ -1,0 +1,11 @@
+<nav class="accesos-rapidos" aria-label="Accesos Rápidos">
+  <div class="accesos-rapidos__header">
+    <img src="/assets/escudoPUJ-Bogota_rgb-azul_lateral.png" alt="PUJ logo" class="accesos-rapidos__logo"/>
+    <h3 class="accesos-rapidos__title">Accesos Rápidos</h3>
+  </div>
+  <ul class="accesos-rapidos__list">
+    <li *ngFor="let it of items" class="accesos-rapidos__item">
+      <button type="button" class="accesos-rapidos__link" (click)="go(it)">{{ it.label }}</button>
+    </li>
+  </ul>
+</nav>
