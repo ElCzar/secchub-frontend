@@ -19,10 +19,5 @@ export class SuccessModal {
     this.closed.emit();
   }
 
-  backdropClick(e: MouseEvent) {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains('overlay')) {
-      this.onClose();
-    }
-  }
+  
 }
