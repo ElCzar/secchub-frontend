@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
@@ -13,7 +13,7 @@ import { PlanningClassesTable } from "../../components/planning-classes-table/pl
   templateUrl: './planificacion-page.html',
   styleUrls: ['./planificacion-page.scss'],
 })
-export class PlanificacionClasesPage {
+export class PlanificacionClasesPage implements OnInit {
   // Simulación de rol; cámbialo cuando conectemos auth
   role: 'admin' | 'seccion' = 'admin';
 
@@ -38,36 +38,56 @@ export class PlanificacionClasesPage {
     },
   ];
 
+  ngOnInit() {
+    // Asegurar que siempre haya una fila editable al iniciar
+    this.ensureEditableRow();
+  }
+
+  private ensureEditableRow() {
+    // Solo agregar una fila nueva si NO hay filas en absoluto
+    if (this.rows.length === 0) {
+      this.addNewEditableRow();
+    }
+    // No agregamos fila automáticamente si ya hay filas existentes
+  }
+
+  private addNewEditableRow() {
+    const newRow: PlanningRow = {
+      _state: 'new',
+      courseId: '',
+      courseName: '',
+      section: '',
+      classId: '',
+      seats: 0,
+      startDate: '',
+      endDate: '',
+      weeks: 0,
+      teacher: undefined,
+      status: 'PENDIENTE',
+      notes: [],
+      schedules: [],
+      _editing: true // Nueva fila siempre en modo edición
+    };
+    this.rows.push(newRow);
+  }
+
   // Botones superiores (sin acción aún)
-  nuevaClase() {}
   planAnterior() {}
   aplicarPlaneacion() {}
 
   onPatchRow(e: { index: number; data: Partial<PlanningRow> }) {
     Object.assign(this.rows[e.index], e.data);
   }
+  
   onAddRow() {
-    this.rows = [
-      ...this.rows,
-      {
-        _state: 'new',
-        courseId: '',
-        courseName: '',
-        section: '',
-        classId: '',
-        seats: 0,
-        startDate: '',
-        endDate: '',
-        weeks: 0,
-        teacher: undefined,
-        status: 'PENDIENTE',
-        notes: [],
-        schedules: [],
-      },
-    ];
+    // Agregar una nueva fila en modo edición
+    this.addNewEditableRow();
   }
+  
   onRemoveRow(i: number) {
     this.rows = this.rows.filter((_, idx) => idx !== i);
+    // Después de eliminar, asegurar que haya una fila editable
+    this.ensureEditableRow();
   }
 
   // Guardar cambios (luego conectamos backend)

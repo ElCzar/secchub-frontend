@@ -31,6 +31,7 @@ export interface TeacherRef { id: string; name: string; }
 export interface PlanningRow {
   _state: 'new' | 'existing' | 'deleted';
   _open?: boolean;
+  _editing?: boolean;
 
   courseId: string;
   courseName: string;

@@ -1,9 +1,7 @@
 <div class="sched-wrap">
   <div class="sched-head">
     <span class="title">Horarios</span>
-    <div class="right">
-      <button type="button" class="btn-icon" (click)="add()">+</button>
-    </div>
+    <!-- Removido el botón + de la esquina derecha -->
   </div>
 
   <div class="sched-table">
@@ -18,16 +16,16 @@
       <div>Salón</div>
     </div>
 
-    <div class="sched-row" *ngFor="let r of rows; let i = index">
+    <div class="sched-row" *ngFor="let r of rows; let i = index; trackBy: trackByFn">
       <!-- Acciones -->
       <div class="actions">
-        <button class="btn-icon" type="button" (click)="remove(i)">−</button>
-        <button class="btn-icon" type="button" (click)="add()">+</button>
+        <button class="btn-icon" type="button" (click)="remove(i)" [disabled]="!editable">−</button>
+        <button class="btn-icon" type="button" (click)="add()" [disabled]="!editable">+</button>
       </div>
 
       <!-- Día -->
       <div>
-        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})">
+        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})" [disabled]="!editable">
           <option [ngValue]="undefined">Seleccione…</option>
           <option *ngFor="let d of days" [ngValue]="d.v">{{ d.t }}</option>
         </select>
@@ -35,39 +33,39 @@
 
       <!-- Hora inicio -->
       <div class="time-cell">
-        <input #ti type="time" class="input" [ngModel]="r.startTime" (ngModelChange)="patch(i,{startTime:$event})">
-        <button class="icon" type="button" (click)="focus(ti)">🕒</button>
+        <input #ti type="time" class="input" [ngModel]="r.startTime" (ngModelChange)="patch(i,{startTime:$event})" [disabled]="!editable">
+
       </div>
 
       <!-- Hora final -->
       <div class="time-cell">
-        <input #tf type="time" class="input" [ngModel]="r.endTime" (ngModelChange)="patch(i,{endTime:$event})">
-        <button class="icon" type="button" (click)="focus(tf)">🕒</button>
+        <input #tf type="time" class="input" [ngModel]="r.endTime" (ngModelChange)="patch(i,{endTime:$event})" [disabled]="!editable">
+    
       </div>
 
       <!-- Tipo salón -->
       <div>
-        <select class="input" [ngModel]="r.roomType" (ngModelChange)="patch(i,{roomType:$event})">
+        <select class="input" [ngModel]="r.roomType" (ngModelChange)="patch(i,{roomType:$event})" [disabled]="!editable">
           <option *ngFor="let t of roomTypes" [value]="t">{{ t }}</option>
         </select>
       </div>
 
       <!-- Discapacidad -->
       <div class="radio">
-        <label><input type="radio" [checked]="r.disability" (change)="patch(i,{disability:true})"> Sí</label>
-        <label><input type="radio" [checked]="!r.disability" (change)="patch(i,{disability:false})"> No</label>
+        <label><input type="radio" [checked]="r.disability" (change)="patch(i,{disability:true})" [disabled]="!editable"> Sí</label>
+        <label><input type="radio" [checked]="!r.disability" (change)="patch(i,{disability:false})" [disabled]="!editable"> No</label>
       </div>
 
       <!-- Modalidad -->
       <div>
-        <select class="input" [ngModel]="r.modality" (ngModelChange)="patch(i,{modality:$event})">
+        <select class="input" [ngModel]="r.modality" (ngModelChange)="patch(i,{modality:$event})" [disabled]="!editable">
           <option *ngFor="let m of modalities" [value]="m">{{ m }}</option>
         </select>
       </div>
 
       <!-- Salón -->
       <div>
-        <input class="input" placeholder="Ej: A-203" [ngModel]="r.room" (ngModelChange)="patch(i,{room:$event})"/>
+        <input class="input" placeholder="Ej: A-203" [ngModel]="r.room" (ngModelChange)="patch(i,{room:$event})" [disabled]="!editable"/>
       </div>
     </div>
   </div>
