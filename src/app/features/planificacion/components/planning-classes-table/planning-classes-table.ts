@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { PlanningRow } from '../../models/planificacion.models';
-import { DatePipe } from '@angular/common';
 import { SchedulesTableRoom } from "../schedules-table-room/schedules-table-room";
 
 // Interfaz para las opciones de curso en el autocompletado
@@ -25,11 +25,11 @@ export class PlanningClassesTable {
   @Output() addRow = new EventEmitter<void>();
   @Output() removeRow = new EventEmitter<number>();
 
+  constructor(private readonly router: Router, private readonly datePipe: DatePipe) {}
+
   // Propiedades para el autocompletado
   suggestions: CourseOption[][] = [];
   showList: boolean[] = [];
-
-  constructor(private readonly datePipe: DatePipe) {}
 
   private ensureEditableRow() {
     // Si no hay filas, solicitar al padre que agregue una
@@ -170,8 +170,8 @@ export class PlanningClassesTable {
 
   selectTeacher(index: number) {
     console.log('Seleccionar docente para la fila', index);
-    // TODO: Redirigir a la pantalla de selección de docentes
-    // Router.navigate(['/seleccionar-docente', { classId: this.rows[index].classId }]);
+    // Navegar a la pantalla de selección de docentes
+    this.router.navigate(['/seleccionar-docente']);
   }
 
   selectAdditionalTeacher(index: number) {

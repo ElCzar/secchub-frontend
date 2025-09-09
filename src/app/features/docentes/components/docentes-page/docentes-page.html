@@ -1,0 +1,73 @@
+<div class="docentes-page">
+  <!-- Sidebar con accesos rápidos -->
+  <div class="sidebar">
+    <div class="logo-section">
+      <img src="assets/escudoPUJ-Bogota_rgb-azul_lateral.png" alt="Universidad Javeriana" class="university-logo">
+    </div>
+    
+    <div class="sidebar-title">Accesos Rápidos</div>
+    
+    <!-- Accesos rápidos según el rol -->
+    <app-accesos-rapidos-admi *ngIf="role === 'admin'"></app-accesos-rapidos-admi>
+    <app-accesos-rapidos-seccion *ngIf="role === 'seccion'"></app-accesos-rapidos-seccion>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <h1 class="titulo-pagina">Docentes</h1>
+
+    <!-- Filtros -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchText" 
+          (ngModelChange)="filterDocentes()" 
+          placeholder="Buscar docente..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="semester-select">Filtrar por Semestre:</label>
+        <select id="semester-select" [(ngModel)]="semesterFilter" (ngModelChange)="filterDocentes()" class="filter-select">
+          <option value="">Todos los semestres</option>
+          <option *ngFor="let semester of semesters" [value]="semester">{{semester}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="subject-select">Filtrar por materia:</label>
+        <select id="subject-select" [(ngModel)]="subjectFilter" (ngModelChange)="filterDocentes()" class="filter-select">
+          <option value="">Todas las materias</option>
+          <option *ngFor="let subject of subjects" [value]="subject">{{subject}}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Grid de docentes -->
+    <div class="docentes-grid">
+      <app-docente-card
+        *ngFor="let docente of filteredDocentes"
+        [docente]="docente"
+        (selected)="selectDocente($event)"
+      ></app-docente-card>
+    </div>
+  </div>
+</div>
+
+<!-- Modal básico de información del profesor -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Información del Profesor</h3>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Nombre:</strong> {{ selectedDocenteInfo?.name }}</p>
+      <p><strong>Materias:</strong> {{ selectedDocenteInfo?.subjects?.join(', ') }}</p>
+      <p><strong>Semestres:</strong> {{ selectedDocenteInfo?.semesters?.join(', ') }}</p>
+      <p class="modal-note">Esta es información básica del profesor. Más detalles serán agregados posteriormente.</p>
+    </div>
+  </div>
+</div>

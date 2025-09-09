@@ -1,0 +1,170 @@
+.docentes-page {
+  display: flex;
+  height: 100vh;
+  background-color: #f8fafc;
+}
+
+.sidebar {
+  width: 290px;
+  background-color: var(--brand-azul);
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px 40px;
+  overflow-y: auto;
+}
+
+.filters-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: var(--text-700);
+  font-size: var(--fs-base);
+}
+
+.search-bar, .filter-select {
+  padding: 10px 15px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: var(--fs-base);
+  min-width: 200px;
+  background-color: white;
+  font-family: 'Hedvig Letters Sans', sans-serif;
+}
+
+.search-bar {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="21 21l-6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  padding-right: 40px;
+}
+
+.filter-select:focus, .search-bar:focus {
+  outline: none;
+  border-color: var(--brand-azul);
+  box-shadow: 0 0 0 2px rgba(44, 86, 151, 0.15);
+}
+
+.docentes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Sidebar styling usando variables globales */
+.sidebar-title {
+  color: var(--brand-amarillo);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.logo-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.university-logo {
+  width: 60px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+/* Modal styles usando variables globales */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--brand-rojo);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background-color: var(--muted);
+  color: var(--text-700);
+}
+
+.modal-body {
+  padding: 20px 25px 25px;
+}
+
+.modal-body p {
+  margin: 0 0 12px 0;
+  color: var(--text-700);
+  font-size: var(--fs-base);
+}
+
+.modal-body strong {
+  color: var(--brand-azul);
+}
+
+.modal-note {
+  font-style: italic;
+  color: var(--text-500);
+  margin-top: 20px;
+  font-size: var(--fs-small);
+}
