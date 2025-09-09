@@ -41,8 +41,24 @@
     height: 32px; 
     border-radius: 50%; 
     border: 1px solid var(--border); 
-    background: #fff; 
+    background: var(--brand-azul); 
     font-weight: 700; 
+    color: #fff;
+    cursor: pointer; /* Cursor manito */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s ease; /* Transición suave */
+    
+    &:hover:not(:disabled) { 
+        background: #1e4076; /* Hover azul más oscuro */
+    }
+    
+    &:disabled {
+        background: #6c757d; /* Gris cuando deshabilitado */
+        cursor: not-allowed; /* Cursor prohibido */
+        opacity: 0.65;
+    }
 }
 .input { 
     width: 100%; 
