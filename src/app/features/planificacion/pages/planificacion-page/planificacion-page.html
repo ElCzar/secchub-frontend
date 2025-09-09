@@ -1,0 +1,29 @@
+<div class="page">
+  <aside class="sidebar">
+    <!-- Mostramos el acceso rápido según rol -->
+    <app-accesos-rapidos-admi *ngIf="role==='admin'"></app-accesos-rapidos-admi>
+    <app-accesos-rapidos-seccion *ngIf="role==='seccion'"></app-accesos-rapidos-seccion>
+  </aside>
+
+  <main class="content">
+    <h1 class="titulo-pagina">Planificación Clases</h1>
+
+    <div class="toolbar">
+      <button class="btn btn--secondary" (click)="nuevaClase()">+ Nueva Clase</button>
+      <button class="btn btn--secondary" (click)="planAnterior()">Planificación Semestre Anterior</button>
+      <button class="btn btn--secondary" (click)="aplicarPlaneacion()">Aplicar Planeacion Carreras</button>
+    </div>
+
+    <!-- Tabla principal -->
+    <app-planning-classes-table
+      [rows]="rows"
+      (patchRow)="onPatchRow($event)"
+      (addRow)="onAddRow()"
+      (removeRow)="onRemoveRow($event)">
+    </app-planning-classes-table>
+
+    <div class="actions">
+      <button class="btn btn--primary" (click)="guardar()">Guardar cambios</button>
+    </div>
+  </main>
+</div>

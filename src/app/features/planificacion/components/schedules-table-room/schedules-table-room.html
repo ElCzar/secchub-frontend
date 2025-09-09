@@ -1,0 +1,74 @@
+<div class="sched-wrap">
+  <div class="sched-head">
+    <span class="title">Horarios</span>
+    <div class="right">
+      <button type="button" class="btn-icon" (click)="add()">+</button>
+    </div>
+  </div>
+
+  <div class="sched-table">
+    <div class="sched-row sched-row--head">
+      <div style="width:92px;">Acciones</div>
+      <div>Día</div>
+      <div>Hora Inicio</div>
+      <div>Hora Final</div>
+      <div>Tipo de salón</div>
+      <div>Discapacidad</div>
+      <div>Modalidad</div>
+      <div>Salón</div>
+    </div>
+
+    <div class="sched-row" *ngFor="let r of rows; let i = index">
+      <!-- Acciones -->
+      <div class="actions">
+        <button class="btn-icon" type="button" (click)="remove(i)">−</button>
+        <button class="btn-icon" type="button" (click)="add()">+</button>
+      </div>
+
+      <!-- Día -->
+      <div>
+        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})">
+          <option [ngValue]="undefined">Seleccione…</option>
+          <option *ngFor="let d of days" [ngValue]="d.v">{{ d.t }}</option>
+        </select>
+      </div>
+
+      <!-- Hora inicio -->
+      <div class="time-cell">
+        <input #ti type="time" class="input" [ngModel]="r.startTime" (ngModelChange)="patch(i,{startTime:$event})">
+        <button class="icon" type="button" (click)="focus(ti)">🕒</button>
+      </div>
+
+      <!-- Hora final -->
+      <div class="time-cell">
+        <input #tf type="time" class="input" [ngModel]="r.endTime" (ngModelChange)="patch(i,{endTime:$event})">
+        <button class="icon" type="button" (click)="focus(tf)">🕒</button>
+      </div>
+
+      <!-- Tipo salón -->
+      <div>
+        <select class="input" [ngModel]="r.roomType" (ngModelChange)="patch(i,{roomType:$event})">
+          <option *ngFor="let t of roomTypes" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <!-- Discapacidad -->
+      <div class="radio">
+        <label><input type="radio" [checked]="r.disability" (change)="patch(i,{disability:true})"> Sí</label>
+        <label><input type="radio" [checked]="!r.disability" (change)="patch(i,{disability:false})"> No</label>
+      </div>
+
+      <!-- Modalidad -->
+      <div>
+        <select class="input" [ngModel]="r.modality" (ngModelChange)="patch(i,{modality:$event})">
+          <option *ngFor="let m of modalities" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+
+      <!-- Salón -->
+      <div>
+        <input class="input" placeholder="Ej: A-203" [ngModel]="r.room" (ngModelChange)="patch(i,{room:$event})"/>
+      </div>
+    </div>
+  </div>
+</div>
