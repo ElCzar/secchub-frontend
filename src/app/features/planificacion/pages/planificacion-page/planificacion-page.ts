@@ -13,7 +13,7 @@ import { PlanningClassesTable } from "../../components/planning-classes-table/pl
   templateUrl: './planificacion-page.html',
   styleUrls: ['./planificacion-page.scss'],
 })
-export class PlanificacionClasesPageComponent {
+export class PlanificacionClasesPage {
   // Simulación de rol; cámbialo cuando conectemos auth
   role: 'admin' | 'seccion' = 'admin';
 

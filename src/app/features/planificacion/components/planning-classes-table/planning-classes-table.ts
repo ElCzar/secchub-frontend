@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output, output } from '@angular/core';
+import { PlanningRow } from '../../models/planificacion.models';
 
 @Component({
   selector: 'app-planning-classes-table',
@@ -7,5 +8,10 @@ import { Component } from '@angular/core';
   styleUrl: './planning-classes-table.scss'
 })
 export class PlanningClassesTable {
+  @Input() rows: PlanningRow[] = [];
+
+  @Output() patchRow = new EventEmitter<{ index: number; data: Partial<PlanningRow> }>();
+  @Output() addRow = new EventEmitter<void>();
+  @Output() removeRow = new EventEmitter<number>();
 
 }
