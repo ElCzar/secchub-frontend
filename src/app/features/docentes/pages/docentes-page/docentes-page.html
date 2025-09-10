@@ -15,6 +15,7 @@
   <!-- Contenido principal -->
   <div class="main-content">
     <h1 class="titulo-pagina">Docentes</h1>
+    <div class="hr-line"></div>
 
     <!-- Filtros -->
     <div class="filters-container">
@@ -56,18 +57,12 @@
   </div>
 </div>
 
-<!-- Modal básico de información del profesor -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Información del Profesor</h3>
-      <button class="modal-close" (click)="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p><strong>Nombre:</strong> {{ selectedDocenteInfo?.name }}</p>
-      <p><strong>Materias:</strong> {{ selectedDocenteInfo?.subjects?.join(', ') }}</p>
-      <p><strong>Semestres:</strong> {{ selectedDocenteInfo?.semesters?.join(', ') }}</p>
-      <p class="modal-note">Esta es información básica del profesor. Más detalles serán agregados posteriormente.</p>
-    </div>
-  </div>
-</div>
+<!-- Modal detallado de información del profesor -->
+<app-teacher-select-modal
+  [docente]="selectedDocenteInfo"
+  [showModal]="showModal"
+  [classKey]="classKey"
+  [classInfo]="classInfo"
+  (modalClosed)="closeModal()"
+  (docenteSelected)="onDocenteSelected($event)">
+</app-teacher-select-modal>

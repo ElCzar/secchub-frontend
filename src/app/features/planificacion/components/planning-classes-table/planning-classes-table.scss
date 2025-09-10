@@ -156,6 +156,19 @@
     border-color: var(--brand-azul);
     box-shadow: 0 0 0 2px rgba(44,86,151,.15);
   }
+
+  // Estilo para campos calculados automáticamente (solo lectura)
+  &[readonly] {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    
+    &:focus {
+      border-color: #e9ecef;
+      box-shadow: none;
+    }
+  }
 }
 
 /* ==============================

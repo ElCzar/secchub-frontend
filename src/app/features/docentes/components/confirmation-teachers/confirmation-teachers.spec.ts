@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { StatusPill } from './status-pill';
+import { ConfirmationTeachers } from './confirmation-teachers';
 
-describe('StatusPill', () => {
-  let component: StatusPill;
-  let fixture: ComponentFixture<StatusPill>;
+describe('ConfirmationTeachers', () => {
+  let component: ConfirmationTeachers;
+  let fixture: ComponentFixture<ConfirmationTeachers>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StatusPill]
+      imports: [ConfirmationTeachers]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(StatusPill);
+    fixture = TestBed.createComponent(ConfirmationTeachers);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

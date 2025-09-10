@@ -107,7 +107,9 @@
           <!-- Fecha Inicio -->
           <td>
             <ng-container *ngIf="row._editing; else showStart">
-              <input class="input" type="date" [(ngModel)]="row.startDate" />
+              <input class="input" type="date" 
+                     [ngModel]="row.startDate" 
+                     (ngModelChange)="onStartDateChange(i, $event)" />
             </ng-container>
             <ng-template #showStart>{{ row.startDate | date: 'shortDate' }}</ng-template>
           </td>
@@ -115,17 +117,22 @@
           <!-- Fecha Final -->
           <td>
             <ng-container *ngIf="row._editing; else showEnd">
-              <input class="input" type="date" [(ngModel)]="row.endDate" />
+              <input class="input" type="date" 
+                     [ngModel]="row.endDate" 
+                     (ngModelChange)="onEndDateChange(i, $event)" />
             </ng-container>
             <ng-template #showEnd>{{ row.endDate | date: 'shortDate' }}</ng-template>
           </td>
 
-          <!-- Semanas -->
+          <!-- Semanas (calculadas automáticamente) -->
           <td>
             <ng-container *ngIf="row._editing; else showWeeks">
-              <input class="input" type="number" [(ngModel)]="row.weeks" />
+              <input class="input" type="number" 
+                     [ngModel]="getCalculatedWeeks(row)" 
+                     readonly 
+                     title="Las semanas se calculan automáticamente basándose en las fechas" />
             </ng-container>
-            <ng-template #showWeeks>{{ row.weeks }}</ng-template>
+            <ng-template #showWeeks>{{ getCalculatedWeeks(row) }}</ng-template>
           </td>
 
           <!-- Docente -->

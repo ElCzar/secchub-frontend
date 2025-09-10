@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PlanningRow } from '../../models/planificacion.models';
 import { SchedulesTableRoom } from "../schedules-table-room/schedules-table-room";
+import { SelectedTeachers } from '../../services/selected-teachers';
 
 // Interfaz para las opciones de curso en el autocompletado
 export interface CourseOption {
@@ -25,7 +26,7 @@ export class PlanningClassesTable {
   @Output() addRow = new EventEmitter<void>();
   @Output() removeRow = new EventEmitter<number>();
 
-  constructor(private readonly router: Router, private readonly datePipe: DatePipe) {}
+  constructor(private readonly router: Router, private readonly datePipe: DatePipe, private readonly selectedTeachersService: SelectedTeachers) {}
 
   // Propiedades para el autocompletado
   suggestions: CourseOption[][] = [];
@@ -170,8 +171,23 @@ export class PlanningClassesTable {
 
   selectTeacher(index: number) {
     console.log('Seleccionar docente para la fila', index);
-    // Navegar a la pantalla de selección de docentes
-    this.router.navigate(['/seleccionar-docente']);
+    
+    // Crear un key único para esta clase específica
+    const row = this.rows[index];
+    const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
+    
+    // Navegar a la pantalla de selección de docentes con el contexto de la clase
+    this.router.navigate(['/seleccionar-docente'], {
+      state: {
+        classKey,
+        classInfo: {
+          materia: row.courseName,
+          seccion: row.section,
+          classId: row.classId,
+          rowIndex: index
+        }
+      }
+    });
   }
 
   selectAdditionalTeacher(index: number) {
@@ -183,5 +199,66 @@ export class PlanningClassesTable {
   viewTeacherDetails(index: number) {
     console.log('Ver detalles del docente para la fila', index);
     // TODO: Mostrar modal o navegar a detalles del docente
+  }
+
+  // Métodos para manejo de fechas y cálculo automático de semanas
+  onStartDateChange(index: number, newStartDate: string) {
+    const row = this.rows[index];
+    row.startDate = newStartDate;
+    this.calculateWeeks(index);
+    this.patchRow.emit({ index, data: { startDate: newStartDate, weeks: row.weeks } });
+  }
+
+  onEndDateChange(index: number, newEndDate: string) {
+    const row = this.rows[index];
+    row.endDate = newEndDate;
+    this.calculateWeeks(index);
+    this.patchRow.emit({ index, data: { endDate: newEndDate, weeks: row.weeks } });
+  }
+
+  private calculateWeeks(index: number) {
+    const row = this.rows[index];
+    
+    if (row.startDate && row.endDate) {
+      const startDate = new Date(row.startDate);
+      const endDate = new Date(row.endDate);
+      
+      // Validar que la fecha final sea posterior a la inicial
+      if (endDate > startDate) {
+        // Calcular la diferencia en milisegundos
+        const timeDifference = endDate.getTime() - startDate.getTime();
+        
+        // Convertir a días y luego a semanas (redondeando hacia arriba)
+        const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+        const weeks = Math.ceil(daysDifference / 7);
+        
+        row.weeks = weeks;
+      } else if (endDate < startDate) {
+        // Si la fecha final es anterior a la inicial, mostrar error
+        console.warn('La fecha final debe ser posterior a la fecha inicial');
+        row.weeks = 0;
+      } else {
+        // Si las fechas son iguales
+        row.weeks = 1;
+      }
+    } else {
+      // Si no hay ambas fechas, no calcular
+      row.weeks = 0;
+    }
+  }
+
+  // Getter para obtener las semanas calculadas (solo lectura en modo no edición)
+  getCalculatedWeeks(row: PlanningRow): number {
+    if (row.startDate && row.endDate) {
+      const startDate = new Date(row.startDate);
+      const endDate = new Date(row.endDate);
+      
+      if (endDate > startDate) {
+        const timeDifference = endDate.getTime() - startDate.getTime();
+        const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+        return Math.ceil(daysDifference / 7);
+      }
+    }
+    return row.weeks || 0;
   }
 }

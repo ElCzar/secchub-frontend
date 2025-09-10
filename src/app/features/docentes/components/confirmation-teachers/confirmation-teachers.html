@@ -1,0 +1,39 @@
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Confirmar Selección</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="confirmation-message">
+        <p class="question-text">¿Está seguro de seleccionar {{ selectedDocentes.length === 1 ? 'este profesor' : 'estos profesores' }}?</p>
+        
+        <div class="selected-teachers">
+          <div class="teacher-item" *ngFor="let docente of selectedDocentes">
+            <strong>{{ docente.name }}</strong>
+            <span class="teacher-subjects">{{ docente.subjects.join(', ') }}</span>
+          </div>
+        </div>
+        
+        <p class="additional-text" *ngIf="selectedDocentes.length === 1">
+          ¿Desea agregar otro profesor más?
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+      
+      <button type="button" class="btn btn--primary" (click)="onAddAnother()" *ngIf="selectedDocentes.length < 3">
+        Agregar Otro
+      </button>
+      
+      <button type="button" class="btn btn--primary btn-continue" (click)="onContinue()">
+        Continuar
+      </button>
+    </div>
+  </div>
+</div>
