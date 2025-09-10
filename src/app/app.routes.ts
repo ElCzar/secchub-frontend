@@ -3,5 +3,5 @@ import { MonitorFormPageComponent } from './features/monitores/pages/monitor-for
 
 export const routes: Routes = [
 
-    { path: '', component: MonitorFormPageComponent }
+    { path: 'FormularioMonitores', component: MonitorFormPageComponent }
 ];
