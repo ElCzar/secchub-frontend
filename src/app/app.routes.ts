@@ -3,6 +3,6 @@ import { ConfirmacionPageComponent } from './features/confirmacion-docentes/page
 
 export const routes: Routes = [
 
-    { path: '', component: ConfirmacionPageComponent }
+    { path: 'FormularioConfirmacionDocentes', component: ConfirmacionPageComponent }
    
 ];
