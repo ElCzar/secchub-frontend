@@ -1,0 +1,33 @@
+<div class="modal-overlay" *ngIf="show" (click)="onCancel()">
+  <div class="modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Observaciones">
+    <header class="modal-header">
+      <h3 class="modal-title">{{ title }}</h3>
+      <button class="btn-close" (click)="onCancel()" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <section class="modal-body">
+      <label class="label">Observaciones anteriores:</label>
+      <ul class="obs-list" *ngIf="localObs?.length; else noObs">
+        <li *ngFor="let o of localObs; let i = index" class="obs-item">
+          <span class="obs-text">{{ o }}</span>
+          <button class="btn-remove" (click)="removeObservation(i)" title="Eliminar observación" aria-label="Eliminar observación">×</button>
+        </li>
+      </ul>
+      <ng-template #noObs>
+        <div class="no-obs">No hay observaciones registradas.</div>
+      </ng-template>
+
+      <label class="label">Agregar observación:</label>
+      <textarea [(ngModel)]="newObs" class="obs-input" placeholder="Escribe una observación..."></textarea>
+      <div class="actions-row">
+        <button class="btn btn--secondary" (click)="addObservation()" type="button">Añadir</button>
+      </div>
+    </section>
+
+    <footer class="modal-footer">
+      <button class="btn btn--ghost" (click)="onCancel()" type="button">Cancelar</button>
+      <button class="btn btn--primary" (click)="onSave()" type="button">Guardar</button>
+    </footer>
+  </div>
+</div>
+

@@ -1,0 +1,129 @@
+.page { 
+    display: grid; 
+    grid-template-columns: 280px 1fr; 
+    gap: 24px; 
+}
+
+.sidebar { 
+    background: var(--brand-azul-10, #f1f5fb); 
+    border-radius: var(--radius); 
+    padding: 16px;
+}
+.content {
+    display: grid;
+    gap: 16px;
+}
+.titulo-pagina {
+    margin-bottom: 8px;
+}
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+.btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+.btn--secondary {
+    background: #e9eef7;
+    color: #234574;
+    font-weight: 600;
+}
+.btn--primary {
+    background: var(--brand-azul);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ==============================
+  Estilos para filtros
+  ============================== */
+.filters-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.filter-label {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--text-700);
+    margin: 0;
+}
+
+.search-bar {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    min-width: 280px;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    &::placeholder {
+        color: #999;
+    }
+}
+
+.filter-select {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    option {
+        padding: 8px 12px;
+    }
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .search-bar {
+        min-width: auto;
+    }
+}

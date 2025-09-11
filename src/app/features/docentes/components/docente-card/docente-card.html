@@ -1,0 +1,8 @@
+<div
+  class="docente-block"
+  [ngClass]="{'selected': docente?.selected}"
+  (click)="onSelect()"
+>
+  <p class="docente-name">{{ docente?.name || 'Sin nombre' }}</p>
+  <small class="docente-subjects">Materias: {{ docente?.subjects?.join(', ') || '—' }}</small>
+</div>

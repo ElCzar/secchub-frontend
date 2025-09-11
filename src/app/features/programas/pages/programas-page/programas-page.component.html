@@ -1,0 +1,67 @@
+<app-header></app-header>
+
+<div class="page-container">
+  <header class="page-head">
+    <h1 class="titulo-pagina">Formulario para Programas</h1>
+    <div class="hr-line"></div>
+
+    <!-- Contexto cargado desde backend -->
+    <ng-container *ngIf="context$ | async as ctx; else ctxLoading">
+      <div class="meta">
+        <span><strong>ID Carrera:</strong> {{ ctx.careerId }}</span>
+        <span><strong>Carrera:</strong> {{ ctx.careerName }}</span>
+        <span><strong>Semestre:</strong> {{ ctx.semester }}</span>
+      </div>
+    </ng-container>
+
+    <!-- Placeholder mientras carga -->
+    <ng-template #ctxLoading>
+      <div class="meta">
+        <span><strong>ID Carrera:</strong> …</span>
+        <span><strong>Carrera:</strong> …</span>
+        <span><strong>Semestre:</strong> …</span>
+      </div>
+    </ng-template>
+
+    <!-- Contador de clases (solo front) -->
+    <div class="meta">
+      <span><strong>Número total de clases a inscribir:</strong> {{ totalCount }}</span>
+    </div>
+
+    <!-- Botones de acciones alineados a la derecha -->
+    <div class="actions actions--right">
+      <button type="button" class="btn btn--primary" (click)="loadPrevious()">
+        Solicitud del semestre anterior
+      </button>
+    </div>
+  </header>
+
+  <section class="tabla-placeholder"> 
+    <app-classes-table
+    [rows]="rows"
+    (add)="addRow()"
+    (remove)="removeRow($event)"
+    (patch)="onPatch($event)">
+  </app-classes-table>
+
+</section>
+
+
+
+
+<!-- Botón Enviar al final del formulario -->
+<div class="actions actions--right actions--enviar">
+  <button type="button" class="btn btn--primary" (click)="showConfirm = true">
+    Enviar
+  </button>
+</div>
+
+<!-- Popup de confirmación reutilizable -->
+<app-confirm-send-popup
+  [visible]="showConfirm"
+  (confirm)="onConfirmSend()"
+  (decline)="showConfirm = false">
+</app-confirm-send-popup>
+
+
+</div>
