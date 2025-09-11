@@ -1,0 +1,34 @@
+<div class="container">
+  <h1 class="titulo-pagina">Bienvenido, Jefe de Sección</h1>
+  <!-- Separación -->
+  <div class="hr-line"></div>
+
+
+  <div class="layout">
+    <!-- Columna izquierda: Accesos rápidos -->
+    <aside class="sidebar">
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    </aside>
+
+    <!-- Columna derecha: contenido principal -->
+    <main class="content">
+      <!-- Resumen de alertas y tareas pendientes -->
+      <ng-container *ngIf="taskStatus$ | async as taskStatus">
+        <app-task-status-card [data]="taskStatus"></app-task-status-card>
+      </ng-container>
+
+      
+      <!-- Resumen de progreso -->
+      <ng-container *ngIf="progressStatus$ | async as progress">
+        <app-progress-summary-table [data]="progress"></app-progress-summary-table>
+      </ng-container>
+
+      <!-- Botón de cerrar planificación -->
+      <div class="page-actions">
+        <button class="btn btn--primary btn--large" (click)="cerrarPlanificacion()">
+          CERRAR PLANIFICACIÓN
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
