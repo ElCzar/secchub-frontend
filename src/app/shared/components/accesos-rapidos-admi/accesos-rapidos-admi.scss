@@ -1,0 +1,55 @@
+.accesos-rapidos {
+  background: var(--brand-azul);
+  color: #fff;
+  width: 280px;
+  padding: 24px 18px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-radius: 0;
+  z-index: 30;
+}
+.accesos-rapidos__title {
+  color: var(--brand-amarillo);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  margin: 0 0 8px 0;
+}
+.accesos-rapidos__header{
+  display:flex;
+  flex-direction: column; /* stack logo above title */
+  align-items: flex-start;
+  gap: 8px;
+}
+.accesos-rapidos__logo{
+  width:120px;
+  height:auto;
+  display:block;
+}
+.accesos-rapidos__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.accesos-rapidos__link {
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  border: 0;
+  padding: 8px 6px;
+  font-size: var(--fs-base);
+  cursor: pointer;
+}
+.accesos-rapidos__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .accesos-rapidos { position: static; width: 100%; height: auto; border-radius: 0; }
+}

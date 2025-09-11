@@ -65,6 +65,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4200
+          },
           "configurations": {
             "production": {
               "buildTarget": "secchub-frontend:build:production"
@@ -97,6 +100,7 @@
                 "input": "src/assets",
                 "output": "/assets"
               }
+              
             ],
             "styles": [
               "src/styles.scss"
@@ -105,5 +109,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "049a0f12-61d7-44ae-aeae-2bf65ec225d3"
   }
 }

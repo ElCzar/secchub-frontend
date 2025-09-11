@@ -1,0 +1,33 @@
+<app-header></app-header>
+
+<div class="page">
+  <h1 class="titulo-pagina">Confirmación Clases</h1>
+  <div class="hr-line"></div>
+
+  <section class="block">
+    <h2 class="subtitulo">Clases Aceptadas</h2>
+    <app-classes-table [rows]="accepted" [selectable]="false"></app-classes-table>
+  </section>
+
+  <section class="block">
+    <h2 class="subtitulo">Clases por Aceptar</h2>
+    <app-classes-table
+      [rows]="pending"
+      [selectable]="true"
+      [selectedIds]="selectedPending"
+      (selectedIdsChange)="selectedPending = $event"
+    ></app-classes-table>
+  </section>
+
+  <div class="actions">
+    <button class="btn btn--danger" [disabled]="!canSubmit" (click)="onReject()">Rechazar</button>
+    <button class="btn btn--primary" [disabled]="!canSubmit" (click)="onAccept()">Aceptar</button>
+  </div>
+
+  <!-- confirmation popup -->
+  <app-confirm-send-popup
+    [visible]="popupVisible"
+    (confirm)="onPopupConfirm()"
+    (decline)="onPopupDecline()"
+  ></app-confirm-send-popup>
+</div>
