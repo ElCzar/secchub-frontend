@@ -7,5 +7,6 @@ export interface LoginDto{
 export interface AuthTokenDto {
   message?: string;
   email?: string;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken?: string | null;
 }
