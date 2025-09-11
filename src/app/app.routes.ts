@@ -7,8 +7,10 @@ import { LoginPageComponent } from './features/auth/pages/login-page/login-page.
 import { PlanificacionClasesPage } from './features/planificacion/pages/planificacion-page/planificacion-page';
 import { DocentesPage } from './features/docentes/pages/docentes-page/docentes-page';
 
+import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/inicio-admi-page';
+import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
+
 export const routes: Routes = [
-  
     {path: '',component: LoginPageComponent },
   
     { path: 'FormularioProgramas', component: ProgramasPageComponent },
@@ -21,5 +23,11 @@ export const routes: Routes = [
   
     { path: 'docentes', component: DocentesPage },
   
-    { path: 'seleccionar-docente', component: DocentesPage }
+    { path: 'seleccionar-docente', component: DocentesPage },
+  
+    { path: 'inicio-admi', component: InicioAdmiPage },
+  
+    { path: 'inicio-seccion', component: InicioSeccionPage }
 ];
+
+

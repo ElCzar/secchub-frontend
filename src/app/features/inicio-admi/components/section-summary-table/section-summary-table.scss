@@ -1,0 +1,73 @@
+.table-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 16px;
+}
+
+.table-card__title {
+  color: var(--brand-rojo);
+  font-size: var(--fs-h1);
+  margin-bottom: 8px;
+}
+
+.tabla-wrap { overflow-x: auto; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-base);
+}
+
+.tabla th, .tabla td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: 999px; border: 1px solid transparent;
+  font-weight: 600;
+}
+.badge--ok   { color: #16a34a; background: #ecfdf5; border-color: #86efac; }
+.badge--warn { color: #a16207; background: #fffbeb; border-color: #fde68a; }
+
+.actions { 
+  display: flex; 
+  gap: 8px; 
+}
+
+/* Estilos para botones */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn--primary {
+  background-color: var(--brand-azul, #2C5697);
+  color: white;
+}
+
+.btn--primary:hover {
+  background-color: #1e3a6f;
+}
+
+.btn--danger {
+  background-color: var(--brand-rojo, #820A1E);
+  color: white;
+}
+
+.btn--danger:hover {
+  background-color: #5a0814;
+}

@@ -1,0 +1,81 @@
+.table-card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.table-card__title {
+    color: var(--brand-rojo); 
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.tabla-wrap { 
+  overflow-x: auto; 
+  margin-bottom: 16px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.tabla th {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+}
+
+.tabla td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.task-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.badge {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 4px 12px; 
+  border-radius: 20px; 
+  border: 1px solid transparent;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.badge--success   { 
+  color: #059669; 
+  background: #ecfdf5; 
+  border-color: #a7f3d0; 
+}
+
+.badge--warning { 
+  color: #d97706; 
+  background: #fffbeb; 
+  border-color: #fcd34d; 
+}
+
+.badge--error { 
+  color: #dc2626; 
+  background: #fef2f2; 
+  border-color: #fca5a5; 
+}
+
+.badge--pending { 
+  color: #7c3aed; 
+  background: #f3f4f6; 
+  border-color: #d1d5db; 
+}

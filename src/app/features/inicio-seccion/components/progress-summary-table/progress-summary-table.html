@@ -1,0 +1,99 @@
+<div class="table-card">
+  <h2 class="table-card__title">Resumen de progreso</h2>
+
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <colgroup>
+        <col class="c-task" />
+        <col class="c-status" />
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>Tarea</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            <span class="task-icon">📥</span>
+            Solicitudes de materias recibidas
+          </td>
+          <td>
+            <span class="badge badge--success">
+              ✅ Completado
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">🏢</span>
+            Salones asignados
+          </td>
+          <td>
+            <span class="badge badge--warning">
+              ⚠️ Incompleto
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">👨‍🏫</span>
+            Docentes asignados
+          </td>
+          <td>
+            <span class="badge badge--warning">
+              ⚠️ Incompleto
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">📤</span>
+            Confirmaciones enviadas
+          </td>
+          <td>
+            <span class="badge badge--success">
+              ✅ Enviado
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">📥</span>
+            Confirmaciones recibidas
+          </td>
+          <td>
+            <span class="badge badge--pending">
+              📧 {{ data().confirmationsReceived.count }} pendientes
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">⚠️</span>
+            Conflictos de horario registrados
+          </td>
+          <td>
+            <span class="badge badge--warning">
+              ⚠️ {{ data().scheduleConflicts.count }} conflicto
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="task-icon">✅</span>
+            Planificación cerrada
+          </td>
+          <td>
+            <span class="badge badge--error">
+              ❌ No
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
