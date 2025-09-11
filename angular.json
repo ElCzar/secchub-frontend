@@ -32,8 +32,6 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "/assets"
-
-             
               }
             ],
             "styles": [
@@ -66,6 +64,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4200
+          },
           "configurations": {
             "production": {
               "buildTarget": "secchub-frontend:build:production"
@@ -92,8 +93,7 @@
               {
                 "glob": "**/*",
                 "input": "public"
-
-                
+<
               },
               {
                 "glob": "**/*",
