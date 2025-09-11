@@ -191,3 +191,11 @@
     </tbody>
   </table>
 </div>
+
+<app-observaciones-modal
+  [show]="showObservationsModal"
+  [title]="'Observaciones de la clase'"
+  [observaciones]="currentObservations"
+  (save)="onSaveObservations($event)"
+  (close)="onCloseObservationsModal()">
+</app-observaciones-modal>

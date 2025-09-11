@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { PlanningRow } from '../../models/planificacion.models';
 import { SchedulesTableRoom } from "../schedules-table-room/schedules-table-room";
 import { SelectedTeachers } from '../../services/selected-teachers';
+import { ObservacionesModal } from '../observaciones-modal/observaciones-modal';
 
 // Interfaz para las opciones de curso en el autocompletado
 export interface CourseOption {
@@ -14,7 +15,7 @@ export interface CourseOption {
 
 @Component({
   selector: 'app-planning-classes-table',
-  imports: [CommonModule, FormsModule, SchedulesTableRoom],
+  imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal],
   templateUrl: './planning-classes-table.html',
   styleUrls: ['./planning-classes-table.scss'],
   providers: [DatePipe]
@@ -31,6 +32,11 @@ export class PlanningClassesTable {
   // Propiedades para el autocompletado
   suggestions: CourseOption[][] = [];
   showList: boolean[] = [];
+
+  // Propiedades para el modal de observaciones
+  showObservationsModal = false;
+  currentObservations: string[] = [];
+  currentRowIndex = -1;
 
   private ensureEditableRow() {
     // Si no hay filas, solicitar al padre que agregue una
@@ -78,7 +84,30 @@ export class PlanningClassesTable {
   // Función para ver las observaciones de la clase
   viewObservations(index: number) {
     console.log('Ver observaciones de clase', this.rows[index]);
-    // Aquí iría la lógica para abrir un modal de observaciones
+    this.currentRowIndex = index;
+    this.currentObservations = this.rows[index].notes || [];
+    this.showObservationsModal = true;
+  }
+
+  // Métodos para el modal de observaciones
+  onSaveObservations(observations: string[]) {
+    if (this.currentRowIndex >= 0) {
+      this.patchRow.emit({ 
+        index: this.currentRowIndex, 
+        data: { notes: observations } 
+      });
+    }
+    this.closeObservationsModal();
+  }
+
+  onCloseObservationsModal() {
+    this.closeObservationsModal();
+  }
+
+  private closeObservationsModal() {
+    this.showObservationsModal = false;
+    this.currentObservations = [];
+    this.currentRowIndex = -1;
   }
 
   // Función para seleccionar una clase

@@ -3,7 +3,6 @@ import { PlanificacionClasesPage } from './features/planificacion/pages/planific
 import { DocentesPage } from './features/docentes/pages/docentes-page/docentes-page';
 
 export const routes: Routes = [
-    { path: '', component: PlanificacionClasesPage },
     { path: 'planificacion', component: PlanificacionClasesPage },
     { path: 'docentes', component: DocentesPage },
     { path: 'seleccionar-docente', component: DocentesPage }
