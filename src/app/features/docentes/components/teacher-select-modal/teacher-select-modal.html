@@ -1,0 +1,85 @@
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">{{ docente?.name }}</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Tabla de materias y horarios -->
+      <div class="classes-table-container" *ngIf="hasClasses">
+        <table class="classes-table">
+          <thead>
+            <tr>
+              <th>Materia</th>
+              <th>Sección</th>
+              <th>Semestre</th>
+              <th>Horarios</th>
+              <th>N°Clases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let clase of clases">
+              <td>{{ clase.materia }}</td>
+              <td>{{ clase.seccion }}</td>
+              <td>{{ clase.semestre }}</td>
+              <td>
+                <div class="horarios">
+                  <div *ngFor="let horario of clase.horarios">{{ horario }}</div>
+                </div>
+              </td>
+              <td>{{ clase.numeroClases }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Botón Agregar -->
+      <div class="actions-section">
+        <button type="button" class="btn btn--primary agregar-btn" (click)="selectDocente()">
+          Agregar
+        </button>
+      </div>
+
+      <!-- Sección de Observaciones -->
+      <div class="observaciones-section">
+        <h3 class="observaciones-title">OBSERVACIONES:</h3>
+        
+        <!-- Lista de observaciones existentes -->
+        <div class="observaciones-list" *ngIf="hasObservaciones">
+          <div class="observacion-item" *ngFor="let observacion of observaciones; let i = index">
+            <p>{{ observacion }}</p>
+            <button type="button" class="btn-remove" (click)="eliminarObservacion(i)" title="Eliminar observación">×</button>
+          </div>
+        </div>
+
+        <!-- Campo para agregar nueva observación -->
+        <div class="nueva-observacion">
+          <textarea 
+            [(ngModel)]="nuevaObservacion"
+            placeholder="Escribir nueva observación..."
+            class="observacion-textarea"
+            rows="3">
+          </textarea>
+          <button 
+            type="button" 
+            class="btn btn--primary" 
+            (click)="agregarObservacion()"
+            [disabled]="!nuevaObservacion.trim()">
+            Añadir Observacion
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<app-confirmation-teachers
+  [showModal]="showConfirmationModal"
+  [selectedDocentes]="selectedDocentes"
+  (modalClosed)="onConfirmationClosed()"
+  (cancelSelection)="onCancelSelection()"
+  (addAnotherTeacher)="onAddAnotherTeacher()"
+  (continueToPlanning)="onContinueToPlanning($event)">
+</app-confirmation-teachers>

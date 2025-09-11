@@ -1,0 +1,83 @@
+<!-- Modal de conflicto de horarios -->
+<div *ngIf="showModal" 
+     class="modal-overlay" 
+     (click)="onOverlayClick($event)"
+     (keydown)="onKeydown($event)">
+  
+  <dialog class="modal-content" aria-labelledby="conflict-title" [open]="showModal">
+    <!-- Header del modal -->
+    <div class="modal-header">
+      <h2 id="conflict-title" class="modal-title">
+        ⚠️ Conflicto de Horarios
+      </h2>
+      <button type="button" 
+              class="modal-close" 
+              (click)="closeModal()" 
+              aria-label="Cerrar modal">
+        ×
+      </button>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="modal-body">
+      <div class="conflict-content">
+        <!-- Mensaje principal -->
+        <p class="conflict-message">
+          El profesor <strong>{{teacherName}}</strong> ya tiene asignada otra clase en el mismo horario.
+        </p>
+
+        <!-- Detalles del conflicto -->
+        <div class="conflict-details">
+          <div class="conflict-section">
+            <h4 class="section-title">Clase Existente:</h4>
+            <div class="schedule-info existing">
+              <div class="info-item">
+                <span class="info-label">Materia:</span>
+                <span class="info-value">{{conflictSubject}}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Horario:</span>
+                <span class="info-value">{{conflictSchedule}}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="conflict-section">
+            <h4 class="section-title">Nueva Asignación:</h4>
+            <div class="schedule-info new">
+              <div class="info-item">
+                <span class="info-label">Materia:</span>
+                <span class="info-value">{{newSubject}}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Horario:</span>
+                <span class="info-value">{{newSchedule}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de acción -->
+        <div class="action-message">
+          <p class="suggestion-text">
+            <strong>Sugerencia:</strong> Asigna otro profesor para evitar conflictos de horarios.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer con acciones -->
+    <div class="modal-footer">
+      <button type="button" 
+              class="btn btn-cancel" 
+              (click)="closeModal()">
+        Cancelar
+      </button>
+      <button type="button" 
+              class="btn btn--primary btn-assign" 
+              (click)="onAssignDifferentTeacher()">
+        Asignar Otro Profesor
+      </button>
+    </div>
+  </dialog>
+</div>

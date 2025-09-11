@@ -1,0 +1,73 @@
+<div class="page">
+  <aside class="sidebar">
+    <!-- Mostramos el acceso rápido según rol -->
+    <app-accesos-rapidos-admi *ngIf="role==='admin'"></app-accesos-rapidos-admi>
+    <app-accesos-rapidos-seccion *ngIf="role==='seccion'"></app-accesos-rapidos-seccion>
+  </aside>
+
+  <main class="content">
+    <h1 class="titulo-pagina">Planificación Clases</h1>
+    <div class="hr-line"></div>
+
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchText" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar por materia, ID o docente..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="materia-select">Filtrar por Materia:</label>
+        <select id="materia-select" [(ngModel)]="materiaFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las materias</option>
+          <option *ngFor="let materia of availableMaterias" [value]="materia">{{materia}}</option>
+        </select>
+      </div>
+      
+      <!-- Filtro de sección solo visible para administradores -->
+      <div class="filter-group" *ngIf="role === 'admin'">
+        <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
+        <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las secciones</option>
+          <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn--secondary" (click)="planAnterior()">Planificación Semestre Anterior</button>
+      <button class="btn btn--secondary" (click)="aplicarPlaneacion()">Aplicar Planeacion Carreras</button>
+    </div>
+
+    <!-- Tabla principal -->
+    <app-planning-classes-table
+      [rows]="rows"
+      (patchRow)="onPatchRow($event)"
+      (addRow)="onAddRow()"
+      (removeRow)="onRemoveRow($event)">
+    </app-planning-classes-table>
+
+    <div class="actions">
+      <button class="btn btn--primary" (click)="guardar()">Guardar cambios</button>
+      <!-- Botón de prueba para el modal de conflictos -->
+      <button class="btn btn--secondary" (click)="testScheduleConflict()">🔍 Probar Conflicto de Horarios</button>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de conflicto de horarios -->
+<app-schedule-conflict
+  [showModal]="showScheduleConflict"
+  [teacherName]="conflictData.teacherName"
+  [conflictSchedule]="conflictData.conflictSchedule"
+  [conflictSubject]="conflictData.conflictSubject"
+  [newSchedule]="conflictData.newSchedule"
+  [newSubject]="conflictData.newSubject"
+  (modalClosed)="onConflictModalClosed()"
+  (assignDifferentTeacher)="onAssignDifferentTeacher()">
+</app-schedule-conflict>

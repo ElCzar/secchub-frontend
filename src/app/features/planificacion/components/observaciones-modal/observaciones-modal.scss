@@ -1,0 +1,109 @@
+/* Usa variables globales definidas en styles.scss */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 24px;
+}
+
+.modal-card {
+  background: var(--bg, #fff);
+  width: min(920px, 95%);
+  border-radius: var(--radius, 10px);
+  box-shadow: 0 8px 20px rgba(12, 22, 36, 0.12);
+  border: 1px solid var(--border, #e6edf3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+
+.modal-title {
+  margin:0;
+  color: var(--brand-rojo);
+  font-size: var(--fs-h2, 20px);
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-700);
+}
+
+.modal-body {
+  padding: 18px 22px;
+}
+
+.label { color: var(--text-700); font-weight:600; margin-bottom:8px; display:block; }
+
+.obs-list {
+  list-style:none;
+  padding:0;
+  margin:0 0 12px 0;
+}
+
+.obs-item {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-card, #fafafa);
+  border: 1px solid var(--border);
+  margin-bottom:8px;
+}
+
+.obs-text { color: var(--text-700); }
+
+.btn-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-500);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.no-obs { color: var(--text-500); padding: 8px 0 12px 0; }
+
+.obs-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  resize: vertical;
+  font-size: var(--fs-base, 14px);
+  margin-bottom: 10px;
+}
+
+.actions-row { display:flex; justify-content:flex-end; gap:8px; margin-bottom: 8px; }
+
+.modal-footer {
+  padding: 14px 22px;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  border-top: 1px solid var(--border);
+  background: transparent;
+}
+
+/* botones: usa clases globales si existen, sino fallback */
+.btn { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; }
+.btn--primary { background: var(--brand-azul); color: #fff; }
+.btn--secondary { background: var(--brand-azul); color: #fff; }
+.btn--ghost { background: transparent; color: var(--text-700); border: 1px solid var(--border); }
