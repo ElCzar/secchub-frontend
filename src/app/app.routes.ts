@@ -1,7 +1,10 @@
 import { Routes } from '@angular/router';
+import { ProgramasPageComponent } from './features/programas/pages/programas-page/programas-page.component';
 
 
 export const routes: Routes = [
+  
+  
   {
     path: 'login',
     loadComponent: () =>
@@ -10,5 +13,11 @@ export const routes: Routes = [
   },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' }
+
+  { path: 'FormularioProgramas', component: ProgramasPageComponent }
+
+ 
+
 ];
+
 

@@ -7,9 +7,12 @@ import { RouterOutlet } from '@angular/router';
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrls: ['./app.scss']
 })
 
 export class App {
   protected readonly title = signal('secchub-frontend');
+
 }
+
+

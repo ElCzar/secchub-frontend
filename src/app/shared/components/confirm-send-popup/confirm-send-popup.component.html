@@ -1,0 +1,18 @@
+<div class="popup-backdrop" *ngIf="visible">
+  <div class="popup-confirm">
+    <div class="popup-title">
+      <span>Confirmar envío</span>
+      <hr class="popup-divider" />
+    </div>
+    <p class="popup-message">
+      ¿Está seguro/a de enviar este formulario que está dirigido al departamento de Ingeniería de sistemas?
+    </p>
+    <p class="popup-warning">
+      Una vez confirmado, el mensaje será enviado y no podrá modificarse ni cancelarse.
+    </p>
+    <div class="popup-actions">
+  <button class="btn btn--primary" (click)="onDecline()">Cancelar</button>
+  <button class="btn btn--primary" (click)="onConfirm()">Enviar</button>
+    </div>
+  </div>
+</div>
