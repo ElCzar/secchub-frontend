@@ -1,0 +1,25 @@
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02);
+}
+
+.card__title {
+  font-size: var(--fs-h1);
+  color: var(--brand-rojo);
+  margin: 0 0 12px;
+}
+.card__title .muted { color: var(--text-500); font-weight: 600; }
+
+.list {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;
+}
+.list__item { display: flex; gap: 10px; align-items: flex-start; }
+.icon { width: 22px; text-align: center; line-height: 22px; }
+.icon.ok   { color: #22c55e; }
+.icon.warn { color: #eab308; }
+.icon.date { color: var(--brand-azul); }
+.link { color: var(--brand-azul); text-decoration: none; }
+.link:hover { text-decoration: underline; }

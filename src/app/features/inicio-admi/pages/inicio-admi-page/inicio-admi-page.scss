@@ -1,0 +1,38 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.titulo-pagina {
+  font-size: var(--fs-title, 30px);
+  color: var(--brand-azul);
+  margin-bottom: 24px;
+  margin-left: 200px; /* 280px del sidebar + 24px del gap */
+  padding-bottom: 8px;
+}
+
+
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+.sidebar {
+  position: sticky; 
+  top: 16px;
+}
+
+.content {
+  display: grid;
+  gap: 16px;
+}
+
+.hr-line {
+  height: 2px;
+  background: var(--border, #cfd6e4);
+  margin-bottom: 24px;
+  margin-left: 200px;
+}

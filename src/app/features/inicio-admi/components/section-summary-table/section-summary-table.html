@@ -1,0 +1,42 @@
+<div class="table-card">
+  <h2 class="table-card__title">Resumen por sección</h2>
+
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <colgroup>
+        <col class="c-section" />
+        <col class="c-state" />
+        <col class="c-classes" />
+        <col class="c-pending" />
+        <col class="c-actions" />
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>Sección</th>
+          <th>Estado</th>
+          <th>Clases asignadas</th>
+          <th>Docentes sin confirmar</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let row of data.rows">
+          <td>{{ row.sectionCode }}</td>
+          <td>
+            <span class="badge" [ngClass]="{ 'badge--ok': row.status==='CLOSED', 'badge--warn': row.status==='EDITING' }">
+              {{ row.status === 'CLOSED' ? '✅ Cerrada' : '⚠ En edición' }}
+            </span>
+          </td>
+          <td>{{ row.assignedClasses }}</td>
+          <td>{{ row.unconfirmedTeachers }}</td>
+          <td class="actions">
+            <button class="btn btn--primary" (click)="onView(row)">Ver</button>
+            <button class="btn btn--danger" *ngIf="row.status==='EDITING'" (click)="onEnter(row)">Entrar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
