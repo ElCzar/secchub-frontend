@@ -1,0 +1,116 @@
+<div class="tabla-wrap">
+  <table class="tabla">
+    <colgroup>
+      <col class="c-actions" />
+      <col class="c-id" />
+      <col class="c-name" />
+      <col class="c-section" />
+      <col class="c-seats" />
+      <col class="c-start" />
+      <col class="c-end" />
+      <col class="c-weeks" />
+    </colgroup>
+
+    <thead>
+      <tr>
+        <th>Acciones</th>
+        <th>ID Materia</th>
+        <th>Nombre Materia</th>
+        <th>Sección</th>
+        <th>Cupos solicitados</th>
+        <th>Fecha inicio</th>
+        <th>Fecha final</th>
+        <th>Semanas</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <ng-container *ngFor="let row of rows; let i = index">
+        <!-- Fila principal -->
+        <tr [class.is-deleted]="row._state==='deleted'">
+          <td class="acciones">
+            <button type="button" class="btn-icon" (click)="remove.emit(i)">−</button>
+            <button type="button" class="btn-icon" (click)="add.emit()">+</button>
+          </td>
+
+          <!-- ID -->
+          <td class="cell-autocomplete">
+            <input
+              class="input"
+              [ngModel]="row.courseId"
+              (ngModelChange)="patch.emit({index:i, data:{courseId: $event}})"
+              (input)="onSearch(i, $any($event.target).value)"
+              (focus)="onSearch(i, row.courseId || row.courseName)"
+              (blur)="closeList(i)"
+              placeholder="Buscar id o nombre" />
+            <ul class="suggest" *ngIf="showList[i]">
+              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)">
+                <span class="id">{{ s.id }}</span>
+                <span class="name">{{ s.name }}</span>
+              </li>
+            </ul>
+          </td>
+
+          <!-- Nombre -->
+          <td class="cell-autocomplete">
+            <input
+              class="input"
+              [ngModel]="row.courseName"
+              (ngModelChange)="patch.emit({index:i, data:{courseName: $event}})"
+              (input)="onSearch(i, $any($event.target).value)"
+              (focus)="onSearch(i, row.courseName || row.courseId)"
+              (blur)="closeList(i)"
+              placeholder="Buscar por nombre" />
+            <ul class="suggest" *ngIf="showList[i]">
+              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)">
+                <span class="id">{{ s.id }}</span>
+                <span class="name">{{ s.name }}</span>
+              </li>
+            </ul>
+          </td>
+
+          <td><input class="input" [ngModel]="row.section" readonly /></td>
+
+          <td>
+            <input
+              class="input"
+              type="number"
+              min="0"
+              [ngModel]="row.seats"
+              (ngModelChange)="onSeatsInput(i, $event)" />
+          </td>
+
+          <td>
+            <input class="input" type="date"
+              [ngModel]="row.startDate"
+              (ngModelChange)="onStartChange(i, $event)" />
+          </td>
+
+          <td>
+            <input class="input" type="date"
+              [ngModel]="row.endDate"
+              (ngModelChange)="onEndChange(i, $event)" />
+          </td>
+
+          <td><input class="input" [ngModel]="row.weeks" readonly /></td>
+        </tr>
+
+        <!-- Expander (siempre visible) -->
+        <tr class="expander-row">
+          <td colspan="8">
+            <button class="expander" type="button" (click)="row._open = !row._open">
+              <span class="caret" [class.open]="row._open">▸</span> Horarios
+            </button>
+          </td>
+        </tr>
+
+        <!-- Bloque de horarios (solo si _open) -->
+        <tr *ngIf="row._open">
+          <td colspan="8">
+            <app-schedules-table [(rows)]="row.schedules"></app-schedules-table>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>
