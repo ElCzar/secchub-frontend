@@ -14,7 +14,7 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   { path: '**', redirectTo: 'login' }
 
-  { path: 'FormularioProgramas', component: ProgramasPageComponent }
+  { path: 'FormularioProgramas', component: ProgramasPageComponent },
 
     { path: 'FormularioConfirmacionDocentes', component: ConfirmacionPageComponent }
    
