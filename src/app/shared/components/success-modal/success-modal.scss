@@ -1,0 +1,33 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    width: 560px;
+    max-width: calc(100% - 48px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .title { color: #8B0F1A; margin: 0 0 8px 0; font-size: 20px; }
+  .divider { height: 2px; background: #222; width: 100%; margin: 12px 0 18px; }
+  .icon { font-size: 72px; color: #109e4a; margin: 12px 0; }
+  .message { font-size: 18px; color: #111; }
+  .actions { margin-top: 18px; }
+
+}

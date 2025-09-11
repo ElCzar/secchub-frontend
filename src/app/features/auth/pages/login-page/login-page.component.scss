@@ -1,0 +1,27 @@
+.login-bg {
+  position: relative;
+  min-height: 100dvh;
+  background: url('/assets/FondoLogin.jpg') center/cover no-repeat fixed;
+  display: grid;
+  place-items: center;
+}
+
+.overlay {
+  position: absolute; 
+  inset: 0;
+  background: rgba(0, 16, 32, 0.45);
+  backdrop-filter: blur(1px);
+  z-index: 0;
+}
+
+.card {
+position: relative;
+  z-index: 1;
+  width: min(92vw, 560px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+
