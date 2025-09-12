@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from "../../services/auth/auth.service";
 import { AuthStateService } from '../../../../core/services/auth-state.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: "app-login-form",
@@ -17,7 +18,11 @@ export class LoginFormComponent {
   errorMessage = '';
   successMessage = '';
 
-  constructor(private authService: AuthService, private authState: AuthStateService) {}
+  constructor(
+    private authService: AuthService,
+    private authState: AuthStateService,
+    private router: Router
+  ) {}
 
   submit(email: string, password: string) {
     this.errorMessage = '';
@@ -29,6 +34,19 @@ export class LoginFormComponent {
         this.loading = false;
         if (response.accessToken) {
           this.successMessage = 'Inicio de sesión exitoso!';
+          // Suponiendo que el backend devuelve el rol en response.rol
+          const role = response.role;
+          if (role === 'ROLE_STUDENT') {
+            this.router.navigate(['/FormularioMonitores']);
+          } else if (role === 'ROLE_TEACHER') {
+            this.router.navigate(['/FormularioConfirmacionDocentes']);
+          } else if (role === 'ROLE_ADMIN') {
+            this.router.navigate(['/inicio-admi']);
+          } else if (role === 'ROLE_PROGRAM') {
+            this.router.navigate(['/FormularioProgramas']);
+          } else if (role === 'ROLE_USER') {
+            this.router.navigate(['/inicio-seccion']);
+          }
         } else {
           this.errorMessage = response?.message || 'No se recibió access token.';
         }

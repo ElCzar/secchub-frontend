@@ -9,4 +9,5 @@ export interface AuthTokenDto {
   email?: string;
   accessToken: string | null;
   refreshToken?: string | null;
+  role?: string;
 }
