@@ -68,33 +68,59 @@ export class ClassesTableComponent {
   showList: boolean[] = [];
 
   /**
-   * Inyección del servicio ProgramasService para acceder a la API de cursos y secciones.
+   * Indica si los cursos están siendo cargados
    */
-  constructor(private api: ProgramasService) {}
+  coursesLoading = true;
 
   /**
-   * Realiza la búsqueda de cursos al escribir en el campo de ID o nombre.
-   * Actualiza las sugerencias y muestra la lista si hay resultados.
+   * Inyección del servicio ProgramasService para acceder a la API de cursos y secciones.
+   */
+  constructor(private readonly api: ProgramasService) {
+    // Subscribe to courses loading status
+    this.api.areCoursesLoaded().subscribe(loaded => {
+      this.coursesLoading = !loaded;
+    });
+  }
+
+  /**
+   * Obtiene el número total de cursos cargados (útil para depuración)
+   */
+  getTotalCoursesCount(): number {
+    return this.api.getCoursesCount();
+  }
+
+  /**
+   * Realiza la búsqueda de cursos al escribir en el campo de nombre.
+   * Busca únicamente por nombre del curso en los datos cargados previamente.
    * @param i Índice de la fila
    * @param term Término de búsqueda ingresado
    */
   onSearch(i: number, term: string) {
     const q = term?.trim();
-    if (!q) {
+    if (!q || q.length < 2) { // Iniciar búsqueda a partir de 2 caracteres
       this.suggestions[i] = [];
       this.showList[i] = false;
       return;
     }
-    this.api.searchCourses(q).subscribe(list => {
-      this.suggestions[i] = list;
-      this.showList[i] = list.length > 0;
+
+    // Buscar por nombre en los cursos cargados localmente
+    this.api.searchCourses(q).subscribe({
+      next: (list) => {
+        this.suggestions[i] = list;
+        this.showList[i] = list.length > 0;
+      },
+      error: (error) => {
+        console.error('Error searching courses:', error);
+        this.suggestions[i] = [];
+        this.showList[i] = false;
+      }
     });
   }
 
 
   /**
    * Selecciona un curso de la lista de sugerencias y actualiza los datos de la fila correspondiente.
-   * También solicita y asigna la sección por defecto del curso seleccionado.
+   * Usa los datos del curso que ya están disponibles en la opción seleccionada.
    * @param i Índice de la fila
    * @param opt Opción de curso seleccionada
    */
@@ -102,12 +128,15 @@ export class ClassesTableComponent {
     this.showList[i] = false;
     this.suggestions[i] = [];
 
-    // Actualiza el ID y nombre del curso en la fila
-    this.patch.emit({ index: i, data: { courseId: opt.id, courseName: opt.name } });
-
-    // Solicita la sección por defecto y la asigna
-    this.api.getDefaultSection(opt.id).subscribe(sec => {
-      this.patch.emit({ index: i, data: { section: sec ?? '' } });
+    // Actualiza todos los datos del curso en una sola emisión
+    const section = opt.sectionId ? opt.sectionId.toString() : '01';
+    this.patch.emit({
+      index: i,
+      data: {
+        courseId: opt.id,
+        courseName: opt.name,
+        section: section
+      }
     });
   }
 
@@ -189,6 +218,25 @@ export class ClassesTableComponent {
     const days = diffMs / (1000 * 60 * 60 * 24);
     const weeks = Math.ceil(days / 7);
     this.patch.emit({ index: i, data: { weeks } });
+  }
+
+  /**
+   * Verifica si una fila tiene horarios válidos
+   * @param row La fila a verificar
+   * @returns true si tiene al menos un horario válido
+   */
+  hasValidSchedules(row: ClaseRowView): boolean {
+    if (!row.schedules || row.schedules.length === 0) {
+      return false;
+    }
+
+    return row.schedules.some(schedule =>
+      schedule.day &&
+      schedule.startTime &&
+      schedule.endTime &&
+      schedule.modality &&
+      schedule.roomType
+    );
   }
 
 }

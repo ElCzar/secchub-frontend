@@ -36,7 +36,7 @@
     </div>
   </header>
 
-  <section class="tabla-placeholder"> 
+  <section class="tabla-placeholder">
     <app-classes-table
     [rows]="rows"
     (add)="addRow()"
@@ -51,7 +51,11 @@
 
 <!-- Botón Enviar al final del formulario -->
 <div class="actions actions--right actions--enviar">
-  <button type="button" class="btn btn--primary" (click)="showConfirm = true">
+  <button
+    type="button"
+    class="btn btn--primary"
+    [disabled]="!isFormValid()"
+    (click)="showConfirm = true">
     Enviar
   </button>
 </div>

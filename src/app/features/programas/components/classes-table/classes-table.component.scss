@@ -32,6 +32,24 @@
 }
 
 /* ==============================
+  Estilos de validación
+  ============================== */
+.input--invalid {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5 !important;
+}
+
+.input--invalid:focus {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.required-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+/* ==============================
   Estilos de la tabla principal
   ============================== */
 .tabla {

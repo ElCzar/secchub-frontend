@@ -29,65 +29,72 @@
         <!-- Fila principal -->
         <tr [class.is-deleted]="row._state==='deleted'">
           <td class="acciones">
-            <button type="button" class="btn-icon" (click)="remove.emit(i)">−</button>
+            <button type="button" class="btn-icon" (click)="remove.emit(i)">-</button>
             <button type="button" class="btn-icon" (click)="add.emit()">+</button>
           </td>
 
           <!-- ID -->
-          <td class="cell-autocomplete">
+          <td>
             <input
               class="input"
+              [class.input--invalid]="!row.courseId.trim()"
               [ngModel]="row.courseId"
-              (ngModelChange)="patch.emit({index:i, data:{courseId: $event}})"
-              (input)="onSearch(i, $any($event.target).value)"
-              (focus)="onSearch(i, row.courseId || row.courseName)"
-              (blur)="closeList(i)"
-              placeholder="Buscar id o nombre" />
-            <ul class="suggest" *ngIf="showList[i]">
-              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)">
-                <span class="id">{{ s.id }}</span>
-                <span class="name">{{ s.name }}</span>
-              </li>
-            </ul>
+              placeholder="ID del curso *"
+              readonly />
           </td>
 
           <!-- Nombre -->
           <td class="cell-autocomplete">
             <input
               class="input"
+              [class.input--invalid]="!row.courseName.trim()"
               [ngModel]="row.courseName"
-              (ngModelChange)="patch.emit({index:i, data:{courseName: $event}})"
-              (input)="onSearch(i, $any($event.target).value)"
-              (focus)="onSearch(i, row.courseName || row.courseId)"
+              (ngModelChange)="patch.emit({index:i, data:{courseName: $event}}); onSearch(i, $event)"
+              (focus)="onSearch(i, row.courseName)"
               (blur)="closeList(i)"
-              placeholder="Buscar por nombre" />
+              placeholder="Buscar por nombre *" />
             <ul class="suggest" *ngIf="showList[i]">
-              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)">
+              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keydown.enter)="selectCourse(i, s)">
                 <span class="id">{{ s.id }}</span>
                 <span class="name">{{ s.name }}</span>
               </li>
             </ul>
           </td>
 
-          <td><input class="input" [ngModel]="row.section" readonly /></td>
+          <td>
+            <input
+              class="input"
+              [class.input--invalid]="!row.section.trim()"
+              [ngModel]="row.section"
+              placeholder="Sección *"
+              readonly />
+          </td>
 
           <td>
             <input
               class="input"
+              [class.input--invalid]="!row.seats || row.seats <= 0"
               type="number"
-              min="0"
+              min="1"
               [ngModel]="row.seats"
-              (ngModelChange)="onSeatsInput(i, $event)" />
+              (ngModelChange)="onSeatsInput(i, $event)"
+              placeholder="Cupos *" />
           </td>
 
           <td>
-            <input class="input" type="date"
+            <input
+              class="input"
+              [class.input--invalid]="!row.startDate"
+              type="date"
               [ngModel]="row.startDate"
               (ngModelChange)="onStartChange(i, $event)" />
           </td>
 
           <td>
-            <input class="input" type="date"
+            <input
+              class="input"
+              [class.input--invalid]="!row.endDate"
+              type="date"
               [ngModel]="row.endDate"
               (ngModelChange)="onEndChange(i, $event)" />
           </td>
@@ -99,7 +106,9 @@
         <tr class="expander-row">
           <td colspan="8">
             <button class="expander" type="button" (click)="row._open = !row._open">
-              <span class="caret" [class.open]="row._open">▸</span> Horarios
+              <span class="caret" [class.open]="row._open">▸</span>
+              Horarios
+              <span class="required-indicator" *ngIf="!hasValidSchedules(row)">*</span>
             </button>
           </td>
         </tr>
