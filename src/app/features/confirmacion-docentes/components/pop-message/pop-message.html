@@ -1,0 +1,33 @@
+<div class="popup-overlay" *ngIf="visible" (click)="onBackdropClick($event)">
+  <div class="popup-container">
+    <div class="popup-header">
+      <h3 class="popup-title">{{ title }}</h3>
+      <button class="close-button" (click)="onClose()">
+        <span>&times;</span>
+      </button>
+    </div>
+    
+    <div class="popup-content">
+      <div class="message-section">
+        <label class="message-label">Mensaje:</label>
+        <textarea 
+          class="message-textarea"
+          [(ngModel)]="message"
+          (ngModelChange)="onMessageChange()"
+          [placeholder]="placeholder"
+          [maxlength]="maxLength"
+          rows="6">
+        </textarea>
+        <div class="character-count">
+          {{ message.length }}/{{ maxLength }}
+        </div>
+      </div>
+    </div>
+    
+    <div class="popup-footer">
+      <button class="btn btn-secondary" (click)="onClose()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

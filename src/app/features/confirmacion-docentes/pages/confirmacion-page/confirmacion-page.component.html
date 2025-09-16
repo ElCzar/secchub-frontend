@@ -3,21 +3,33 @@
 <div class="page">
   <h1 class="titulo-pagina">Confirmación Clases</h1>
   <div class="hr-line"></div>
+  
+  <!-- Sección superior con clases aceptadas y manual lado a lado -->
+  <div class="top-section">
+    <div class="accepted-classes-section">
+      <h2 class="subtitulo">Clases Aceptadas</h2>
+      <app-classes-table [rows]="accepted" [selectable]="false"></app-classes-table>
+    </div>
+    
+    <div class="manual-section">
+      <app-manual-confirmacion></app-manual-confirmacion>
+    </div>
+  </div>
 
-  <section class="block">
-    <h2 class="subtitulo">Clases Aceptadas</h2>
-    <app-classes-table [rows]="accepted" [selectable]="false"></app-classes-table>
-  </section>
-
-  <section class="block">
-    <h2 class="subtitulo">Clases por Aceptar</h2>
-    <app-classes-table
-      [rows]="pending"
-      [selectable]="true"
-      [selectedIds]="selectedPending"
-      (selectedIdsChange)="selectedPending = $event"
-    ></app-classes-table>
-  </section>
+  <!-- Sección de clases por aceptar alineada con la tabla superior -->
+  <div class="bottom-section">
+    <div class="pending-classes-section">
+      <h2 class="subtitulo">Clases por Aceptar</h2>
+      <app-classes-table
+        [rows]="pending"
+        [selectable]="true"
+        [selectedIds]="selectedPending"
+        (selectedIdsChange)="selectedPending = $event"
+      ></app-classes-table>
+    </div>
+    
+    <div class="spacer"></div>
+  </div>
 
   <div class="actions">
     <button class="btn btn--danger" [disabled]="!canSubmit" (click)="onReject()">Rechazar</button>
