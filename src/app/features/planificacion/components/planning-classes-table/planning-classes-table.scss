@@ -20,6 +20,7 @@
   --col-weeks: 110px;
   --col-teacher: 200px;
   --col-status: 150px;
+  --col-email: 120px;
   --col-observations: 140px;
 }
 
@@ -39,7 +40,7 @@
   ============================== */
 .tabla {
   width: 100%;
-  min-width: 1600px;
+  min-width: 1720px; /* Incrementado para acomodar la nueva columna de email */
   border-collapse: collapse;
   table-layout: fixed;
 
@@ -87,6 +88,7 @@
 .tabla col.c-weeks   { width: var(--col-weeks); }
 .tabla col.c-teacher { width: var(--col-teacher); }
 .tabla col.c-status  { width: var(--col-status); }
+.tabla col.c-email   { width: var(--col-email); }
 .tabla col.c-observations { width: var(--col-observations); }
 
 /* ==============================
@@ -135,6 +137,19 @@
 
     &:hover {
       background: #f8f9fa;
+    }
+  }
+
+  /* Botón de email con estilo específico */
+  &.btn-email {
+    background: var(--brand-azul);
+    border-color: var(--brand-azul);
+    color: #fff;
+    font-size: 14px;
+
+    &:hover {
+      background: #fff;
+      border-color: var(--brand-azul);
     }
   }
 }

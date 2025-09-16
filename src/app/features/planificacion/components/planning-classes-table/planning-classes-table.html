@@ -12,6 +12,7 @@
       <col class="c-weeks" />
       <col class="c-teacher" />
       <col class="c-status" />
+      <col class="c-email" />
       <col class="c-observations" />
     </colgroup>
     <thead>
@@ -27,6 +28,7 @@
         <th>Semanas</th>
         <th>Docente</th>
         <th>Estado</th>
+        <th>Enviar Correo</th>
         <th>Observaciones</th>
       </tr>
     </thead>
@@ -163,6 +165,11 @@
             </span>
           </td>
 
+          <!-- Enviar Correo -->
+          <td>
+            <button type="button" class="btn-icon btn-email" (click)="sendEmail(i)" title="Enviar correo">📧</button>
+          </td>
+
           <!-- Observaciones -->
           <td>
             <button type="button" class="btn--primary" (click)="viewObservations(i)">Ver Más</button>
@@ -171,7 +178,7 @@
 
         <!-- Expander para horarios -->
         <tr class="expander-row">
-          <td colspan="12">
+          <td colspan="13">
             <div class="expander-inner">
               <button class="expander" type="button" (click)="row._open = !row._open">
                 <span class="caret" [class.open]="row._open">▸</span> Horarios
@@ -183,7 +190,7 @@
 
         <!-- Bloque de horarios (solo si _open) -->
         <tr *ngIf="row._open">
-          <td colspan="12">
+          <td colspan="13">
             <app-schedules-table-room [(rows)]="row.schedules" [editable]="row._editing || false"></app-schedules-table-room>
           </td>
         </tr>
