@@ -327,12 +327,15 @@
   Fila de sub-horarios (desplegable)
   ============================== */
 .expander-row td {
-  background: transparent; /* sin fondo directo */
+  /* Usar el mismo color muted para cubrir el borde/strip izquierdo que aparece al expandir */
+  background: var(--muted);
   padding: 0 !important;   /* eliminamos padding para ancho completo */
 }
 .expander-row td .expander-inner {
-  background: #eef1f4;
+  background: var(--muted);
   padding: 8px 12px 4px 12px; /* mantenemos coherencia interna con el resto de la tabla */
+  /* Alinear radios con el contenedor principal para no mostrar esquinas blancas */
+  border-radius: 0 0 var(--radius, 8px) var(--radius, 8px);
 }
 .expander-row td .separator-line.separator-under {
   margin: 0; 
