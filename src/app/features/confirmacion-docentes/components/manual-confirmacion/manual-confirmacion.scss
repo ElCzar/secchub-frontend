@@ -46,7 +46,6 @@
 }
 
 /* Colores solicitados */
-.badge--ok     { background: #ecfdf5; color: #16a34a; border-color: #86efac; }   /* verde */
+.badge--ok     { background: #ecfdf5; color: var(--brand-azul); border-color: var(--brand-azul); }   /* verde */
 .badge--danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }   /* rojo */
 .badge--warn   { background: #fffbeb; color: #a16207; border-color: #fde68a; }   /* amarillo */
-.badge--neutral{ background: #f5f7fb; color: var(--text-700); border-color: var(--border); }

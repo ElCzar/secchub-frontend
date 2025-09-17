@@ -16,7 +16,7 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  max-width: 500px;
+  max-width: 420px;
   width: 90%;
   max-height: 80vh;
   overflow: hidden;
@@ -62,7 +62,7 @@
 }
 
 .popup-content {
-  padding: 24px;
+  padding: 50px;
 }
 
 .message-section {
@@ -107,33 +107,6 @@
   margin-top: 4px;
 }
 
-.popup-footer {
-  padding: 16px 24px 20px;
-  border-top: 1px solid #e0e0e0;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.btn {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: #fff;
-
-  &:hover {
-    background: #5a6268;
-  }
-}
 
 // Animaciones
 @keyframes fadeIn {

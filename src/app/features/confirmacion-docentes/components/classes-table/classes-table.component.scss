@@ -13,8 +13,8 @@
   border-radius: var(--radius);
   background: #fff;
   overflow-x: auto;
-  /* limitar el ancho del contenedor de la tabla para que no ocupe toda la página */
-  max-width: 1000px;
+  /* permitir que la tabla ocupe más ancho para mejor visibilidad */
+  max-width: none;
   /* centrar solo el contenedor de la tabla */
   margin: 0 auto;
   display: block;
@@ -46,10 +46,21 @@
   }
 
   tbody td {
-  padding: 8px 10px; /* padding reducido */
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
+    padding: 8px 10px; /* padding reducido */
+    vertical-align: middle;
   }
+
+  /* draw a single separator line per row so it stays aligned across all columns */
+  tbody tr { border-bottom: 1px solid var(--border); }
+
+  /* remove last divider if desired */
+  tbody tr:last-child { border-bottom: none; }
+
+  /* ensure consistent box sizing for border/padding alignment */
+  th, td { box-sizing: border-box; }
+
+  thead th.c-select, col.c-select { text-align: center; }
+  tbody td.sel-cell { text-align: center; }
 
   .sched-cell { white-space: normal; line-height: 1.3; }
 }
@@ -61,7 +72,9 @@
   .tabla thead th, .tabla tbody td { padding: 6px 8px; }
 }
 
-.sel-cell { text-align: center; }
+.sel-cell { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+.comment-btn { padding: 4px 8px; font-size: 12px; }
 
 .chk {
   --size: 18px;
@@ -84,3 +97,13 @@
     box-shadow: 0 0 0 2px rgba(44,86,151,.15);
   }
 }
+
+/* row state visuals */
+tr.accept { background: rgba(44,86,151,0.06); }
+tr.accept .box { background: var(--brand-azul); border-color: var(--brand-azul); }
+
+tr.reject { background: rgba(191, 54, 54, 0.06); }
+tr.reject .box { background: #bf3636; border-color: #bf3636; }
+
+tr.review { background: rgba(255, 193, 7, 0.06); }
+tr.review .box { background: #a16207; border-color: #a16207; }

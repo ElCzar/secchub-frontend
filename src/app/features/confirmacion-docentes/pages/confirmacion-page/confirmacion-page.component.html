@@ -25,6 +25,8 @@
         [selectable]="true"
         [selectedIds]="selectedPending"
         (selectedIdsChange)="selectedPending = $event"
+        (stateChange)="onPendingStateChange($event)"
+        (commentRequest)="onCommentRequest($event)"
       ></app-classes-table>
     </div>
     
@@ -32,8 +34,7 @@
   </div>
 
   <div class="actions">
-    <button class="btn btn--danger" [disabled]="!canSubmit" (click)="onReject()">Rechazar</button>
-    <button class="btn btn--primary" [disabled]="!canSubmit" (click)="onAccept()">Aceptar</button>
+    <button class="btn btn--primary" [disabled]="!canSubmitAny" (click)="onAccept()">Enviar</button>
   </div>
 
   <!-- confirmation popup -->

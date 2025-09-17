@@ -21,7 +21,7 @@
     </thead>
 
     <tbody>
-      <tr *ngFor="let r of rows; trackBy: trackById">
+  <tr *ngFor="let r of rows; trackBy: trackById" [class.accept]="getState(r.id) === 'accept'" [class.reject]="getState(r.id) === 'reject'" [class.review]="getState(r.id) === 'review'">
         <td>{{ r.section }}</td>
         <td>{{ r.subject }}</td>
         <td>{{ r.semester }}</td>
@@ -36,13 +36,21 @@
             <input
               type="checkbox"
               [checked]="isChecked(r.id)"
-              (change)="toggle(r.id)"
+              (click)="onClick(r.id, $event)"
+              (dblclick)="onDblClick(r.id, $event)"
+              (keydown)="onKey(r.id, $event)"
             />
             <span class="box"></span>
           </label>
+          <button *ngIf="getState(r.id) === 'review'" class="btn btn--small btn--secondary comment-btn" (click)="openComment(r.id)">Enviar comentario</button>
         </td>
       </tr>
     </tbody>
   </table>
+  <app-pop-message
+    [visible]="popVisible"
+    (messageChange)="onPopMessageChange($event)"
+    (close)="onPopClose()"
+  ></app-pop-message>
 </div>
 
