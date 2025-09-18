@@ -4,10 +4,11 @@ import { SectionsSummary, SystemStatusSummary } from '../../models/dashboard.mod
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { SystemStatusCard } from '../../components/system-status-card/system-status-card';
 import { SectionSummaryTable } from '../../components/section-summary-table/section-summary-table';
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-inicio-admi-page',
-  imports: [CommonModule,AccesosRapidosAdmi,SystemStatusCard,SectionSummaryTable],
+  imports: [CommonModule, AccesosRapidosAdmi, SystemStatusCard, SectionSummaryTable, HeaderComponent],
   templateUrl: './inicio-admi-page.html',
   styleUrls: ['./inicio-admi-page.scss']
 })

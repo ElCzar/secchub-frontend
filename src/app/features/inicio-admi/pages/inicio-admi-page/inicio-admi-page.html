@@ -1,11 +1,16 @@
+<app-header></app-header>
+
+<!-- Posicionamos el botón de accesos rápidos en la esquina superior izquierda -->
+<app-accesos-rapidos-admi mode="push" class="accesos-rapidos-floating"></app-accesos-rapidos-admi>
+
 <div class="container">
   <h1 class="titulo-pagina">Bienvenido, Administrador Académico</h1>
   <div class="hr-line"></div>
 
   <div class="layout">
-    <!-- Columna izquierda: Accesos rápidos -->
+    <!-- Columna izquierda: (sidebar vacío ahora que el botón es flotante) -->
     <aside class="sidebar">
-      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+      <!-- sidebar preserved for spacing/layout; button is floating -->
     </aside>
 
     <!-- Columna derecha: contenido principal -->

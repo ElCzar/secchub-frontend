@@ -10,8 +10,29 @@
   height: 100vh;
   overflow-y: auto;
   border-radius: 0;
-  z-index: 30;
+  z-index: 60;
+  /* initial drawer state: hidden to the left */
+  transform: translateX(-100%);
+  transition: transform 240ms ease-in-out;
+  /* hide scrollbar but keep scrolling possible when content overflows */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
+.accesos-rapidos::-webkit-scrollbar { display: none; } /* WebKit */
+.accesos-rapidos--open { transform: translateX(0); }
+.accesos-rapidos-container { position: relative; display: inline-block; }
+.accesos-rapidos__menu-btn {
+  background: transparent;
+  border: 0;
+  color: var(--brand-azul);
+  padding: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.accesos-rapidos__menu-btn:focus { outline: 2px solid rgba(0,0,0,0.08); }
+.hamburger-icon { display: block; color: var(--brand-azul); }
 .accesos-rapidos__title {
   color: var(--brand-amarillo);
   font-weight: 700;
@@ -50,6 +71,33 @@
   text-decoration: underline;
 }
 
+/* When the menu is shown inline (for small viewports), make it appear as an overlay */
+.accesos-rapidos-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease-in-out;
+  z-index: 55;
+  border: 0;
+}
+.accesos-rapidos-backdrop.open,
+.accesos-rapidos-backdrop.open:active,
+.accesos-rapidos-backdrop.open:focus {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 @media (max-width: 720px) {
-  .accesos-rapidos { position: static; width: 100%; height: auto; border-radius: 0; }
+  .accesos-rapidos { position: fixed; width: 80%; max-width: 360px; height: 100vh; border-radius: 0; }
+  .accesos-rapidos-backdrop { display: block; }
+}
+.accesos-rapidos__close {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
 }

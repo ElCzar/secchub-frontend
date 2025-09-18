@@ -6,10 +6,11 @@ import { ProgressSummaryTable } from '../../components/progress-summary-table/pr
 import { ProgressStatus, TaskStatusSummary } from '../../models/section-dashboard.models';
 import { map, Observable } from 'rxjs';
 import { AccesosRapidosSeccion } from "../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion";
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-inicio-seccion-page',
-  imports: [CommonModule, TaskStatusCard, ProgressSummaryTable, AccesosRapidosSeccion],
+  imports: [CommonModule, TaskStatusCard, ProgressSummaryTable, AccesosRapidosSeccion, HeaderComponent],
   templateUrl: './inicio-seccion-page.html',
   styleUrls: ['./inicio-seccion-page.scss']
 })

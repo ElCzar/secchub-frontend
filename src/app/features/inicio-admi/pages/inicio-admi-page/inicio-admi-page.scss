@@ -1,14 +1,20 @@
 .container {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1100px;
+  /* Mover el contenido hacia la izquierda: usar margin-left menor y mantener margen derecho automático */
+  margin: 0 auto 0 60px;
+}
+
+/* Cuando el drawer está en modo 'push', aplicamos esta clase al container para desplazar el contenido */
+.accesos-rapidos--pushed {
+  transform: translateX(280px);
+  transition: transform 240ms ease-in-out;
 }
 
 .titulo-pagina {
   font-size: var(--fs-title, 30px);
   color: var(--brand-azul);
   margin-bottom: 24px;
-  margin-left: 200px; /* 280px del sidebar + 24px del gap */
   padding-bottom: 8px;
 }
 
@@ -16,8 +22,9 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 24px;
+  /* hacemos la columna izquierda de ancho 0 para que el contenido principal quede alineado con el título */
+  grid-template-columns: 0 1fr;
+  gap: 0;
 }
 
 .sidebar {
@@ -34,5 +41,20 @@
   height: 2px;
   background: var(--border, #cfd6e4);
   margin-bottom: 24px;
-  margin-left: 200px;
+}
+
+/* Botón accesos rápidos flotante en esquina superior izquierda */
+.accesos-rapidos-floating {
+  position: fixed;
+  /* colocar debajo del header (header ~55px height + paddings) */
+  top: 96px;
+  left: 12px;
+  z-index: 50; /* debajo del header pero encima del contenido */
+  display: inline-block;
+}
+
+@media (max-width: 720px) {
+  .accesos-rapidos-floating { top: 72px; left: 8px; }
+  /* En pantallas pequeñas no necesitamos offset a la izquierda */
+  .container { padding-left: 20px; margin: 0 auto; }
 }
