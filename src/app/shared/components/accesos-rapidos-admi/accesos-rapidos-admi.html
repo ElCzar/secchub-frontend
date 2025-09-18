@@ -1,7 +1,17 @@
-<nav class="accesos-rapidos" aria-label="Accesos Rápidos">
+<!-- Menu button (hamburger) -->
+<button type="button" class="accesos-rapidos__menu-btn" aria-label="Abrir accesos rápidos" aria-expanded="{{open}}" (click)="toggle($event)">
+  <svg class="hamburger-icon" width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect y="1" width="22" height="2" rx="1" fill="currentColor" />
+    <rect y="7" width="22" height="2" rx="1" fill="currentColor" />
+    <rect y="13" width="22" height="2" rx="1" fill="currentColor" />
+  </svg>
+</button>
+
+<nav class="accesos-rapidos" [class.accesos-rapidos--open]="open" aria-label="Accesos Rápidos" [attr.aria-hidden]="!open">
   <div class="accesos-rapidos__header">
     <img src="/assets/escudoPUJ-Bogota_rgb-azul_lateral.png" alt="PUJ logo" class="accesos-rapidos__logo"/>
     <h3 class="accesos-rapidos__title">Accesos Rápidos</h3>
+    <button type="button" class="accesos-rapidos__close" aria-label="Cerrar accesos rápidos" (click)="close()">×</button>
   </div>
   <ul class="accesos-rapidos__list">
     <li *ngFor="let it of items" class="accesos-rapidos__item">

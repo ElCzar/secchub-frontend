@@ -20,10 +20,11 @@ export class AccesosRapidosSeccion implements OnInit, OnDestroy {
 
   items = [
     { label: 'Perfil', route: '/perfil' },
+    { label: 'Inicio', route: '/inicio-seccion' },
     { label: 'Planificar Clases', route: '/planificar' },
     { label: 'Confirmar Disponibilidad Docente', route: '/confirmar-disponibilidad' },
     { label: 'Monitores', route: '/monitores' },
-    { label: 'Cerrar sesión', route: '/logout' }
+    { label: 'Cerrar sesión', route: '/' }
   ];
 
   constructor(private readonly router: Router, private readonly renderer: Renderer2) {}
