@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Docente } from '../../models/docente.model';
 import { ConfirmationTeachers } from '../confirmation-teachers/confirmation-teachers';
+import { HourLimitWarning } from '../hour-limit-warning/hour-limit-warning';
 import { SelectedTeachers } from '../../../planificacion/services/selected-teachers';
 
 @Component({
   selector: 'app-teacher-select-modal',
-  imports: [CommonModule, FormsModule, ConfirmationTeachers],
+  imports: [CommonModule, FormsModule, ConfirmationTeachers, HourLimitWarning],
   templateUrl: './teacher-select-modal.html',
   styleUrls: ['./teacher-select-modal.scss']
 })
@@ -23,7 +24,9 @@ export class TeacherSelectModal {
 
   nuevaObservacion: string = '';
   showConfirmationModal: boolean = false;
+  showHourWarningModal: boolean = false;
   selectedDocentes: Docente[] = [];
+  workHoursToAssign: number = 4; // Horas por defecto para una clase
 
   constructor(private readonly router: Router, private readonly selectedTeachersService: SelectedTeachers) {}
 
@@ -49,9 +52,50 @@ export class TeacherSelectModal {
 
   selectDocente() {
     if (this.docente) {
+      // Verificar las horas del docente antes de proceder
+      this.checkTeacherWorkloadAndProceed();
+    }
+  }
+
+  private checkTeacherWorkloadAndProceed() {
+    if (!this.docente) return;
+
+    const availableHours = this.docente.availableHours || 0;
+
+    // Mostrar advertencia si tiene pocas horas disponibles o si ya está al límite
+    if (availableHours <= 4) {
+      console.log(`⚠️ Advertencia de horas para ${this.docente.name}:`, {
+        maxHours: this.docente.maxHours,
+        assignedHours: this.docente.assignedHours,
+        availableHours: this.docente.availableHours
+      });
+      
+      this.showHourWarningModal = true;
+    } else {
+      // Si tiene suficientes horas disponibles, proceder normalmente
+      this.proceedWithSelection();
+    }
+  }
+
+  private proceedWithSelection() {
+    if (this.docente) {
       this.showConfirmationModal = true;
       this.selectedDocentes = [this.docente];
     }
+  }
+
+  onHourWarningClosed() {
+    this.showHourWarningModal = false;
+  }
+
+  onHourWarningConfirmed() {
+    this.showHourWarningModal = false;
+    this.proceedWithSelection();
+  }
+
+  onHourWarningCancelled() {
+    this.showHourWarningModal = false;
+    // No hacer nada, mantener el modal principal abierto
   }
 
   onConfirmationClosed() {

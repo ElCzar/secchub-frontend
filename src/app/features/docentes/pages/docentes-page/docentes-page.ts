@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Docente } from '../../models/docente.model';
+import { Subject, takeUntil, finalize } from 'rxjs';
+import { Docente, convertTeacherDTOToDocente } from '../../models/docente.model';
+import { TeacherService } from '../../services/teacher.service';
+import { SelectedTeachersService } from '../../services/selected-teachers.service';
 import { DocenteCard } from "../../components/docente-card/docente-card";
 import { TeacherSelectModal } from "../../components/teacher-select-modal/teacher-select-modal";
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
@@ -14,13 +17,19 @@ import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rap
   templateUrl: './docentes-page.html',
   styleUrls: ['./docentes-page.scss']
 })
-export class DocentesPage {
+export class DocentesPage implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
   // Simulación de rol (como en planificacion-page)
   role: 'admin' | 'seccion' = 'admin';
   
   searchText = '';
   semesterFilter = '';
   subjectFilter = '';
+  
+  // Loading states
+  isLoading = false;
+  loadError: string | null = null;
   
   // Modal state
   showModal = false;
@@ -30,124 +39,259 @@ export class DocentesPage {
   classKey: string = '';
   classInfo: any = null;
 
-  constructor(private readonly router: Router) {
+  // Datos de docentes (ahora cargados desde el backend)
+  docentes: Docente[] = [];
+  filteredDocentes: Docente[] = [];
+
+  constructor(
+    private readonly router: Router,
+    private readonly teacherService: TeacherService,
+    private readonly selectedTeachersService: SelectedTeachersService
+  ) {
     // Obtener el estado del router si está disponible
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
       this.classKey = navigation.extras.state['classKey'] || '';
       this.classInfo = navigation.extras.state['classInfo'] || null;
-      console.log('Contexto de clase recibido:', { classKey: this.classKey, classInfo: this.classInfo });
+      console.log('🎯 Contexto de clase recibido:', { classKey: this.classKey, classInfo: this.classInfo });
+      
+      // Establecer el estado en el servicio de selección
+      if (this.classKey) {
+        this.selectedTeachersService.setSelectionState(this.classKey, this.classInfo);
+      }
     } else {
-      // Fallback: usar valores predeterminados
-      this.classKey = `default-class-${Date.now()}`;
-      console.log('No se recibió contexto, usando key por defecto:', this.classKey);
+      // Intentar obtener del servicio de selección
+      const selectionState = this.selectedTeachersService.getSelectionState();
+      if (selectionState) {
+        this.classKey = selectionState.classKey;
+        this.classInfo = selectionState.classInfo;
+        console.log('🔄 Contexto recuperado del servicio:', { classKey: this.classKey, classInfo: this.classInfo });
+      } else {
+        // Fallback: usar valores predeterminados
+        this.classKey = `default-class-${Date.now()}`;
+        console.log('⚠️ No se recibió contexto, usando key por defecto:', this.classKey);
+      }
     }
   }
+
+  ngOnInit() {
+    this.loadTeachers();
+    
+    // Verificar si ya hay un docente seleccionado para esta clase
+    const selectedTeacher = this.selectedTeachersService.getSelectedTeacher(this.classKey);
+    if (selectedTeacher) {
+      console.log('📌 Docente ya seleccionado para esta clase:', selectedTeacher);
+    }
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   
-  // Opciones para los filtros (simulando backend)
+  // Opciones para los filtros (hardcodeadas por ahora)
   semesters = ['2024-1', '2024-2', '2025-1', '2025-2'];
   subjects = ['Redes', 'IA', 'Optimización', 'Algoritmos', 'Bases de Datos', 'Programación'];
-  
-  // Datos mock (simulando backend) con más docentes y clases detalladas
-  docentes: Docente[] = [
-    { 
-      name: 'Ana Maria Gutierrez', 
-      subjects: ['Redes', 'Optimización'], 
-      selected: false, 
-      semesters: ['2024-1', '2024-2'],
-      classes: [
-        {
-          materia: 'Redes',
-          seccion: 'SIS-01',
-          semestre: '2024-01',
-          horarios: ['Lu. Mi. 8-10am', 'Lu. Vi. 2-5pm'],
-          numeroClases: 2
+
+  /**
+   * Cargar todos los docentes desde el backend
+   */
+  loadTeachers() {
+    this.isLoading = true;
+    this.loadError = null;
+    
+    console.log('📚 Cargando docentes desde el backend...');
+    
+    this.teacherService.getAllTeachers()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (teachers) => {
+          console.log('✅ Docentes cargados exitosamente:', teachers);
+          this.docentes = teachers.map(teacher => convertTeacherDTOToDocente(teacher));
+          
+          // Marcar el docente seleccionado si existe
+          this.markSelectedTeacher();
+          
+          this.filteredDocentes = [...this.docentes];
+          this.extractOptionsFromData();
         },
-        {
-          materia: 'Intro IA',
-          seccion: 'SIS-02',
-          semestre: '2023-02',
-          horarios: ['Lu. Vi. 2-5pm'],
-          numeroClases: 1
-        },
-        {
-          materia: 'BD',
-          seccion: 'SIS-03',
-          semestre: '2024-03',
-          horarios: ['Lu. Vi. 2-5pm'],
-          numeroClases: 1
+        error: (error) => {
+          console.error('❌ Error cargando docentes:', error);
+          this.loadError = 'Error al cargar los docentes. Por favor, inténtalo de nuevo.';
+          // Fallback a datos mock en caso de error
+          this.loadMockData();
         }
-      ],
-      observaciones: ['Máster en Ciberseguridad de Redes y Sistemas']
-    },
-    { 
-      name: 'Sofia Gutierrez', 
-      subjects: ['Redes', 'IA'], 
-      selected: false, 
-      semesters: ['2024-1', '2025-1'],
-      classes: [
-        {
-          materia: 'IA Avanzada',
-          seccion: 'SIS-04',
-          semestre: '2024-01',
-          horarios: ['Ma. Ju. 10-12am'],
-          numeroClases: 2
-        }
-      ],
-      observaciones: ['Especialista en Machine Learning', 'PhD en Inteligencia Artificial']
-    },
-    { 
-      name: 'Daniel Sanchez', 
-      subjects: ['Redes', 'Optimización'], 
-      selected: false, 
-      semesters: ['2024-2', '2025-1'],
-      classes: [
-        {
-          materia: 'Optimización',
-          seccion: 'ING-01',
-          semestre: '2024-02',
-          horarios: ['Vi. 8-11am'],
-          numeroClases: 1
-        }
-      ],
-      observaciones: []
-    },
-    { 
-      name: 'Carlos Rodriguez', 
-      subjects: ['Algoritmos', 'Programación'], 
-      selected: false, 
-      semesters: ['2024-1', '2025-1'],
-      classes: [
-        {
-          materia: 'Algoritmos',
-          seccion: 'SIS-05',
-          semestre: '2024-01',
-          horarios: ['Lu. Mi. Vi. 2-4pm'],
-          numeroClases: 3
-        }
-      ],
-      observaciones: ['Experto en Estructuras de Datos']
-    },
-    { 
-      name: 'Maria Elena Lopez', 
-      subjects: ['Bases de Datos', 'IA'], 
-      selected: false, 
-      semesters: ['2024-2', '2025-2'],
-      classes: [
-        {
-          materia: 'Bases de Datos',
-          seccion: 'SIS-06',
-          semestre: '2024-02',
-          horarios: ['Ma. Ju. 9-12am'],
-          numeroClases: 2
-        }
-      ],
-      observaciones: ['DBA Certificada Oracle', 'Especialista en NoSQL']
+      });
+  }
+
+  /**
+   * Extraer opciones dinámicas de los datos cargados
+   */
+  private extractOptionsFromData() {
+    // Extraer semestres únicos
+    const allSemesters = this.docentes
+      .flatMap(docente => docente.semesters || [])
+      .filter((semester, index, array) => array.indexOf(semester) === index)
+      .sort();
+    
+    if (allSemesters.length > 0) {
+      this.semesters = allSemesters;
     }
-  ];
 
+    // Extraer materias únicas
+    const allSubjects = this.docentes
+      .flatMap(docente => docente.subjects || [])
+      .filter((subject, index, array) => array.indexOf(subject) === index)
+      .sort();
+    
+    if (allSubjects.length > 0) {
+      this.subjects = allSubjects;
+    }
+  }
 
-  filteredDocentes = [...this.docentes];
+  /**
+   * Datos mock de fallback (temporales hasta que el backend esté listo)
+   */
+  private loadMockData() {
+    console.log('⚠️ Usando datos mock como fallback');
+    this.docentes = [
+      {
+        id: 1,
+        name: 'Ana María',
+        lastName: 'Gutiérrez Silva',
+        email: 'ana.gutierrez@javeriana.edu.co',
+        maxHours: 40,
+        assignedHours: 12,
+        availableHours: 28,
+        contractType: 'Tiempo Completo',
+        subjects: ['Redes', 'Optimización', 'Seguridad Informática'],
+        selected: false,
+        semesters: ['2024-1', '2024-2'],
+        classes: [
+          {
+            materia: 'Redes de Computadores',
+            seccion: 'SIS-01',
+            semestre: '2024-01',
+            horarios: ['Lunes 8:00-10:00', 'Miércoles 8:00-10:00'],
+            numeroClases: 2
+          }
+        ],
+        observaciones: ['Máster en Ciberseguridad', 'Especialista en Redes']
+      },
+      {
+        id: 2,
+        name: 'Carlos Eduardo',
+        lastName: 'Rodríguez Martínez',
+        email: 'carlos.rodriguez@javeriana.edu.co',
+        maxHours: 30,
+        assignedHours: 18,
+        availableHours: 12,
+        contractType: 'Cátedra',
+        subjects: ['Inteligencia Artificial', 'Machine Learning'],
+        selected: false,
+        semesters: ['2024-1', '2025-1'],
+        classes: [
+          {
+            materia: 'IA Avanzada',
+            seccion: 'SIS-04',
+            semestre: '2024-01',
+            horarios: ['Martes 10:00-12:00', 'Jueves 10:00-12:00'],
+            numeroClases: 2
+          }
+        ],
+        observaciones: ['PhD en Inteligencia Artificial', 'Investigador Senior']
+      },
+      {
+        id: 3,
+        name: 'María Elena',
+        lastName: 'López Hernández',
+        email: 'maria.lopez@javeriana.edu.co',
+        maxHours: 35,
+        assignedHours: 20,
+        availableHours: 15,
+        contractType: 'Tiempo Completo',
+        subjects: ['Bases de Datos', 'Arquitectura de Software'],
+        selected: false,
+        semesters: ['2024-2', '2025-1'],
+        classes: [
+          {
+            materia: 'Bases de Datos',
+            seccion: 'SIS-06',
+            semestre: '2024-02',
+            horarios: ['Martes 9:00-12:00', 'Jueves 9:00-12:00'],
+            numeroClases: 2
+          }
+        ],
+        observaciones: ['DBA Certificada Oracle', 'Especialista en NoSQL']
+      },
+      {
+        id: 4,
+        name: 'Daniel Alejandro',
+        lastName: 'Sánchez Castro',
+        email: 'daniel.sanchez@javeriana.edu.co',
+        maxHours: 25,
+        assignedHours: 15,
+        availableHours: 10,
+        contractType: 'Cátedra',
+        subjects: ['Algoritmos', 'Programación Avanzada'],
+        selected: false,
+        semesters: ['2024-2', '2025-1'],
+        classes: [
+          {
+            materia: 'Algoritmos y Estructuras',
+            seccion: 'ING-01',
+            semestre: '2024-02',
+            horarios: ['Viernes 8:00-11:00'],
+            numeroClases: 1
+          }
+        ],
+        observaciones: ['Especialista en Algoritmos', 'Competencias de Programación']
+      },
+      {
+        id: 5,
+        name: 'Sofia Valentina',
+        lastName: 'Ramírez Torres',
+        email: 'sofia.ramirez@javeriana.edu.co',
+        maxHours: 20,
+        assignedHours: 8,
+        availableHours: 12,
+        contractType: 'Cátedra',
+        subjects: ['Desarrollo Web', 'Frontend Development'],
+        selected: false,
+        semesters: ['2024-1', '2024-2'],
+        classes: [],
+        observaciones: ['Full Stack Developer', 'Especialista en Angular']
+      }
+    ];
+    this.filteredDocentes = [...this.docentes];
+    this.markSelectedTeacher();
+  }
+
+  /**
+   * Marcar el docente seleccionado en la lista
+   */
+  private markSelectedTeacher() {
+    const selectedTeacher = this.selectedTeachersService.getSelectedTeacher(this.classKey);
+    if (selectedTeacher) {
+      // Buscar y marcar el docente en la lista
+      this.docentes.forEach(docente => {
+        docente.selected = docente.id === selectedTeacher.id || 
+                          (docente.name === selectedTeacher.name && 
+                           docente.lastName === selectedTeacher.lastName);
+      });
+      
+      this.filteredDocentes.forEach(docente => {
+        docente.selected = docente.id === selectedTeacher.id || 
+                          (docente.name === selectedTeacher.name && 
+                           docente.lastName === selectedTeacher.lastName);
+      });
+      
+      console.log('✨ Docente seleccionado marcado en la lista');
+    }
+  }
 
   selectDocente(docente: Docente) {
     // Deseleccionar todos los docentes
@@ -166,15 +310,15 @@ export class DocentesPage {
     this.filteredDocentes = this.docentes.filter(docente => {
       const matchesSearch = !this.searchText || 
         docente.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-        docente.subjects.some(subject => 
+        (docente.subjects || []).some(subject => 
           subject.toLowerCase().includes(this.searchText.toLowerCase())
         );
       
       const matchesSemester = !this.semesterFilter || 
-        docente.semesters?.includes(this.semesterFilter);
+        (docente.semesters || []).includes(this.semesterFilter);
       
       const matchesSubject = !this.subjectFilter || 
-        docente.subjects.includes(this.subjectFilter);
+        (docente.subjects || []).includes(this.subjectFilter);
       
       return matchesSearch && matchesSemester && matchesSubject;
     });
@@ -186,10 +330,23 @@ export class DocentesPage {
   }
 
   onDocenteSelected(docente: Docente) {
-    console.log('Docente seleccionado:', docente);
-    // Aquí podrías emitir un evento al componente padre o guardar la selección
-    // Por ahora solo cerramos el modal
+    console.log('👨‍🏫 Docente seleccionado:', docente);
+    
+    // Guardar la selección en el servicio
+    this.selectedTeachersService.selectTeacher(this.classKey, docente);
+    
+    // Cerrar el modal
     this.closeModal();
+    
+    // Navegar de regreso a la página de planificación con el contexto
+    console.log('🔙 Navegando de regreso a planificación...');
+    this.router.navigate(['/planificacion'], { 
+      state: { 
+        selectedTeacher: docente,
+        classKey: this.classKey,
+        returnFromTeacherSelection: true
+      } 
+    });
   }
   
   // Método para manejar eventos de teclado del modal
@@ -197,6 +354,51 @@ export class DocentesPage {
     if (event.key === 'Escape') {
       this.closeModal();
     }
+  }
+
+  /**
+   * Buscar docentes por término de búsqueda
+   */
+  searchTeachers() {
+    if (!this.searchText.trim()) {
+      this.filteredDocentes = [...this.docentes];
+      return;
+    }
+
+    this.isLoading = true;
+    
+    this.teacherService.searchTeachers(this.searchText)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (teachers) => {
+          console.log('🔍 Resultados de búsqueda:', teachers);
+          this.filteredDocentes = teachers.map(teacher => convertTeacherDTOToDocente(teacher));
+          this.markSelectedTeacher();
+        },
+        error: (error) => {
+          console.error('❌ Error en búsqueda:', error);
+          // Fallback a filtrado local
+          this.filterDocentes();
+        }
+      });
+  }
+
+  /**
+   * Filtrar docentes por criterios múltiples
+   */
+  applyFilters() {
+    // Usar filtrado local ya que el backend no tiene estos endpoints
+    this.filterDocentes();
+  }
+
+  /**
+   * Recargar docentes
+   */
+  reloadTeachers() {
+    this.loadTeachers();
   }
 }
 

@@ -1,7 +1,8 @@
 <div class="sched-wrap">
   <div class="sched-head">
     <span class="title">Horarios</span>
-    <!-- Removido el botón + de la esquina derecha -->
+    <!-- Botón de debug temporal -->
+    <button type="button" (click)="debugAddSchedule()" style="background: #ff6b6b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px;">DEBUG +</button>
   </div>
 
   <div class="sched-table">
@@ -19,8 +20,8 @@
     <div class="sched-row" *ngFor="let r of rows; let i = index; trackBy: trackByFn">
       <!-- Acciones -->
       <div class="actions">
-        <button class="btn-icon" type="button" (click)="remove(i)" [disabled]="!editable">−</button>
-        <button class="btn-icon" type="button" (click)="add()" [disabled]="!editable">+</button>
+        <button class="btn-icon" type="button" (click)="remove(i)" [disabled]="!editable" title="Eliminar horario">−</button>
+        <button class="btn-icon" type="button" (click)="addNewSchedule()" [disabled]="!editable" title="Agregar horario">+</button>
       </div>
 
       <!-- Día -->
@@ -45,9 +46,13 @@
 
       <!-- Tipo salón -->
       <div>
-        <select class="input" [ngModel]="r.roomType" (ngModelChange)="patch(i,{roomType:$event})" [disabled]="!editable">
-          <option *ngFor="let t of roomTypes" [value]="t">{{ t }}</option>
+        <select class="input" [ngModel]="r.roomType" (ngModelChange)="patch(i,{roomType:$event})" [disabled]="!editable || r.modality === 'Online'">
+          <option [ngValue]="undefined">Seleccionar tipo...</option>
+          <option *ngFor="let t of roomTypes" [value]="t">
+            {{ roomTypeDisplayNames[t] || t }}
+          </option>
         </select>
+        <small style="color: #777; font-size: 10px;">Valor interno: {{ r.roomType }}</small>
       </div>
 
       <!-- Discapacidad -->
@@ -58,14 +63,29 @@
 
       <!-- Modalidad -->
       <div>
-        <select class="input" [ngModel]="r.modality" (ngModelChange)="patch(i,{modality:$event})" [disabled]="!editable">
-          <option *ngFor="let m of modalities" [value]="m">{{ m }}</option>
+        <select class="input" [ngModel]="r.modality" (ngModelChange)="onModalityChange(i, $event)" [disabled]="!editable">
+          <option *ngFor="let m of modalities_local" [value]="m">
+            {{ modalityDisplayNames[m] || m }}
+          </option>
         </select>
+        <small style="color: #777; font-size: 10px;">Valor interno: {{ r.modality }}</small>
       </div>
 
       <!-- Salón -->
       <div>
-        <input class="input" placeholder="Ej: A-203" [ngModel]="r.room" (ngModelChange)="patch(i,{room:$event})" [disabled]="!editable"/>
+        <ng-container *ngIf="classrooms.length > 0; else fallbackRoomInput">
+          <select class="input" [ngModel]="getSimpleRoomName(r.room)" (ngModelChange)="onRoomChange(i, $event)" [disabled]="!editable || r.modality === 'Online'">
+            <option value="">Seleccionar aula...</option>
+            <option *ngFor="let classroom of classrooms" [value]="classroom.name">
+              {{ classroom.name }} ({{ classroom.building }}, Cap: {{ classroom.capacity }})
+            </option>
+          </select>
+          <small style="color: #777; font-size: 10px;" *ngIf="r.classroomId">ID: {{ r.classroomId }}</small>
+        </ng-container>
+        <ng-template #fallbackRoomInput>
+          <input class="input" placeholder="Ej: A-203" [ngModel]="r.room" (ngModelChange)="patch(i,{room:$event})" [disabled]="!editable || r.modality === 'Online'"/>
+        </ng-template>
+        <small *ngIf="r.modality === 'Online'" class="text-muted">No se requiere aula para modalidad online</small>
       </div>
     </div>
   </div>

@@ -25,13 +25,19 @@
           id="search-input"
           [(ngModel)]="searchText" 
           (ngModelChange)="filterDocentes()" 
+          [disabled]="isLoading"
           placeholder="Buscar docente..." 
           class="search-bar">
       </div>
       
       <div class="filter-group">
         <label class="filter-label" for="semester-select">Filtrar por Semestre:</label>
-        <select id="semester-select" [(ngModel)]="semesterFilter" (ngModelChange)="filterDocentes()" class="filter-select">
+        <select 
+          id="semester-select" 
+          [(ngModel)]="semesterFilter" 
+          (ngModelChange)="applyFilters()" 
+          [disabled]="isLoading"
+          class="filter-select">
           <option value="">Todos los semestres</option>
           <option *ngFor="let semester of semesters" [value]="semester">{{semester}}</option>
         </select>
@@ -39,15 +45,52 @@
       
       <div class="filter-group">
         <label class="filter-label" for="subject-select">Filtrar por materia:</label>
-        <select id="subject-select" [(ngModel)]="subjectFilter" (ngModelChange)="filterDocentes()" class="filter-select">
+        <select 
+          id="subject-select" 
+          [(ngModel)]="subjectFilter" 
+          (ngModelChange)="applyFilters()" 
+          [disabled]="isLoading"
+          class="filter-select">
           <option value="">Todas las materias</option>
           <option *ngFor="let subject of subjects" [value]="subject">{{subject}}</option>
         </select>
       </div>
+
+      <!-- Botón de recarga -->
+      <div class="filter-group">
+        <button 
+          (click)="reloadTeachers()" 
+          [disabled]="isLoading"
+          class="reload-button"
+          title="Recargar docentes">
+          <span *ngIf="!isLoading">🔄</span>
+          <span *ngIf="isLoading">⏳</span>
+          Recargar
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div *ngIf="loadError" class="error-message">
+      <span class="error-icon">⚠️</span>
+      <span class="error-text">{{ loadError }}</span>
+      <button (click)="reloadTeachers()" class="retry-button">Reintentar</button>
+    </div>
+
+    <!-- Indicador de carga -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Cargando docentes...</p>
     </div>
 
     <!-- Grid de docentes -->
-    <div class="docentes-grid">
+    <div *ngIf="!isLoading && !loadError" class="docentes-grid">
+      <div *ngIf="filteredDocentes.length === 0" class="no-results">
+        <span class="no-results-icon">🔍</span>
+        <p class="no-results-text">No se encontraron docentes con los criterios seleccionados.</p>
+        <button (click)="reloadTeachers()" class="retry-button">Recargar docentes</button>
+      </div>
+      
       <app-docente-card
         *ngFor="let docente of filteredDocentes"
         [docente]="docente"
