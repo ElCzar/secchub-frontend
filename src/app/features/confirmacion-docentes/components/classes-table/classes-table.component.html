@@ -16,7 +16,7 @@
         <th>Semestre</th>
         <th>Id Clase</th>
         <th>Horarios</th>
-        <th *ngIf="selectable">Seleccionar</th>
+        <th *ngIf="selectable">Acciones</th>
       </tr>
     </thead>
 
@@ -32,17 +32,9 @@
           </div>
         </td>
         <td *ngIf="selectable" class="sel-cell">
-          <label class="chk">
-            <input
-              type="checkbox"
-              [checked]="isChecked(r.id)"
-              (click)="onClick(r.id, $event)"
-              (dblclick)="onDblClick(r.id, $event)"
-              (keydown)="onKey(r.id, $event)"
-            />
-            <span class="box"></span>
-          </label>
-          <button *ngIf="getState(r.id) === 'review'" class="btn btn--small btn--secondary comment-btn" (click)="openComment(r.id)">Enviar comentario</button>
+          <button class="btn btn--small btn--accept" aria-pressed="{{ getState(r.id) === 'accept' }}" (click)="setAccept(r.id)">Aceptar</button>
+          <button class="btn btn--small btn--reject" aria-pressed="{{ getState(r.id) === 'reject' }}" (click)="setReject(r.id)">Rechazar</button>
+          <button class="btn btn--small btn--secondary comment-btn" (click)="openComment(r.id)">Enviar comentario</button>
         </td>
       </tr>
     </tbody>
