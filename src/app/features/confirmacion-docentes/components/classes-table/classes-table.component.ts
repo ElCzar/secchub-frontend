@@ -98,6 +98,19 @@ export class ClassesTableComponent implements OnChanges {
     this.setState(id, newState);
   }
 
+  // Public helpers used by the template buttons
+  setAccept(id: string): void {
+    if (!this.selectable) return;
+    const newState: StateType = this.states[id] === 'accept' ? 'none' : 'accept';
+    this.setState(id, newState);
+  }
+
+  setReject(id: string): void {
+    if (!this.selectable) return;
+    const newState: StateType = this.states[id] === 'reject' ? 'none' : 'reject';
+    this.setState(id, newState);
+  }
+
   openComment(id: string) {
     this.popTargetId = id;
     this.popMessage = '';
