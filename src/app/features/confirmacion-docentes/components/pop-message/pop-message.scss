@@ -108,7 +108,7 @@
 }
 
 
-// Animaciones
+/* Animaciones */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -129,7 +129,7 @@
   }
 }
 
-// Responsive
+/* Responsive */
 @media (max-width: 600px) {
   .popup-container {
     width: 95%;

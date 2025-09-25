@@ -1,5 +1,5 @@
 :host {
-  /* tamaños de columna más ajustados para evitar tablas demasiado anchas */
+  /* Variables de ancho de columna (ajustar según diseño) */
   --col-section: 90px;
   --col-subject: 140px;
   --col-semester: 100px;
@@ -12,42 +12,44 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: #fff;
-  overflow-x: auto;
-  /* permitir que la tabla ocupe más ancho para mejor visibilidad */
-  max-width: none;
+  /* Permitir expansión y wrapping de celdas */
+  overflow-x: visible;
+  max-width: 100%;
   /* centrar solo el contenedor de la tabla */
   margin: 0 auto;
   display: block;
-  padding: 8px; /* pequeño espacio interior para que la tabla no toque el borde */
+  padding: 8px; /* Espaciado interior */
 }
 
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  /* reducir el min-width para que las columnas queden más compactas en escritorio
-    manteniendo el scroll horizontal en pantallas muy pequeñas */
-  min-width: 720px;
+  /* table-layout auto para distribución proporcional de columnas */
+  table-layout: auto;
+  /* permitir que la tabla se reduzca con el contenedor en pantallas más pequeñas */
+  min-width: 0;
   font-size: 14px;
 
-  col.c-section { width: var(--col-section); }
-  col.c-subject { width: var(--col-subject); }
-  col.c-semester { width: var(--col-semester); }
-  col.c-id { width: var(--col-id); }
-  col.c-sched { width: var(--col-sched); }
-  col.c-select { width: var(--col-select); }
+  /* Anchos relativos de columnas (porcentajes) */
+  col.c-section { width: 12%; }
+  col.c-subject { width: 32%; }
+  col.c-semester { width: 10%; }
+  col.c-id { width: 12%; }
+  col.c-sched { width: 28%; }
+  col.c-select { width: 6%; }
 
   thead th {
     background: var(--muted);
     text-align: left;
-  padding: 8px 10px; /* padding reducido */
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border);
     font-weight: 700;
   }
 
   tbody td {
-    padding: 8px 10px; /* padding reducido */
+    padding: 8px 10px;
     vertical-align: middle;
+    white-space: normal; /* Permitir wrapping */
   }
 
   /* draw a single separator line per row so it stays aligned across all columns */
@@ -62,43 +64,37 @@
   thead th.c-select, col.c-select { text-align: center; }
   tbody td.sel-cell { text-align: center; }
 
-  .sched-cell { white-space: normal; line-height: 1.3; }
+  .sched-cell { white-space: normal; line-height: 1.3; word-break: break-word; }
 }
 
-/* hacer las tablas más compactas en pantallas estrechas */
+/* Estilos responsivos para pantallas estrechas */
 @media (max-width: 640px) {
   :host { --col-section: 80px; --col-subject: 120px; --col-sched: 160px; }
-  .tabla { min-width: 600px; font-size: 13px; }
+  /* Ajustes de fuente y padding en móvil */
+  .tabla { min-width: 0; font-size: 13px; }
   .tabla thead th, .tabla tbody td { padding: 6px 8px; }
 }
 
+/* Celda de acciones */
 .sel-cell { display: flex; align-items: center; justify-content: center; gap: 10px; }
 
 .comment-btn { padding: 4px 8px; font-size: 12px; }
 
-/* action buttons */
-.btn {
-  border: 0;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
+.btn { border: 0; padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; }
 .btn--small { padding: 6px 8px; font-size: 12px; }
 .btn--accept { background: rgba(34,139,34,0.12); color: #1b5e20; }
 .btn--reject { background: rgba(191,54,54,0.12); color: #7f1d1d; }
 .btn--secondary { background: rgba(0,0,0,0.04); color: #111827; }
 
-/* focus/pressed visuals */
+/* Estados visuales */
 .btn:focus { outline: 2px solid rgba(0,0,0,0.08); }
-.btn[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(44,86,151,0.08); }
+.btn[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(27,94,32,0.12); }
 
-/* row state visuals */
-tr.accept { background: rgba(44,86,151,0.06); }
-tr.accept .box { background: var(--brand-azul); border-color: var(--brand-azul); }
+tr.accept { background: rgba(34,139,34,0.06); }
+tr.accept .btn--accept { background: #1b5e20; color: #fff; }
 
 tr.reject { background: rgba(191, 54, 54, 0.06); }
-tr.reject .box { background: #bf3636; border-color: #bf3636; }
+tr.reject .btn--reject { background: #bf3636; color: #fff; }
 
 tr.review { background: rgba(255, 193, 7, 0.06); }
-tr.review .box { background: #a16207; border-color: #a16207; }
+tr.review .btn--secondary { background: #a16207; color: #fff; }
