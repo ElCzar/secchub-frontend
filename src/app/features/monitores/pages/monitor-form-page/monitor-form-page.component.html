@@ -119,8 +119,11 @@
       <!-- Asignatura -->
       <div class="form-group mb-16">
         <label for="subject">Asignatura</label>
-        <select id="subject" name="subject" class="input" required>
-          <option value="">Seleccione</option>
+        <select id="subject" name="subject" class="input" required [disabled]="loadingSubjects">
+          <option value="">{{ loadingSubjects ? 'Cargando...' : 'Seleccione una asignatura' }}</option>
+          <option *ngFor="let subject of subjects" [value]="subject.id">
+            {{ subject.name }}
+          </option>
         </select>
       </div>
 
@@ -154,8 +157,11 @@
       <!-- Seleccionar Sección -->
       <div class="form-group mb-24" *ngIf="adminMonitor">
         <label for="section">Seleccionar Sección</label>
-        <select id="section" name="section" class="input">
-          <option value="">Seleccione</option>
+        <select id="section" name="section" class="input" [disabled]="loadingSections">
+          <option value="">{{ loadingSections ? 'Cargando...' : 'Seleccione una sección' }}</option>
+          <option *ngFor="let section of sections" [value]="section.id">
+            {{ section.name }}
+          </option>
         </select>
       </div>
 

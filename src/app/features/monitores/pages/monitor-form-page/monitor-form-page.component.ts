@@ -1,10 +1,12 @@
 // src/app/features/monitores/pages/monitor-form/monitor-form-page.component.ts
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { AvailabilityRow, AvailabilityTableComponent, newAvailabilityRow } from '../../components/availability-table/availability-table.component';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
+import { ProgramasService, CourseOption } from '../../../programas/services/programas.service';
+import { SectionsService, Section } from '../../../../shared/services/sections.service';
 
 
 @Component({
@@ -15,10 +17,20 @@ import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm
   templateUrl: './monitor-form-page.component.html',
   styleUrls: ['./monitor-form-page.component.scss'],
 })
-export class MonitorFormPageComponent {
+export class MonitorFormPageComponent implements OnInit {
+  /** Inyección de servicios */
+  private programasService = inject(ProgramasService);
+  private sectionsService = inject(SectionsService);
+
   /** Catálogos (si luego los conectas al backend, cámbialos por servicios) */
   docTypes = ['CC', 'TI', 'NIT', 'PP', 'RC', 'CE', 'TE'];
   weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+  /** Arrays para las listas desplegables */
+  subjects: CourseOption[] = [];
+  sections: Section[] = [];
+  loadingSubjects = false;
+  loadingSections = false;
 
   /** Estado de disponibilidad (para el componente reusable) */
   availabilityRows: AvailabilityRow[] = [newAvailabilityRow()];
@@ -31,6 +43,43 @@ export class MonitorFormPageComponent {
   /** Controla la visibilidad del popup de confirmación */
   showConfirmPopup = false;
   private _lastFormEvent: Event | null = null;
+
+  ngOnInit(): void {
+    this.loadSubjects();
+    this.loadSections();
+  }
+
+  /** Cargar asignaturas */
+  private loadSubjects(): void {
+    this.loadingSubjects = true;
+    this.programasService.getAllCourseOptions().subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+        this.loadingSubjects = false;
+        console.log('Asignaturas cargadas:', subjects.length);
+      },
+      error: (error) => {
+        console.error('Error cargando asignaturas:', error);
+        this.loadingSubjects = false;
+      }
+    });
+  }
+
+  /** Cargar secciones */
+  private loadSections(): void {
+    this.loadingSections = true;
+    this.sectionsService.getAllSections().subscribe({
+      next: (sections) => {
+        this.sections = sections;
+        this.loadingSections = false;
+        console.log('Secciones cargadas:', sections.length);
+      },
+      error: (error) => {
+        console.error('Error cargando secciones:', error);
+        this.loadingSections = false;
+      }
+    });
+  }
 
   /** Total de horas (sumatoria de la tabla de disponibilidad) */
   get totalAvailabilityHours(): number {
