@@ -7,6 +7,7 @@ import { AvailabilityRow, AvailabilityTableComponent, newAvailabilityRow } from 
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { ProgramasService, CourseOption } from '../../../programas/services/programas.service';
 import { SectionsService, Section } from '../../../../shared/services/sections.service';
+import { StudentApplicationService } from '../../services/student-application.service';
 
 
 @Component({
@@ -21,6 +22,7 @@ export class MonitorFormPageComponent implements OnInit {
   /** Inyección de servicios */
   private programasService = inject(ProgramasService);
   private sectionsService = inject(SectionsService);
+  private studentApplicationService = inject(StudentApplicationService);
 
   /** Catálogos (si luego los conectas al backend, cámbialos por servicios) */
   docTypes = ['CC', 'TI', 'NIT', 'PP', 'RC', 'CE', 'TE'];
@@ -86,6 +88,53 @@ export class MonitorFormPageComponent implements OnInit {
     return this.availabilityRows.reduce((acc, r) => acc + (Number.isFinite(r.total) ? r.total : 0), 0);
   }
 
+  /** Convierte formato HH:mm a HH:mm:ss para el backend */
+  private formatTimeForBackend(timeStr: string): string {
+    if (!timeStr || timeStr.trim() === '') return '';
+    
+    // Si ya tiene formato HH:mm:ss, lo devuelve tal como está
+    if (timeStr.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      return timeStr;
+    }
+    
+    // Si tiene formato HH:mm, agrega :00
+    if (timeStr.match(/^\d{2}:\d{2}$/)) {
+      return timeStr + ':00';
+    }
+    
+    // Si tiene otro formato, intenta parsearlo y reformatearlo
+    return timeStr + ':00';
+  }
+
+  /** Métodos auxiliares para extraer valores del formulario */
+  private getCourseId(form: HTMLFormElement): number | undefined {
+    const courseSelect = form.querySelector<HTMLSelectElement>('#subject');
+    const value = courseSelect?.value?.trim();
+    console.log('CourseId capturado:', value);
+    return value && value !== '' ? parseInt(value) || undefined : undefined;
+  }
+
+  private getCourseAverage(form: HTMLFormElement): number | undefined {
+    const gradeInput = form.querySelector<HTMLInputElement>('#subjectGrade');
+    const value = gradeInput?.value?.trim();
+    console.log('CourseAverage capturado:', value);
+    return value && value !== '' ? parseFloat(value) || undefined : undefined;
+  }
+
+  private getCourseTeacher(form: HTMLFormElement): string | undefined {
+    const teacherInput = form.querySelector<HTMLInputElement>('#professor');
+    const value = teacherInput?.value?.trim();
+    console.log('CourseTeacher capturado:', value);
+    return value && value !== '' ? value : undefined;
+  }
+
+  private getSectionId(form: HTMLFormElement): number | undefined {
+    const sectionSelect = form.querySelector<HTMLSelectElement>('#section');
+    const value = sectionSelect?.value?.trim();
+    console.log('SectionId capturado:', value);
+    return value && value !== '' ? parseInt(value) || undefined : undefined;
+  }
+
   /** Submit simple para tu formulario actual (no reactivo) */
   onSubmit(evt: Event): void {
     evt.preventDefault();
@@ -124,39 +173,57 @@ export class MonitorFormPageComponent implements OnInit {
     const form = (evt.target as HTMLFormElement);
 
     const payload = {
-      studentId: (form.querySelector<HTMLInputElement>('#studentId')?.value ?? '').trim(),
-      documentType: (form.querySelector<HTMLSelectElement>('#documentType')?.value ?? '').trim(),
-      documentNumber: (form.querySelector<HTMLInputElement>('#documentNumber')?.value ?? '').trim(),
-
-      firstName: (form.querySelector<HTMLInputElement>('#firstName')?.value ?? '').trim(),
-      lastName: (form.querySelector<HTMLInputElement>('#lastName')?.value ?? '').trim(),
+      // === DATOS PERSONALES ===
+      program: (form.querySelector<HTMLInputElement>('#career')?.value ?? '').trim(),
+      semester: parseInt((form.querySelector<HTMLInputElement>('#semester')?.value ?? '0').trim()) || 0,
+      academicAverage: parseFloat((form.querySelector<HTMLInputElement>('#average')?.value ?? '0').trim()) || 0,
+      phoneNumber: (form.querySelector<HTMLInputElement>('#cellphone')?.value ?? '').trim(),
+      alternatePhoneNumber: (form.querySelector<HTMLInputElement>('#altPhone')?.value ?? '').trim(),
       address: (form.querySelector<HTMLInputElement>('#address')?.value ?? '').trim(),
-      email: (form.querySelector<HTMLInputElement>('#email')?.value ?? '').trim(),
-      altEmail: (form.querySelector<HTMLInputElement>('#altEmail')?.value ?? '').trim(),
-      cellphone: (form.querySelector<HTMLInputElement>('#cellphone')?.value ?? '').trim(),
-      altPhone: (form.querySelector<HTMLInputElement>('#altPhone')?.value ?? '').trim(),
+      personalEmail: (form.querySelector<HTMLInputElement>('#altEmail')?.value ?? '').trim(),
+      wasTeachingAssistant: (form.querySelector<HTMLInputElement>('input[name="hasBeenMonitor"]:checked')?.value ?? 'false') === 'true',
 
-      career: (form.querySelector<HTMLInputElement>('#career')?.value ?? '').trim(),
-      semester: (form.querySelector<HTMLInputElement>('#semester')?.value ?? '').trim(),
-      average: (form.querySelector<HTMLInputElement>('#average')?.value ?? '').trim(),
+      // === MONITOR ACADÉMICO (SIEMPRE) ===
+      courseId: this.getCourseId(form),
+      courseAverage: this.getCourseAverage(form),
+      courseTeacher: this.getCourseTeacher(form),
 
-      hasBeenMonitor: (form.querySelector<HTMLInputElement>('input[name="hasBeenMonitor"]:checked')?.value ?? 'false') === 'true',
-      adminMonitor: (form.querySelector<HTMLInputElement>('input[name="adminMonitor"]:checked')?.value ?? 'true') === 'true',
-      section: (form.querySelector<HTMLSelectElement>('#section')?.value ?? '').trim(),
+      // === MONITOR ADMINISTRATIVO (si aplica) ===
+      sectionId: this.adminMonitor ? this.getSectionId(form) : undefined,
 
-      // Tabla de disponibilidad (si usas el componente)
-      availability: this.availabilityRows,
-      totalHours: this.totalAvailabilityHours,
+      // === HORARIOS ===
+      schedules: this.availabilityRows.map(row => {
+        const schedule = {
+          day: row.day,
+          startTime: this.formatTimeForBackend(row.start),
+          endTime: this.formatTimeForBackend(row.end)
+        };
+        console.log('Transformando horario:', row, '→', schedule);
+        return schedule;
+      })
     };
 
-  console.log('FORM MONITOR → payload listo para enviar (confirmado):', payload);
+    console.log('FORM MONITOR → payload listo para enviar (confirmado):', payload);
 
-  // Aquí iría la llamada HTTP al servicio cuando esté disponible.
-  // Por ahora limpiamos el form visualmente
-    (evt.target as HTMLFormElement).reset();
-    this.availabilityRows = [newAvailabilityRow()];
-    this.adminMonitor = false;
-    this.hasBeenMonitor = null;
-    this._lastFormEvent = null;
+    // Enviar al backend
+    this.studentApplicationService.submitApplication(payload).subscribe({
+      next: (response) => {
+        console.log('Solicitud enviada exitosamente:', response);
+        
+        // Limpiar formulario después de envío exitoso
+        (evt.target as HTMLFormElement).reset();
+        this.availabilityRows = [newAvailabilityRow()];
+        this.adminMonitor = false;
+        this.hasBeenMonitor = null;
+        this._lastFormEvent = null;
+        
+        // TODO: Mostrar mensaje de éxito al usuario
+      },
+      error: (error) => {
+        console.error('Error enviando solicitud:', error);
+        // TODO: Mostrar mensaje de error al usuario
+        this.formError = 'Error enviando la solicitud. Por favor, intente nuevamente.';
+      }
+    });
   }
 }
