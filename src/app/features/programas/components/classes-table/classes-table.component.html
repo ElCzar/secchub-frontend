@@ -104,7 +104,9 @@
               (ngModelChange)="onEndChange(i, $event)" />
           </td>
 
-          <td><input class="input" [ngModel]="row.weeks" readonly /></td>
+          <td>
+            <span class="weeks-readonly">{{ row.weeks }}</span>
+          </td>
 
           <!-- Comentarios: textarea que crece según contenido (ahora después de semanas) -->
           <td>

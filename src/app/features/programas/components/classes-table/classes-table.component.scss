@@ -113,6 +113,23 @@
   border-color: var(--brand-azul);
 }
 
+/* Visualizar semanas como solo lectura (no editable) */
+.weeks-readonly {
+  /* Match section-readonly but centered in the column */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-500);
+  font-style: italic;
+  font-weight: 600;
+  text-align: center;
+}
+
 /* ==============================
   Sección de acciones (botones y toggles)
   ============================== */
