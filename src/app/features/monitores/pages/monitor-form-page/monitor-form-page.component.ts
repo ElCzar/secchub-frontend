@@ -38,6 +38,7 @@ export class MonitorFormPageComponent implements OnInit {
   availabilityRows: AvailabilityRow[] = [newAvailabilityRow()];
 
   /** Estado para controles de radio (binding con ngModel) */
+  academicMonitor = false;
   adminMonitor = false;
   hasBeenMonitor: boolean | null = null;
   /** Mensaje de error visible cuando la validación falla al enviar */
@@ -140,6 +141,14 @@ export class MonitorFormPageComponent implements OnInit {
     evt.preventDefault();
     const form = evt.target as HTMLFormElement;
 
+    // Validación: debe seleccionar al menos una opción de monitoría
+    if (!this.academicMonitor && !this.adminMonitor) {
+      this.formError = 'Debe seleccionar al menos una opción: Monitor académico o Monitor administrativo.';
+      // Hacer scroll hacia arriba para mostrar el mensaje de error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     // Validación nativa del formulario
     const valid = form.checkValidity();
     if (!valid) {
@@ -183,12 +192,12 @@ export class MonitorFormPageComponent implements OnInit {
       personalEmail: (form.querySelector<HTMLInputElement>('#altEmail')?.value ?? '').trim(),
       wasTeachingAssistant: (form.querySelector<HTMLInputElement>('input[name="hasBeenMonitor"]:checked')?.value ?? 'false') === 'true',
 
-      // === MONITOR ACADÉMICO (SIEMPRE) ===
-      courseId: this.getCourseId(form),
-      courseAverage: this.getCourseAverage(form),
-      courseTeacher: this.getCourseTeacher(form),
+      // === MONITOR ACADÉMICO (solo si aplica) ===
+      courseId: this.academicMonitor ? this.getCourseId(form) : undefined,
+      courseAverage: this.academicMonitor ? this.getCourseAverage(form) : undefined,
+      courseTeacher: this.academicMonitor ? this.getCourseTeacher(form) : undefined,
 
-      // === MONITOR ADMINISTRATIVO (si aplica) ===
+      // === MONITOR ADMINISTRATIVO (solo si aplica) ===
       sectionId: this.adminMonitor ? this.getSectionId(form) : undefined,
 
       // === HORARIOS ===

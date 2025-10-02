@@ -116,28 +116,45 @@
             <app-availability-table [(rows)]="availabilityRows"></app-availability-table>
           </div>
 
-      <!-- CAMPOS OBLIGATORIOS PARA MONITOR ACADÉMICO (SIEMPRE) -->
-      <!-- Asignatura -->
+      <!-- ¿Monitor académico? (radios) -->
       <div class="form-group mb-16">
-        <label for="subject">Asignatura para monitoría académica</label>
-        <select id="subject" name="subject" class="input" required [disabled]="loadingSubjects">
-          <option value="">{{ loadingSubjects ? 'Cargando...' : 'Seleccione una asignatura' }}</option>
-          <option *ngFor="let subject of subjects" [value]="subject.id">
-            {{ subject.name }}
-          </option>
-        </select>
+        <label>¿Quiere ser monitor académico?</label>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:4px;">
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="academicMonitor" [(ngModel)]="academicMonitor" [value]="true" />
+            <span>Sí</span>
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="academicMonitor" [(ngModel)]="academicMonitor" [value]="false" />
+            <span>No</span>
+          </label>
+        </div>
       </div>
 
-      <!-- Nota -->
-      <div class="form-group mb-16">
-        <label for="subjectGrade">Nota obtenida en la asignatura seleccionada</label>
-        <input id="subjectGrade" name="subjectGrade" type="number" step="0.1" min="0" max="5" class="input" required />
-      </div>
+      <!-- CAMPOS PARA MONITOR ACADÉMICO (SOLO SI SELECCIONA SÍ) -->
+      <div *ngIf="academicMonitor">
+        <!-- Asignatura -->
+        <div class="form-group mb-16">
+          <label for="subject">Asignatura para monitoría académica</label>
+          <select id="subject" name="subject" class="input" [required]="academicMonitor" [disabled]="loadingSubjects">
+            <option value="">{{ loadingSubjects ? 'Cargando...' : 'Seleccione una asignatura' }}</option>
+            <option *ngFor="let subject of subjects" [value]="subject.id">
+              {{ subject.name }}
+            </option>
+          </select>
+        </div>
 
-      <!-- Profesor -->
-      <div class="form-group mb-16">
-        <label for="professor">Nombre del profesor con quien tomó la asignatura</label>
-        <input id="professor" name="professor" type="text" class="input" required />
+        <!-- Nota -->
+        <div class="form-group mb-16">
+          <label for="subjectGrade">Nota obtenida en la asignatura seleccionada</label>
+          <input id="subjectGrade" name="subjectGrade" type="number" step="0.1" min="0" max="5" class="input" [required]="academicMonitor" />
+        </div>
+
+        <!-- Profesor -->
+        <div class="form-group mb-16">
+          <label for="professor">Nombre del profesor con quien tomó la asignatura</label>
+          <input id="professor" name="professor" type="text" class="input" [required]="academicMonitor" />
+        </div>
       </div>
 
       <!-- ¿Monitor administrativo? (radios) -->
@@ -155,10 +172,10 @@
         </div>
       </div>
 
-      <!-- Seleccionar Sección PARA MONITOR ADMINISTRATIVO (OPCIONAL) -->
+      <!-- Seleccionar Sección PARA MONITOR ADMINISTRATIVO (SOLO SI SELECCIONA SÍ) -->
       <div class="form-group mb-24" *ngIf="adminMonitor">
         <label for="section">Seleccionar Sección para monitoría administrativa</label>
-        <select id="section" name="section" class="input" [disabled]="loadingSections" required>
+        <select id="section" name="section" class="input" [disabled]="loadingSections" [required]="adminMonitor">
           <option value="">{{ loadingSections ? 'Cargando...' : 'Seleccione una sección' }}</option>
           <option *ngFor="let section of sections" [value]="section.id">
             {{ section.name }}
