@@ -96,7 +96,7 @@ h1, h2, h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 18px; // es para definir el 
+  padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-weight: 600;
@@ -175,6 +175,13 @@ h1, h2, h3 {
   color: var(--brand-amarillo);
   font-weight: 700;
   font-size: var(--fs-h2);
+}
+
+/* Utility: tamaño grande estándar para botones (coincide con btn--primary) */
+.btn--large {
+  padding: 15px 15px !important;
+  min-width: 120px;
+  border-radius: 999px;
 }
 
 /* ---------------------------
