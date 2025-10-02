@@ -2,6 +2,7 @@
   <table class="tabla">
     <colgroup>
       <col class="c-actions" />
+      <col class="c-estado" />
       <col class="c-id" />
       <col class="c-name" />
       <col class="c-section" />
@@ -18,6 +19,7 @@
     <thead>
       <tr>
         <th>Acciones</th>
+        <th>Estado</th>
         <th>ID Materia</th>
         <th>Materia</th>
         <th>Sección</th>
@@ -27,7 +29,7 @@
         <th>Fecha Final</th>
         <th>Semanas</th>
         <th>Docente</th>
-        <th>Estado</th>
+        <th>Estado Docente</th>
         <th>Enviar Correo</th>
         <th>Observaciones</th>
       </tr>
@@ -41,6 +43,25 @@
             <button type="button" class="btn-icon" (click)="addRow.emit()">＋</button>
             <button type="button" class="btn-icon btn-edit" *ngIf="!row._editing" (click)="editClass(i)">✏️</button>
             <button type="button" class="btn-icon btn-save" *ngIf="row._editing" (click)="saveClass(i)">💾</button>
+          </td>
+
+          <!-- Estado -->
+          <td class="estado-cell">
+            <select 
+              class="estado-select"
+              [ngModel]="$any(row)._rowStatus || 'Subido'"
+              (ngModelChange)="$any(row)._rowStatus = $event"
+              [ngClass]="{
+                'estado-subido': ($any(row)._rowStatus || 'Subido') === 'Subido',
+                'estado-cambiar': ($any(row)._rowStatus || 'Subido') === 'Cambiar',
+                'estado-eliminar': ($any(row)._rowStatus || 'Subido') === 'Eliminar',
+                'estado-crear': ($any(row)._rowStatus || 'Subido') === 'Crear'
+              }">
+              <option value="Subido">Subido</option>
+              <option value="Cambiar">Cambiar</option>
+              <option value="Eliminar">Eliminar</option>
+              <option value="Crear">Crear</option>
+            </select>
           </td>
 
           <!-- ID Materia -->
@@ -178,7 +199,7 @@
 
         <!-- Expander para horarios -->
         <tr class="expander-row">
-          <td colspan="13">
+          <td colspan="14">
             <div class="expander-inner">
               <button class="expander" type="button" (click)="row._open = !row._open">
                 <span class="caret" [class.open]="row._open">▸</span> Horarios
@@ -190,7 +211,7 @@
 
         <!-- Bloque de horarios (solo si _open) -->
         <tr *ngIf="row._open">
-          <td colspan="13">
+          <td colspan="14">
             <app-schedules-table-room [(rows)]="row.schedules" [editable]="row._editing || false"></app-schedules-table-room>
           </td>
         </tr>
