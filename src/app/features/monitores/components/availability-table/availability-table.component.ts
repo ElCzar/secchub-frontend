@@ -40,6 +40,26 @@ export class AvailabilityTableComponent {
     { v: 'DOM', t: 'Domingo' },
   ];
 
+  /** Lista de horas para los dropdowns (solo horas completas) */
+  readonly hours: { value: string; label: string }[] = [
+    { value: '07:00', label: '7:00 AM' },
+    { value: '08:00', label: '8:00 AM' },
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+    { value: '18:00', label: '6:00 PM' },
+    { value: '19:00', label: '7:00 PM' },
+    { value: '20:00', label: '8:00 PM' },
+    { value: '21:00', label: '9:00 PM' },
+    { value: '22:00', label: '10:00 PM' },
+  ];
+
   /** Añade una nueva fila */
   add(): void {
     const next = [...this.rows, newAvailabilityRow()];
@@ -63,15 +83,12 @@ export class AvailabilityTableComponent {
     this.rowsChange.emit(copy);
   }
 
-  /** Cálculo de horas totales entre start y end */
+  /** Cálculo de horas totales entre start y end (solo horas completas) */
   private computeHours(start: string, end: string): number {
     if (!start || !end) return 0;
-    const [sh, sm] = start.split(':').map(Number);
-    const [eh, em] = end.split(':').map(Number);
-    const s = sh * 60 + sm;
-    const e = eh * 60 + em;
-    if (isNaN(s) || isNaN(e) || e <= s) return 0;
-    const diffMin = e - s;
-    return Math.round((diffMin / 60) * 100) / 100; // con 2 decimales
+    const [sh] = start.split(':').map(Number);
+    const [eh] = end.split(':').map(Number);
+    if (isNaN(sh) || isNaN(eh) || eh <= sh) return 0;
+    return eh - sh; // diferencia en horas completas
   }
 }
