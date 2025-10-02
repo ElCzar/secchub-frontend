@@ -1,0 +1,134 @@
+
+
+<div class="page-container">
+  <div class="layout-grid">
+    <main>
+      <header class="page-head">
+        <h1 class="titulo-pagina">Solicitudes de Programas</h1>
+        <div class="hr-line"></div>
+
+        <!-- Barra de búsqueda -->
+        <div class="search-container">
+          <input type="text" placeholder="Buscar por materia o programa" [(ngModel)]="searchQuery" />
+        </div>
+
+      </header>
+
+      <!-- Tabla de Solicitudes -->
+      <section class="tabla-placeholder">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th><input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()"></th>
+              <th>Acciones</th>
+              <th>Programa</th>
+              <th>Materia</th>
+              <th>Cupos</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Final</th>
+              <th>Comentarios</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let row of filteredRows; let i = index">
+              <tr [class.is-deleted]="row._state==='deleted'">
+                <td><input type="checkbox" [(ngModel)]="row.selected"></td>
+                <td>
+                  <button type="button" class="btn-icon" (click)="removeRow(i)">−</button>
+                </td>
+                <td>{{ row.program }}</td>
+                <td>{{ row.materia }}</td>
+                <td>
+                  <input type="number" [(ngModel)]="row.cupos" min="1" />
+                </td>
+                <td>{{ row.startDate }}</td>
+                <td>{{ row.endDate }}</td>
+                <td>{{ row.comments || row.comentarios || '' }}</td>
+              </tr>
+              <tr class="row-horarios">
+                <td colspan="8" style="padding:0;">
+                  <details style="padding:10px 12px;border-top:1px solid var(--border);">
+                    <summary style="font-weight:700; cursor:pointer;">Horarios</summary>
+                    <div style="margin-top:8px;">
+                      <app-schedules-table [rows]="row.schedules || []"></app-schedules-table>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Botones de acción -->
+      <div class="actions actions--right">
+  <button type="button" class="btn btn--accent btn--large" (click)="combineRequests()" [disabled]="!canCombine()">Combinar</button>
+      </div>
+
+      <!-- Combinaciones realizadas -->
+      <section class="tabla-placeholder" *ngIf="combined.length>0">
+        <h3>Combinaciones</h3>
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Acciones</th>
+              <th>Programa</th>
+              <th>Materia</th>
+              <th>Cupos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of combined; let i = index">
+              <td>
+                <button class="btn-icon btn-icon--small" aria-label="Deshacer combinación" title="Deshacer" (click)="undoCombination(i)">
+                  <!-- undo icon -->
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <path d="M21 7v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 17a9 9 0 0114-7.5L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+
+                <button class="btn-icon btn-icon--small" aria-label="Editar combinación" title="Editar" (click)="editCombinedToggle(i)">
+                  <!-- pencil icon -->
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" fill="currentColor"/>
+                    <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </td>
+              <td>{{ c.programs.join(' / ') }}</td>
+              <td>{{ c.materias.join(' / ') }}</td>
+              <td>
+                <span *ngIf="!c.editable">{{ c.cupos }}</span>
+                <input *ngIf="c.editable" type="number" [(ngModel)]="c.cupos" min="0" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Botón Aplicar ahora -->
+      <div class="actions actions--right actions--enviar">
+        <button
+          type="button"
+          class="btn btn--primary btn--large"
+          [disabled]="!isFormValid()"
+          (click)="applyChanges()">
+          Aplicar ahora
+        </button>
+      </div>
+
+      <!-- Popup para la combinación de solicitudes -->
+      <app-combine-popup
+        [visible]="combinePopupVisible"
+        [items]="selectedForCombine"
+        (combine)="onCombineConfirmed($event)"
+        (closed)="cancelCombine()">
+      </app-combine-popup>
+    </main>
+
+    <aside>
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    </aside>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+<div class="combine-overlay" *ngIf="visible">
+  <div class="combine-dialog">
+    <h3>Combinar solicitudes</h3>
+
+    <div class="preview">
+      <div class="tabla-wrap">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Programa</th>
+              <th>Materia</th>
+              <th>Cupos</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Final</th>
+              <th>Comentarios</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of items">
+              <td>{{ it.program }}</td>
+              <td>{{ it.materia }}</td>
+              <td>{{ it.cupos }}</td>
+              <td>{{ it.startDate }}</td>
+              <td>{{ it.endDate }}</td>
+              <td>{{ it.comments || it.comentarios || '' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="combined-edit">
+      <label for="combinedCupos">Cupos combinados</label>
+      <div class="input-cupos">
+        <input id="combinedCupos" type="number" [(ngModel)]="combinedCupos" min="0" />
+      </div>
+    </div>
+
+    <!-- Editable schedules table reused from shared component -->
+    <div class="schedules-section" style="margin-top:12px;">
+      <app-schedules-table [rows]="schedules" (rowsChange)="onSchedulesChange($event)"></app-schedules-table>
+    </div>
+
+    <div class="actions">
+  <button class="btn btn--danger btn--large" type="button" (click)="close()">Cancelar</button>
+      <button class="btn btn--primary btn--large" type="button" (click)="confirm()">Combinar</button>
+    </div>
+  </div>
+</div>
