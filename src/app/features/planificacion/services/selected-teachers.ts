@@ -7,6 +7,8 @@ interface SelectedTeacherData {
   seccion?: string;
   materia?: string;
   rowIndex?: number;
+  // Snapshot opcional de la fila en la planificacion para restaurar si se pierde
+  rowSnapshot?: any;
   teachers: Docente[];
 }
 
@@ -17,7 +19,7 @@ export class SelectedTeachers {
   private readonly selectedTeachersSubject = new BehaviorSubject<Map<string, SelectedTeacherData>>(new Map());
   public selectedTeachers$ = this.selectedTeachersSubject.asObservable();
 
-  addSelectedTeachers(classKey: string, teachers: Docente[], classInfo?: { materia?: string; seccion?: string; classId?: number; rowIndex?: number }) {
+  addSelectedTeachers(classKey: string, teachers: Docente[], classInfo?: { materia?: string; seccion?: string; classId?: number; rowIndex?: number; rowSnapshot?: any }) {
     console.log('Agregando docentes seleccionados:', { classKey, teachers, classInfo });
     
     const currentMap = this.selectedTeachersSubject.value;
@@ -28,7 +30,8 @@ export class SelectedTeachers {
       classId: classInfo?.classId,
       seccion: classInfo?.seccion,
       materia: classInfo?.materia,
-      rowIndex: classInfo?.rowIndex
+      rowIndex: classInfo?.rowIndex,
+      rowSnapshot: classInfo?.rowSnapshot
     });
     
     console.log('Nuevo mapa de docentes:', newMap);

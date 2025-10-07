@@ -83,3 +83,13 @@
   (addAnotherTeacher)="onAddAnotherTeacher()"
   (continueToPlanning)="onContinueToPlanning($event)">
 </app-confirmation-teachers>
+
+<!-- Hour Warning Modal -->
+<app-hour-limit-warning
+  [showModal]="showHourWarningModal"
+  [docente]="docente"
+  [workHoursToAssign]="workHoursToAssign"
+  (modalClosed)="onHourWarningClosed()"
+  (confirmAssignment)="onHourWarningConfirmed()"
+  (cancelAssignment)="onHourWarningCancelled()">
+</app-hour-limit-warning>

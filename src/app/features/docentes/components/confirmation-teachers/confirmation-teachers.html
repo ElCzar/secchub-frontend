@@ -12,7 +12,7 @@
         <div class="selected-teachers">
           <div class="teacher-item" *ngFor="let docente of selectedDocentes">
             <strong>{{ docente.name }}</strong>
-            <span class="teacher-subjects">{{ docente.subjects.join(', ') }}</span>
+            <span class="teacher-subjects">{{ (docente.subjects || []).join(', ') }}</span>
           </div>
         </div>
         

@@ -1,0 +1,63 @@
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="modal-header" [ngClass]="'header-' + warningLevel">
+      <div class="warning-icon">{{ warningIcon }}</div>
+      <h2 class="modal-title">Verificación de Horas de Trabajo</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="warning-message" [ngClass]="'message-' + warningLevel">
+        <p>{{ warningMessage }}</p>
+      </div>
+
+      <div class="teacher-info" *ngIf="docente">
+        <h3>Estado de Horas del Profesor</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Nombre:</span>
+            <span class="value">{{ docente.name }} {{ docente.lastName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Horas Máximas:</span>
+            <span class="value">{{ docente.maxHours || 0 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Horas Asignadas:</span>
+            <span class="value">{{ docente.assignedHours || 0 }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Horas Disponibles:</span>
+            <span class="value" [ngClass]="{'low-hours': (docente.availableHours || 0) <= 4 && (docente.availableHours || 0) > 0, 'negative-hours': (docente.availableHours || 0) <= 0}">
+              {{ docente.availableHours || 0 }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="planning-note">
+          <div class="note-content">
+            <span class="note-icon">💡</span>
+            <div class="note-text">
+              <strong>Nota:</strong> En esta etapa solo asignas el profesor a la clase. 
+              Las horas específicas se asignarán posteriormente en el módulo de <em>Class Schedule</em>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+      
+      <button 
+        type="button" 
+        class="btn" 
+        [ngClass]="{'btn-danger': warningLevel === 'danger', 'btn-warning': warningLevel === 'warning', 'btn-primary': warningLevel === 'info'}"
+        (click)="onConfirm()">
+        {{ confirmButtonText }}
+      </button>
+    </div>
+  </div>
+</div>
