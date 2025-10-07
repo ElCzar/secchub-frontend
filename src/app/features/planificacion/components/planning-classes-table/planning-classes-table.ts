@@ -460,15 +460,15 @@ export class PlanningClassesTable {
         // Convertir a días y luego a semanas (redondeando hacia arriba)
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
         const weeks = Math.ceil(daysDifference / 7);
-        
-        row.weeks = weeks;
+        // Restar una semana al resultado según petición, sin permitir valor negativo
+        row.weeks = Math.max(0, weeks - 1);
       } else if (endDate < startDate) {
         // Si la fecha final es anterior a la inicial, mostrar error
         console.warn('La fecha final debe ser posterior a la fecha inicial');
         row.weeks = 0;
       } else {
-        // Si las fechas son iguales
-        row.weeks = 1;
+        // Si las fechas son iguales: equivalente a 0 semanas después de restar 1
+        row.weeks = 0;
       }
     } else {
       // Si no hay ambas fechas, no calcular
@@ -485,7 +485,9 @@ export class PlanningClassesTable {
       if (endDate > startDate) {
         const timeDifference = endDate.getTime() - startDate.getTime();
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-        return Math.ceil(daysDifference / 7);
+        const weeks = Math.ceil(daysDifference / 7);
+        // Restar una semana y no devolver valores negativos
+        return Math.max(0, weeks - 1);
       }
     }
     return row.weeks || 0;

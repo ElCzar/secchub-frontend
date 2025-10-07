@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ManualConfirmacion } from './manual-confirmacion';
+import { SolicitudProgramasPages } from './solicitud-programas-pages';
 
-describe('ManualConfirmacion', () => {
-  let component: ManualConfirmacion;
-  let fixture: ComponentFixture<ManualConfirmacion>;
+describe('SolicitudProgramasPages', () => {
+  let component: SolicitudProgramasPages;
+  let fixture: ComponentFixture<SolicitudProgramasPages>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ManualConfirmacion]
+      imports: [SolicitudProgramasPages]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ManualConfirmacion);
+    fixture = TestBed.createComponent(SolicitudProgramasPages);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

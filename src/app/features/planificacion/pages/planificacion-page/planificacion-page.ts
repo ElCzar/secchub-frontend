@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { Subscription, catchError, of } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
@@ -17,7 +17,7 @@ import { SelectedTeachersService } from '../../../docentes/services/selected-tea
 @Component({
   selector: 'app-planificacion-clases-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AccesosRapidosAdmi, AccesosRapidosSeccion, PlanningClassesTable, ScheduleConflict],
+  imports: [CommonModule, FormsModule, RouterModule, AccesosRapidosAdmi, AccesosRapidosSeccion, PlanningClassesTable, ScheduleConflict],
   templateUrl: './planificacion-page.html',
   styleUrls: ['./planificacion-page.scss'],
 })

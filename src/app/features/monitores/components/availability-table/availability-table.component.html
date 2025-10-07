@@ -24,11 +24,17 @@
       </div>
 
       <div>
-        <input type="time" class="input" [ngModel]="r.start" (ngModelChange)="patch(i,{start:$event})" required>
+        <select class="input" [ngModel]="r.start" (ngModelChange)="patch(i,{start:$event})" required>
+          <option value="">Seleccione...</option>
+          <option *ngFor="let hour of hours" [value]="hour.value">{{ hour.label }}</option>
+        </select>
       </div>
 
       <div>
-        <input type="time" class="input" [ngModel]="r.end" (ngModelChange)="patch(i,{end:$event})" required>
+        <select class="input" [ngModel]="r.end" (ngModelChange)="patch(i,{end:$event})" required>
+          <option value="">Seleccione...</option>
+          <option *ngFor="let hour of hours" [value]="hour.value">{{ hour.label }}</option>
+        </select>
       </div>
 
       <div>

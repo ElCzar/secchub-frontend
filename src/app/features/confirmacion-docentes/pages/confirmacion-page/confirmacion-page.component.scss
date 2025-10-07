@@ -15,18 +15,14 @@
 .block { margin: 24px 0; }
 .subtitulo {
   color: var(--brand-rojo);
-  margin-bottom: 10px;
   display: block;
-  /* match the table wrapper width and center it */
+  /* Alineación subtítulo: establecer max-width para alinear con la tabla. */
   max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
-  /* shift slightly left so the subtitle starts a few millimeters before the table */
-  transform: translateX(-8px);
+  margin: 0 auto 16px;
 }
 
 .actions {
-  /* poner los botones debajo de las tablas y alineados a la derecha del área de la tabla */
+  /* Acciones: alinear botones a la derecha; ancho coincide con la tabla. */
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -59,10 +55,10 @@
 
 .accepted-classes-section {
   flex: 1;
-  
-  .subtitulo {
-    margin-bottom: 16px;
-  }
+  /* Sección Aceptadas: ancho limitado para alinear con el contenedor de tabla. */
+  max-width: 1000px;
+  margin-left: 100px;
+  margin-right: auto;
 }
 
 .manual-section {
@@ -78,12 +74,22 @@
 
 .pending-classes-section {
   flex: 1;
-  margin-right: 100px; /* Mover la tabla más hacia la derecha */
-  
-  .subtitulo {
-    margin-bottom: 16px;
-  }
+  /* Sección Pendientes: ancho igual a la sección aceptadas para alineación. */
+  max-width: 1000px;
+  margin: 0 auto;
+  .subtitulo { margin-bottom: 16px; }
 }
+
+/* ensure the actual table wrappers inside both sections share the same fixed width
+   so their left edges align exactly with the subtitles */
+.accepted-classes-section .tabla-wrap,
+.pending-classes-section .tabla-wrap {
+  /* Contenedor de tabla: ancho fijo para asegurar alineación entre tablas. */
+  max-width: 1000px;
+  width: 1000px;
+  margin: 0 auto;
+}
+
 
 .spacer {
   flex: 0 0 auto;
@@ -107,5 +113,12 @@
   
   .spacer {
     display: none;
+  }
+
+  /* allow tables to be full-width on smaller viewports */
+  .accepted-classes-section .tabla-wrap,
+  .pending-classes-section .tabla-wrap {
+    width: 100%;
+    max-width: 100%;
   }
 }

@@ -9,10 +9,11 @@
       <col class="c-start" />
       <col class="c-end" />
       <col class="c-weeks" />
+      <col class="c-comments" />
     </colgroup>
 
     <thead>
-      <tr>
+        <tr>
         <th>Acciones</th>
         <th>ID Materia</th>
         <th>Nombre Materia</th>
@@ -21,6 +22,7 @@
         <th>Fecha inicio</th>
         <th>Fecha final</th>
         <th>Semanas</th>
+        <th>Comentarios</th>
       </tr>
     </thead>
 
@@ -102,12 +104,26 @@
               (ngModelChange)="onEndChange(i, $event)" />
           </td>
 
-          <td><input class="input" [ngModel]="row.weeks" readonly /></td>
+          <td>
+            <span class="weeks-readonly">{{ row.weeks }}</span>
+          </td>
+
+          <!-- Comentarios: textarea que crece según contenido (ahora después de semanas) -->
+          <td>
+            <textarea
+              class="input comments-textarea"
+              rows="1"
+              [ngModel]="row.comments"
+              (ngModelChange)="onCommentChange(i, $event)"
+              (input)="autoGrow($event.target)"
+              placeholder="Comentarios..."
+            ></textarea>
+          </td>
         </tr>
 
         <!-- Expander (siempre visible) -->
         <tr class="expander-row">
-          <td colspan="8">
+          <td colspan="9">
             <button class="expander" type="button" (click)="row._open = !row._open">
               <span class="caret" [class.open]="row._open">▸</span>
               Horarios
@@ -118,7 +134,7 @@
 
         <!-- Bloque de horarios (solo si _open) -->
         <tr *ngIf="row._open">
-          <td colspan="8">
+          <td colspan="9">
             <app-schedules-table [(rows)]="row.schedules"></app-schedules-table>
           </td>
         </tr>

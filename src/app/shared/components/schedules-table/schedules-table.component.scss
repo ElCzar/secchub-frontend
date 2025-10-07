@@ -34,8 +34,9 @@
 /* Fila de la tabla de sub-horarios */
 .sched-row {
   display: grid;
-  grid-template-columns: 100px 140px 140px 140px 180px 150px 150px;
-  gap: 50px;
+  /* more generous spacing between columns to match page visuals */
+  grid-template-columns: 80px 160px 140px 140px 160px 120px minmax(150px, 220px);
+  gap: 24px;
   align-items: center;
 }
 
@@ -62,6 +63,28 @@
     border-color: var(--brand-azul);
     box-shadow: 0 0 0 2px rgba(44,86,151,.15);
   }
+}
+
+/* Ensure modality select is not clipped: allow it to size to content within its grid cell */
+.sched-row select.input {
+  min-width: 140px;
+}
+
+/* When schedules table is rendered inside the combine popup, use a compact layout
+   tailored to the popup width so columns like 'Discapacidad' and 'Modalidad' fit. */
+:host-context(.combine-dialog) .sched-row {
+  grid-template-columns: 60px 150px 140px 110px 150px 110px minmax(140px, 320px);
+  gap: 28px;
+  font-size: 0.92rem;
+}
+
+:host-context(.combine-dialog) .sched-row .input {
+  height: 34px;
+  padding: 0 8px;
+}
+
+:host-context(.combine-dialog) .sched-row select.input {
+  min-width: 150px;
 }
 
 

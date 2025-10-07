@@ -1,7 +1,8 @@
 .accesos-rapidos {
   background: var(--brand-azul);
   color: #fff;
-  width: 280px;
+  /* Use a CSS variable so pages can align to the same width. Fallback to 280px */
+  width: var(--sidebar-width, 280px);
   padding: 24px 18px;
   box-sizing: border-box;
   position: fixed;

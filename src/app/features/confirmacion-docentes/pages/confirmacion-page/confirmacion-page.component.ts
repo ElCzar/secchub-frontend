@@ -5,13 +5,12 @@ import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm
 import { TeacherClassRow } from '../../models/class.models';
 import { ConfirmacionService } from '../../services/confirmacion.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
-import { ManualConfirmacion } from '../../components/manual-confirmacion/manual-confirmacion';
 
 
 @Component({
   selector: 'app-confirmacion-page',
   standalone: true,
-  imports: [CommonModule, ClassesTableComponent, HeaderComponent, ConfirmSendPopupComponent, ManualConfirmacion],
+  imports: [CommonModule, ClassesTableComponent, HeaderComponent, ConfirmSendPopupComponent],
   templateUrl: './confirmacion-page.component.html',
   styleUrls: ['./confirmacion-page.component.scss'],
 })

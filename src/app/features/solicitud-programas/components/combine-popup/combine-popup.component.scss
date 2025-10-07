@@ -1,0 +1,113 @@
+.combine-overlay{
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1200;
+	background: rgba(0,0,0,0.18);
+}
+
+.combine-dialog{
+	background: #fff;
+	/* more pronounced rounded corners for a modern look */
+	border-radius: 18px;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+	padding: 18px 20px;
+			/* give more room for schedules columns */
+			min-width: 520px;
+			max-width: 1100px;
+			width: min(98vw, 1100px);
+	border: 1px solid rgba(0,0,0,0.06);
+}
+
+.combine-dialog h3{
+	margin: 0 0 8px 0;
+	color: var(--brand-rojo);
+	font-size: 1.1rem;
+}
+
+.preview table{ width:100%; border-collapse:collapse; margin-top:8px }
+.preview th,.preview td{ border:1px solid #eee; padding:8px; text-align:left }
+
+/* Table visuals: header, zebra rows, hover */
+.preview thead th{
+	background: rgba(0,0,0,0.04);
+	color: var(--text-color, #222);
+	font-weight: 600;
+	font-size: 0.95rem;
+	padding: 10px 12px;
+	border-bottom: 2px solid rgba(0,0,0,0.06);
+}
+
+.preview tbody tr:nth-child(odd){ background: #fafafa }
+.preview tbody tr:hover{ background: rgba(0,0,0,0.03) }
+
+/* Small visual for empty cells / placeholders */
+.preview .empty-cell{ color: var(--muted, #8b8b8b); font-style: italic }
+
+/* Make the table scrollable if content grows */
+.preview-container{
+	max-height: 42vh;
+	overflow: auto;
+	border-radius: 8px;
+	padding-right: 6px; /* avoid clipping scrollbars */
+}
+
+/* Allow horizontal scroll for tables inside the popup so schedules don't overflow */
+
+/* Use the same table look-and-feel as the main page but scoped to the popup */
+.combine-dialog .tabla{ width:100%; min-width:480px; border-collapse:collapse; table-layout: fixed }
+.combine-dialog .tabla-wrap{ overflow-x: auto }
+.combine-dialog .tabla thead th{
+	height: 44px;
+	line-height: 44px;
+	padding: 0 12px;
+	background: var(--muted);
+	text-align: left;
+	font-weight: 700;
+	border-bottom: 1px solid var(--border);
+}
+.combine-dialog .tabla tbody td{ padding: 8px 12px; vertical-align: middle; border-bottom: 1px solid var(--border) }
+.combine-dialog .tabla input[type="number"]{ width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:6px }
+
+/* Popup-specific compact schedules adjustments */
+.combine-dialog .sched-wrap{ max-width:100%; overflow-x:auto; }
+.combine-dialog .sched-row{ display:grid; grid-template-columns: 60px 150px 140px 110px 150px 110px minmax(160px, 320px); gap:28px; align-items:center; font-size:0.92rem }
+.combine-dialog .sched-row .input{ height:34px; padding:0 8px }
+.combine-dialog .sched-row select.input{ min-width:150px }
+.combine-dialog .btn-icon{ width:30px; height:30px }
+
+/* Ensure small icon buttons in popup match page colors and sizes */
+.combine-dialog .btn-icon--small{ background: var(--muted); color: var(--text-700); border: 1px solid var(--border); width:36px; height:36px; border-radius:8px }
+.combine-dialog .btn-icon--small svg{ display:block }
+
+.combined-edit{ margin-top:12px; display:flex; align-items:center; gap:8px }
+
+.combine-divider{ height:2px; background: rgba(0,0,0,0.06); margin: 10px 0 }
+
+.actions{ display:flex; justify-content:flex-end; gap:12px; margin-top:14px }
+
+/* Numeric input for combined cupos */
+.input-cupos{
+	max-width: 120px;
+	min-width: 80px;
+}
+
+.input-cupos input[type="number"]{
+	width: 100%;
+	box-sizing: border-box;
+	padding: 8px 10px;
+	border: 1px solid rgba(0,0,0,0.12);
+	border-radius: 6px;
+	text-align: center;
+	background: #fff;
+}
+
+/* Action icons/buttons inside table */
+.btn-icon--small{ display:inline-flex; align-items:center; justify-content:center; padding:6px; border-radius:6px; border:1px solid transparent; background:transparent; cursor:pointer }
+.btn-icon--small:hover{ background: rgba(0,0,0,0.04) }
+.table-actions-cell{ text-align:center; width:72px }
+
+/* Local button size used in the popup to match page-sized buttons */
+.btn--large { padding: 15px 15px; min-width: 120px; border-radius: 999px; }

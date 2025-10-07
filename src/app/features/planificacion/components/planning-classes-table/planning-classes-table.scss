@@ -10,9 +10,10 @@
   ============================== */
 :host {
   --col-actions:120px;
+  --col-estado: 140px;
   --col-id: 160px;
-  --col-name: 320px;
-  --col-section: 120px;
+  --col-name: 250px;
+  --col-section: 100px;
   --col-class-id: 140px;
   --col-seats: 100px;
   --col-start: 150px;
@@ -40,7 +41,7 @@
   ============================== */
 .tabla {
   width: 100%;
-  min-width: 1720px; /* Incrementado para acomodar la nueva columna de email */
+  min-width: 1770px; /* Ajustado después de reducir el ancho de materia y sección */
   border-collapse: collapse;
   table-layout: fixed;
 
@@ -78,6 +79,7 @@
 }
 
 .tabla col.c-actions { width: var(--col-actions); }
+.tabla col.c-estado  { width: var(--col-estado); }
 .tabla col.c-id      { width: var(--col-id); }
 .tabla col.c-name    { width: var(--col-name); }
 .tabla col.c-section { width: var(--col-section); }
@@ -382,5 +384,55 @@ tr + tr.expander-row + tr[ngif] .separator-line.separator-under {
 
   &.open {
     transform: rotate(90deg);
+  }
+}
+
+/* ==============================
+  Estilos para la columna de Estado
+  ============================== */
+.estado-cell {
+  text-align: center;
+}
+
+.estado-select {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+
+  // Colores para cada estado
+  &.estado-subido {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+
+  &.estado-cambiar {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+  }
+
+  &.estado-eliminar {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+
+  &.estado-crear {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
   }
 }

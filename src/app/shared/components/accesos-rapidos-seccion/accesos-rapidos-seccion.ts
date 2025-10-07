@@ -12,13 +12,13 @@ import { RouterModule, Router } from '@angular/router';
 export class AccesosRapidosSeccion {
   items = [
     { label: 'Perfil', route: '/perfil' },
-    { label: 'Planificar Clases', route: '/planificar' },
+    { label: 'Planificar Clases', route: '/planificacion' },
     { label: 'Confirmar Disponibilidad Docente', route: '/confirmar-disponibilidad' },
     { label: 'Monitores', route: '/monitores' },
-    { label: 'Cerrar sesión', route: '/logout' }
+    { label: 'Cerrar sesión', route: '/' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   go(item: { label: string; route?: string }) {
     if (item.route) {

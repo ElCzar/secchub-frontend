@@ -22,6 +22,7 @@ export interface ClaseRowView {
   startDate: string;        // Fecha de inicio de la clase
   endDate: string;          // Fecha de finalización de la clase
   weeks: number;            // Duración en semanas (calculada)
+  comments?: string;        // Comentarios libres por fila
   _state: 'new' | 'existing' | 'deleted'; // Estado de la fila
 
   schedules: ScheduleRow[]; // Lista de sub-horarios asociados a la clase
@@ -237,6 +238,34 @@ export class ClassesTableComponent {
       schedule.modality &&
       schedule.roomType
     );
+  }
+
+  /**
+   * Maneja cambios en el campo de comentarios y emite un parche hacia el padre.
+   * @param i índice de la fila
+   * @param value nuevo texto de comentarios
+   */
+  onCommentChange(i: number, value: string) {
+    this.patch.emit({ index: i, data: { comments: value } });
+  }
+
+  /**
+   * Ajusta la altura del textarea para que se acomode al contenido.
+   * Se usa desde el template en (input).
+   */
+  autoGrow(target: unknown) {
+    // target puede ser HTMLTextAreaElement; normalizar con type-guard
+    let el: HTMLTextAreaElement | null = null;
+    if (target instanceof HTMLTextAreaElement) el = target;
+    // en algunos entornos Angular el target llega como EventTarget con propiedad value
+    if (!el && typeof target === 'object' && target !== null && 'value' in (target as any)) {
+      const maybe = (target as any) as HTMLTextAreaElement | undefined;
+      if (maybe?.style && typeof maybe?.scrollHeight === 'number') el = maybe;
+    }
+    if (!el) return;
+    el.style.height = 'auto';
+    // añadir un pequeño padding extra para evitar scroll
+    el.style.height = (el.scrollHeight + 2) + 'px';
   }
 
 }
