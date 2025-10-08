@@ -10,6 +10,7 @@ import { DocentesPage } from './features/docentes/pages/docentes-page/docentes-p
 import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/inicio-admi-page';
 import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
+import { ENVIO_CORREO_ROUTES } from './features/Envio-Correo/envio-correo.routes';
 
 export const routes: Routes = [
     {path: '',component: LoginPageComponent },
@@ -31,6 +32,8 @@ export const routes: Routes = [
     { path: 'inicio-seccion', component: InicioSeccionPage },
 
     { path: 'solicitud-programas', component: SolicitudProgramasPages },
+
+    {path: 'envio-correo', children: ENVIO_CORREO_ROUTES}
 ];
 
 

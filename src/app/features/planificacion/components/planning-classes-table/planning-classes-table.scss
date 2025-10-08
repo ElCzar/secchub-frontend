@@ -13,7 +13,7 @@
   --col-estado: 140px;
   --col-id: 160px;
   --col-name: 250px;
-  --col-section: 100px;
+  --col-section: 150px;
   --col-class-id: 140px;
   --col-seats: 100px;
   --col-start: 150px;
@@ -41,7 +41,7 @@
   ============================== */
 .tabla {
   width: 100%;
-  min-width: 1770px; /* Ajustado después de reducir el ancho de materia y sección */
+  min-width: 1820px; /* Ajustado para dar más espacio a "Sección Académica" */
   border-collapse: collapse;
   table-layout: fixed;
 

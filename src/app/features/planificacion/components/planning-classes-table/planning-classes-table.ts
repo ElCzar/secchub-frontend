@@ -216,30 +216,27 @@ export class PlanningClassesTable {
     this.showObservationsModal = true;
   }
 
-  // Función para enviar correo
+  // Función para enviar correo - navega a la ruta de envío de correos
   sendEmail(index: number) {
     const row = this.rows[index];
     console.log('Enviar correo para la clase:', row);
     
-    // TODO: Implementar lógica para enviar correo
-    // Aquí puedes agregar la lógica para enviar un correo electrónico
-    // Por ejemplo, abrir un modal de composición de correo o llamar a un servicio
-    
-    // Ejemplo de datos que podrían enviarse:
-    const emailData = {
-      recipient: row.teacher?.name || 'Sin docente asignado',
-      subject: `Información sobre la clase: ${row.courseName}`,
-      body: `
-        Materia: ${row.courseName}
-        Sección: ${row.section}
-        ID Clase: ${row.classId}
-        Fechas: ${row.startDate} - ${row.endDate}
-        Estado: ${row.status}
-      `
-    };
-    
-    // Por ahora solo mostramos un alert como ejemplo
-    alert(`Enviando correo para la clase: ${row.courseName}\nDocente: ${row.teacher?.name || 'Sin docente'}`);
+    // Navegar a la ruta de envío de correos para docentes
+    // Pasar información de la clase como estado para que pueda ser utilizada en el componente de destino
+    this.router.navigate(['/envio-correo/docentes'], {
+      state: {
+        classInfo: {
+          courseName: row.courseName,
+          section: row.section,
+          classId: row.classId,
+          startDate: row.startDate,
+          endDate: row.endDate,
+          status: row.status,
+          teacher: row.teacher,
+          schedules: row.schedules
+        }
+      }
+    });
   }
 
   // Métodos para el modal de observaciones
