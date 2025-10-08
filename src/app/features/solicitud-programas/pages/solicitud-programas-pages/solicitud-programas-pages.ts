@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
 import { CombinePopupComponent } from '../../components/combine-popup/combine-popup.component';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
@@ -67,7 +68,10 @@ export class SolicitudProgramasPages implements OnInit {
     return visible.every(r => r.selected === true);
   }
 
-  constructor(private readonly service: SolicitudProgramasService) {}
+  constructor(
+    private readonly service: SolicitudProgramasService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -170,7 +174,10 @@ export class SolicitudProgramasPages implements OnInit {
     };
 
     this.service.applyRequests(payload).subscribe({
-      next: () => alert('Solicitudes aplicadas correctamente.'),
+      next: () => {
+        // Navegar a planificación donde se aplicarán las solicitudes
+        this.router.navigate(['/planificacion']);
+      },
       error: () => alert('Error al aplicar solicitudes.')
     });
   }
