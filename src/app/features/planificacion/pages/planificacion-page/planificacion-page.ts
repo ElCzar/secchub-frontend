@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
@@ -150,7 +151,7 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     this.subscription.add(
       this.planningService.getAllClassesWithSchedules()
         .pipe(
-          catchError(error => {
+          catchError((error: any) => {
             console.error('Error al cargar clases del backend:', error);
             this.error = 'Error al cargar las clases. Verifique la conexión con el servidor.';
             // En caso de error, inicializar con datos vacíos para permitir creación
@@ -158,12 +159,12 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
             return of([]);
           })
         )
-        .subscribe(classes => {
+        .subscribe((classes: any[]) => {
           console.log('=== CLASES CARGADAS DEL BACKEND ===');
           console.log('Número de clases:', classes.length);
           console.log('Clases cargadas del backend:', classes);
           console.log('Detalle de cada clase cargada:');
-          classes.forEach((classDTO, index) => {
+          classes.forEach((classDTO: any, index: number) => {
             console.log(`Clase ${index}:`, {
               id: classDTO.id,
               courseId: classDTO.courseId,
@@ -178,7 +179,7 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           if (classes.length > 0) {
             console.log('=== CONVIRTIENDO CLASES A PLANNING ROWS ===');
             // Convertir los DTOs del backend a PlanningRows
-            this.originalRows = classes.map((classDTO, index) => {
+            this.originalRows = classes.map((classDTO: any, index: number) => {
               console.log(`Convirtiendo clase ${index}:`, classDTO);
               const planningRow = this.planningService.convertClassDTOToPlanningRow(classDTO);
               console.log(`PlanningRow resultante ${index}:`, planningRow);
@@ -223,12 +224,12 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         this.subscription.add(
           this.teacherAssignmentService.getTeachersAssignedToClass(row.backendId)
             .pipe(
-              catchError(error => {
+              catchError((error: any) => {
                 console.error(`Error al cargar docentes para clase ${row.backendId}:`, error);
                 return of([]);
               })
             )
-            .subscribe(teachers => {
+            .subscribe((teachers: any[]) => {
               if (teachers.length > 0) {
                 // Tomar el primer docente asignado (o combinar si hay múltiples)
                 const primaryTeacher = teachers[0];
