@@ -1,0 +1,71 @@
+<div class="signature-upload-container">
+  <label for="signature-file-input" class="form-label">Subir firma virtual (PNG o JPG):</label>
+  
+  <!-- Drop zone -->
+  <div 
+    class="file-drop-zone" 
+    [class.dragover]="isDragOver"
+    [class.has-file]="previewUrl"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="fileInput.click()"
+    (keydown)="onKeyDown($event)"
+    tabindex="0"
+    role="button"
+    [attr.aria-label]="previewUrl ? 'Hacer clic para cambiar la firma actual' : 'Hacer clic para subir firma o arrastrar archivo aquí'">
+    
+    <input 
+      #fileInput
+      id="signature-file-input"
+      type="file" 
+      (change)="onFileSelected($event)" 
+      accept="image/png, image/jpeg, image/jpg" 
+      style="display: none;"
+      aria-describedby="file-help" />
+    
+    <div *ngIf="!previewUrl" class="upload-prompt">
+      <div class="upload-icon" aria-hidden="true">📁</div>
+      <p>Arrastra tu firma aquí o haz clic para seleccionar</p>
+      <small id="file-help">PNG o JPG, máximo 2MB</small>
+    </div>
+    
+    <div *ngIf="previewUrl" class="signature-preview-container">
+      <img [src]="previewUrl" alt="Previsualización de la firma cargada" class="signature-preview" />
+      <div class="signature-actions">
+        <button 
+          type="button" 
+          class="btn-remove" 
+          (click)="removeSignature($event)"
+          aria-label="Eliminar la firma actual">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Error message -->
+  <div *ngIf="errorMessage" class="error-message" role="alert">
+    {{ errorMessage }}
+  </div>
+  
+  <!-- Loading indicator -->
+  <output *ngIf="isProcessing" class="processing-indicator">
+    <div class="spinner" aria-hidden="true"></div>
+    <span>Procesando imagen...</span>
+  </output>
+  
+  <!-- Signature information -->
+  <div class="signature-info-section">
+    <label for="signature-text-input" class="section-title">Información de firma</label>
+    <textarea 
+      id="signature-text-input"
+      [(ngModel)]="signatureText" 
+      (ngModelChange)="onSignatureTextChange()"
+      placeholder="Escribe aquí la información que aparecerá en tu firma&#10;Ejemplo:&#10;Departamento de Ingeniería de Sistemas&#10;Pontificia Universidad Javeriana"
+      class="signature-textarea"
+      rows="3">
+    </textarea>
+    <small class="help-text">Puedes usar saltos de línea para organizar la información</small>
+  </div>
+</div>
