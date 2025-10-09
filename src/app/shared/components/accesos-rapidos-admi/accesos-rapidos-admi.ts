@@ -17,8 +17,8 @@ export class AccesosRapidosAdmi {
     { label: 'Consultar Log de Auditoria', route: '/auditoria' },
     { label: 'Ver Planificacion Completa', route: '/planificacion' },
     { label: 'Gestionar Materias', route: '/materias' },
-    { label: 'Enviar formulario a carreras', route: '/formularios/carreras' },
-    { label: 'Enviar formulario monitores', route: '/formularios/monitores' },
+    { label: 'Enviar formulario a carreras', route: 'envio-correo/programas' },
+    { label: 'Enviar formulario monitores', route: 'envio-correo/monitores' },
     { label: 'Ver y Editar Monitores', route: '/solicitud-monitores' },
     { label: 'Exportar programacion a Intranet', route: '/export' },
     { label: 'Cerrar sesión', route: '/' }
