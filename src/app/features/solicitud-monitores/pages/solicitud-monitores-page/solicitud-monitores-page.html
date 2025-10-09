@@ -1,0 +1,22 @@
+<div class="page">
+  <aside class="sidebar">
+    <!-- Accesos rápidos permanente -->
+    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+  </aside>
+
+  <main class="content">
+    <h1 class="titulo-pagina">Ver y Editar Monitores</h1>
+    <div class="hr-line"></div>
+
+    <!-- Botón de guardar cambios -->
+    <div class="toolbar">
+      <button class="btn btn--primary" (click)="guardarCambios()">Guardar cambios</button>
+    </div>
+
+    <!-- Tabla principal de monitores -->
+    <app-monitores-table
+      [monitores]="monitores"
+      (update)="onMonitoresUpdate($event)">
+    </app-monitores-table>
+  </main>
+</div>

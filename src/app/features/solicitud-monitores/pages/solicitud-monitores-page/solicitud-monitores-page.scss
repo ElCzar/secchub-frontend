@@ -1,0 +1,68 @@
+/* =========================================================
+   PÁGINA SOLICITUD MONITORES
+   Layout igual al de planificación con CSS Grid
+   ========================================================= */
+
+.page { 
+    display: grid; 
+    grid-template-columns: 280px 1fr; 
+    gap: 24px; 
+}
+
+.sidebar { 
+    background: var(--brand-azul-10, #f1f5fb); 
+    border-radius: var(--radius); 
+    padding: 16px;
+}
+
+.content {
+    display: grid;
+    gap: 16px;
+}
+
+.titulo-pagina {
+    margin-bottom: 8px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+.btn--secondary {
+    background: #e9eef7;
+    color: #234574;
+    font-weight: 600;
+}
+
+.btn--primary {
+    background: var(--brand-azul);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .sidebar {
+        display: none; /* Ocultar sidebar en móviles */
+    }
+}

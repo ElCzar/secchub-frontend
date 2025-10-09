@@ -1,0 +1,288 @@
+/* =========================================================
+   TABLA DE MONITORES
+   Estilos para la tabla principal de solicitud de monitores
+   ========================================================= */
+
+.table-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.monitores-table {
+  width: 100%;
+  min-width: 1820px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Header de la tabla */
+.monitores-table thead {
+  background: #f8f9fa;
+}
+
+.monitores-table thead th {
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--brand-azul);
+  border-bottom: 1px solid var(--border);
+  white-space: normal;
+  line-height: 1.3;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fff;
+  vertical-align: middle;
+}
+
+.monitores-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  text-align: center;
+  background: #fff;
+}
+
+.monitores-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Eliminar borde inferior de la fila principal cuando va seguida de una fila expander */
+.monitores-table tbody tr:has(+ .expander-row) td,
+.monitores-table tbody tr.monitor-row td {
+  border-bottom: none;
+}
+
+/* Filas alternadas */
+.monitor-row:nth-child(even) td {
+  background-color: #f8f9fa;
+}
+
+/* Columna de checkbox */
+.checkbox-column {
+  width: 50px;
+  text-align: center;
+  padding: 8px !important;
+}
+
+.checkbox-column input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.2);
+  accent-color: var(--brand-azul);
+}
+
+/* Anchos específicos para columnas importantes */
+.monitores-table th:nth-child(2) { /* ID del estudiante */
+  width: 90px;
+}
+
+.monitores-table th:nth-child(3), /* Nombre */
+.monitores-table th:nth-child(4) { /* Apellido */
+  width: 120px;
+}
+
+.monitores-table th:nth-child(5) { /* Carrera */
+  width: 100px;
+}
+
+.monitores-table th:nth-child(6) { /* Semestre */
+  width: 80px;
+}
+
+.monitores-table th:nth-child(7) { /* Promedio Acumulado */
+  width: 90px;
+}
+
+.monitores-table th:nth-child(8) { /* Nombre del profesor */
+  width: 140px;
+}
+
+.monitores-table th:nth-child(9) { /* No. Clase */
+  width: 70px;
+}
+
+.monitores-table th:nth-child(10) { /* Nombre Asignatura */
+  width: 120px;
+}
+
+.monitores-table th:nth-child(11) { /* Nota Obtenida */
+  width: 80px;
+}
+
+.monitores-table th:nth-child(12) { /* Horas Semanales */
+  width: 110px; /* asignar un poco más de espacio para el input */
+  min-width: 90px;
+}
+
+.monitores-table th:nth-child(13) { /* Semanas */
+  width: 90px;
+  min-width: 70px;
+}
+
+.monitores-table th:nth-child(14) { /* Total Horas */
+  width: 80px;
+}
+
+.monitores-table th:nth-child(15) { /* Correo Institucional */
+  width: 260px; /* aumentar para que la mayoría de correos quepan en una línea */
+  min-width: 180px;
+}
+
+/* Asegurar que el contenido de la columna correo se ajuste al ancho y pueda envolverse */
+.monitores-table td:nth-child(15) {
+  white-space: normal; /* permitir wrap si es necesario */
+  overflow-wrap: anywhere; /* permitir romper si es necesario en palabras largas */
+  text-align: left;
+}
+
+.monitores-table th:nth-child(16) { /* ANTIGUO */
+  width: 80px;
+}
+
+.monitores-table th:nth-child(17) { /* Monitor Administrativo */
+  width: 100px;
+}
+
+.monitores-table th:nth-child(18) { /* Acciones */
+  width: 100px;
+}
+
+/* Celdas editables */
+.editable-cell {
+  padding: 4px !important;
+}
+
+.table-input {
+  width: 100%;
+  min-width: 60px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44, 86, 151, 0.1);
+  }
+
+  &:hover {
+    border-color: #ccc;
+  }
+}
+
+/* Inputs pequeños en columnas numéricas para evitar solapamiento */
+.monitores-table td:nth-child(9) .table-input,
+.monitores-table td:nth-child(12) .table-input,
+.monitores-table td:nth-child(13) .table-input {
+  width: 64px; /* fijo y compacto */
+  max-width: 100%;
+  box-sizing: border-box;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Reducir el padding de las celdas con inputs pequeños para que no parezcan encima */
+.monitores-table td:nth-child(9),
+.monitores-table td:nth-child(12),
+.monitores-table td:nth-child(13) {
+  padding: 8px 10px;
+}
+
+/* Columna de total horas */
+.total-horas {
+  font-weight: 600;
+  color: var(--brand-azul);
+  text-align: center;
+}
+
+/* Columna de acciones */
+.actions-column {
+  width: 100px;
+  text-align: center;
+}
+
+/* ==============================
+   Estilos del expander (copiado exacto de planificación)
+   ============================== */
+.expander-row td {
+  background: #f8f9fa;
+  padding: 0;
+  border-bottom: none;
+}
+
+.expander-row td .expander-inner {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.expander-row td .separator-line.separator-under {
+  margin-top: 8px;
+}
+
+/* ==============================
+   Separador visual
+   ============================== */
+.separator-line {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Estilo cuando la línea va debajo del botón Horarios */
+.separator-line.separator-under {
+  margin-top: 8px;
+}
+
+/* Botón expander con icono y texto */
+.expander {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--brand-azul);
+  font-weight: 600;
+}
+
+/* Icono caret para indicar expansión de sub-horarios */
+.caret {
+  font-size: 12px;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  transform: rotate(0deg); /* Estado inicial: flecha hacia la derecha */
+}
+
+.caret.open {
+  transform: rotate(90deg); /* Estado abierto: flecha hacia abajo */
+}
+
+/* Fila de horarios expandible */
+.monitores-table tr:has(app-horarios-monitores) td {
+  padding: 0 !important;
+  background: #fff !important;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 1400px) {
+  .monitores-table th,
+  .monitores-table td {
+    white-space: nowrap;
+    font-size: 11px; /* Texto más pequeño en pantallas medianas */
+  }
+}
+
+@media (max-width: 1024px) {
+  .monitores-table th,
+  .monitores-table td {
+    font-size: 10px; /* Texto aún más pequeño en tablets */
+    padding: 6px 4px;
+  }
+}
