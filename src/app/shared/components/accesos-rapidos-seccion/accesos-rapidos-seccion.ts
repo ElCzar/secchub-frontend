@@ -14,7 +14,7 @@ export class AccesosRapidosSeccion {
     { label: 'Perfil', route: '/perfil' },
     { label: 'Planificar Clases', route: '/planificacion' },
     { label: 'Confirmar Disponibilidad Docente', route: '/confirmar-disponibilidad' },
-    { label: 'Monitores', route: '/monitores' },
+    { label: 'Monitores', route: '/solicitud-monitores' },
     { label: 'Cerrar sesión', route: '/' }
   ];
 

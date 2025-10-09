@@ -11,6 +11,7 @@ import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/in
 import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
 import { ENVIO_CORREO_ROUTES } from './features/Envio-Correo/envio-correo.routes';
+import { SolicitudMonitoresPage } from './features/solicitud-monitores/pages/solicitud-monitores-page/solicitud-monitores-page';
 
 export const routes: Routes = [
     {path: '',component: LoginPageComponent },
@@ -33,7 +34,9 @@ export const routes: Routes = [
 
     { path: 'solicitud-programas', component: SolicitudProgramasPages },
 
-    {path: 'envio-correo', children: ENVIO_CORREO_ROUTES}
+    {path: 'envio-correo', children: ENVIO_CORREO_ROUTES},
+
+    {path: 'solicitud-monitores', component: SolicitudMonitoresPage}
 ];
 
 
