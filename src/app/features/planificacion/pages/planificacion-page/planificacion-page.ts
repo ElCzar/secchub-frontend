@@ -11,6 +11,7 @@ import { PlanningRow, PlanningStatus } from '../../models/planificacion.models';
 import { PlanningClassesTable } from "../../components/planning-classes-table/planning-classes-table";
 import { SelectedTeachers } from '../../services/selected-teachers';
 import { ScheduleConflict } from '../../../docentes/components/schedule-conflict/schedule-conflict';
+import { PopDuplicacionSemetre } from '../../components/pop-duplicacion-semetre/pop-duplicacion-semetre';
 import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
 import { SelectedTeachersService } from '../../../docentes/services/selected-teachers.service';
@@ -18,7 +19,7 @@ import { SelectedTeachersService } from '../../../docentes/services/selected-tea
 @Component({
   selector: 'app-planificacion-clases-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AccesosRapidosAdmi, AccesosRapidosSeccion, PlanningClassesTable, ScheduleConflict],
+  imports: [CommonModule, FormsModule, RouterModule, AccesosRapidosAdmi, AccesosRapidosSeccion, PlanningClassesTable, ScheduleConflict, PopDuplicacionSemetre],
   templateUrl: './planificacion-page.html',
   styleUrls: ['./planificacion-page.scss'],
 })
@@ -40,6 +41,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     newSchedule: '',
     newSubject: ''
   };
+  
+  // Propiedades para el modal de duplicación de semestres
+  showDuplicacionPopup: boolean = false;
   
   // Datos filtrados y originales
   originalRows: PlanningRow[] = [];
@@ -796,9 +800,45 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     this.rows.push(newRow);
   }
 
-  // Botones superiores (sin acción aún)
-  planAnterior() {}
+  // Botones superiores
+  planAnterior() {
+    this.showDuplicacionPopup = true;
+  }
+  
   aplicarPlaneacion() {}
+
+  /**
+   * Cierra el popup de duplicación de semestre
+   */
+  onCloseDuplicacion(): void {
+    this.showDuplicacionPopup = false;
+  }
+
+
+  /**
+   * Aplica la duplicación del semestre seleccionado
+   */
+  onApplySemester(selectedSemester: string): void {
+    console.log('Aplicando planificación del semestre:', selectedSemester);
+    
+    // TODO: Implementar la lógica para duplicar la planificación
+    // Aquí iría la llamada al servicio para obtener y aplicar la planificación del semestre anterior
+    // Ejemplo:
+    // this.planningService.duplicateSemesterPlanning(selectedSemester).subscribe({
+    //   next: (result) => {
+    //     console.log('Planificación duplicada exitosamente');
+    //     this.loadPlanningData(); // Recargar datos
+    //   },
+    //   error: (error) => {
+    //     console.error('Error al duplicar planificación:', error);
+    //     // Mostrar error al usuario solo en caso de fallo
+    //     alert(`Error al aplicar planificación del semestre ${selectedSemester}: ${error.message}`);
+    //   }
+    // });
+    
+    // Cerrar el popup
+    this.showDuplicacionPopup = false;
+  }
 
   /**
    * Genera una clave única para identificar una clase

@@ -1,0 +1,175 @@
+/* =========================================================
+   POPUP DUPLICACIÓN SEMESTRES
+   Estilos para el modal de duplicación de semestres anteriores
+   ========================================================= */
+
+/* Overlay del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Contenedor del popup */
+.modal-container {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.2s ease-out;
+  
+  /* Evitar que el click en el contenedor cierre el modal */
+  pointer-events: auto;
+}
+
+/* Animación de entrada */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Contenido principal del modal */
+.modal-content {
+  margin: 16px 0 24px 0;
+}
+
+/* Texto de la pregunta */
+.question-text {
+  font-size: var(--fs-base);
+  color: var(--text-700);
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+/* Contenedor del select */
+.select-container {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+/* Estilo del select de semestres */
+.semester-select {
+  width: 100%;
+  height: 44px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: var(--fs-base);
+  font-family: inherit;
+  background: #fff;
+  color: var(--text-700);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Flecha personalizada */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  appearance: none;
+  padding-right: 40px;
+}
+
+.semester-select:focus {
+  border-color: var(--brand-azul);
+  box-shadow: 0 0 0 3px rgba(44, 86, 151, 0.1);
+}
+
+.semester-select:disabled {
+  background-color: var(--muted);
+  color: var(--text-500);
+  cursor: not-allowed;
+}
+
+/* Opciones del select */
+.semester-select option {
+  padding: 8px 12px;
+  font-size: var(--fs-base);
+}
+
+.semester-select option:disabled {
+  color: var(--text-500);
+  font-style: italic;
+}
+
+/* Contenedor de botones de acción */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Ajustes específicos para botones en el modal */
+.modal-actions .btn {
+  min-width: 100px;
+  font-size: var(--fs-base);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Estado deshabilitado del botón Aplicar */
+.modal-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Efectos hover para botones habilitados */
+.modal-actions .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Botón Cancelar */
+.modal-actions .btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+/* Botón Aplicar */
+.modal-actions .btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 480px) {
+  .modal-container {
+    min-width: unset;
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
+  }
+}

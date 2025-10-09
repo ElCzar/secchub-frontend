@@ -70,3 +70,10 @@
   (modalClosed)="onConflictModalClosed()"
   (assignDifferentTeacher)="onAssignDifferentTeacher()">
 </app-schedule-conflict>
+
+<!-- Modal de duplicación de semestres -->
+<app-pop-duplicacion-semetre 
+  *ngIf="showDuplicacionPopup"
+  (closeModal)="onCloseDuplicacion()"
+  (applySemester)="onApplySemester($event)">
+</app-pop-duplicacion-semetre>

@@ -1,0 +1,58 @@
+<!-- Modal con overlay -->
+<div class="modal-overlay" 
+     (click)="onClose()" 
+     (keydown.escape)="onClose()">
+  <!-- Contenedor del popup -->
+  <div class="modal-container" 
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()"
+       aria-labelledby="modal-title"
+       aria-describedby="modal-content">
+    
+    <!-- Título del popup -->
+    <h2 id="modal-title" class="popup-title">Duplicación Semestres Anteriores</h2>
+    
+    <!-- Línea divisoria -->
+    <div class="hr-line"></div>
+    
+    <!-- Contenido del popup -->
+    <div id="modal-content" class="modal-content">
+      
+      <!-- Pregunta -->
+      <p class="question-text">¿Cuál semestre desea duplicar?</p>
+      
+      <!-- Desplegable de semestres -->
+      <div class="select-container">
+        <select 
+          class="semester-select" 
+          [(ngModel)]="selectedSemester" 
+          (change)="onSemesterChange()">
+          <option value="" disabled>Seleccione un semestre</option>
+          <option *ngFor="let semester of availableSemesters" [value]="semester">
+            {{ semester }}
+          </option>
+        </select>
+      </div>
+      
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="modal-actions">
+      <button 
+        type="button" 
+        class="btn btn--danger" 
+        (click)="onClose()">
+        Cancelar
+      </button>
+      
+      <button 
+        type="button" 
+        class="btn btn--primary" 
+        [disabled]="!selectedSemester"
+        (click)="onApply()">
+        Aplicar
+      </button>
+    </div>
+    
+  </div>
+</div>
