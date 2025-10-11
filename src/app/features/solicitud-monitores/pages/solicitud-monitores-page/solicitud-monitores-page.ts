@@ -3,10 +3,12 @@ import { Monitor } from '../../models/monitor.model';
 import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
 import { MonitoresTable } from '../../components/monitores-table/monitores-table';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { HeaderComponent } from '../../../../layouts/header/header.component';
+import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 
 @Component({
   selector: 'app-solicitud-monitores-page',
-  imports: [MonitoresTable, AccesosRapidosSeccion],
+  imports: [MonitoresTable, AccesosRapidosSeccion, HeaderComponent, SidebarToggleButtonComponent],
   templateUrl: './solicitud-monitores-page.html',
   styleUrl: './solicitud-monitores-page.scss'
 })
