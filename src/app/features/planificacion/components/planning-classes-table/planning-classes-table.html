@@ -39,8 +39,7 @@
         <!-- Fila principal -->
         <tr class="main-row" [class.is-deleted]="row._state==='deleted'">
           <td class="acciones">
-            <button type="button" class="btn-icon" (click)="removeRow.emit(i)">-</button>
-            <button type="button" class="btn-icon" (click)="addRow.emit()">＋</button>
+            <button type="button" class="btn-icon" (click)="removeRow.emit(i)" title="Eliminar clase">🗑️</button>
             <button type="button" class="btn-icon btn-edit" *ngIf="!row._editing" (click)="editClass(i)">✏️</button>
             <button type="button" class="btn-icon btn-save" *ngIf="row._editing" (click)="saveClass(i)">💾</button>
           </td>

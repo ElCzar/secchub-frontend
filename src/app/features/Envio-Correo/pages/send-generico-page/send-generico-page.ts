@@ -7,10 +7,12 @@ import { ActivatedRoute } from '@angular/router';
 import { UploadSignature } from "../../components/upload-signature/upload-signature";
 import { EmailPreview } from "../../components/email-preview/email-preview";
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-send-generico-page',
-  imports: [FormsModule, UploadSignature, EmailPreview, AccesosRapidosSeccion],
+  imports: [FormsModule, UploadSignature, EmailPreview, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent],
   templateUrl: './send-generico-page.html',
   styleUrls: ['./send-generico-page.scss']
 })

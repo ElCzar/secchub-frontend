@@ -1,4 +1,9 @@
+<app-header></app-header>
+
 <div class="page">
+  <!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+  <app-sidebar-toggle-button></app-sidebar-toggle-button>
+
   <aside class="sidebar">
     <!-- Mostramos el acceso rápido según rol -->
     <app-accesos-rapidos-admi *ngIf="role==='admin'"></app-accesos-rapidos-admi>
@@ -40,6 +45,7 @@
     </div>
 
     <div class="toolbar">
+      <button class="btn btn--primary" (click)="onAddRow()">+ Nueva Clase</button>
       <button class="btn btn--secondary" (click)="planAnterior()">Planificación Semestre Anterior</button>
       <button class="btn btn--secondary" [routerLink]="['/solicitud-programas']">Aplicar Planeacion Programas</button>
     </div>

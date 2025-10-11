@@ -1,0 +1,102 @@
+/* Estilos para manejo dinámico del layout según estado del sidebar */
+
+/* Variable CSS para controlar el margen izquierdo del contenido */
+:root {
+  --sidebar-width: 280px;
+  --content-spacing: 20px; /* Espacio reducido entre sidebar y contenido */
+  --content-margin-left: calc(var(--sidebar-width) + var(--content-spacing));
+}
+
+/* Clase para el body cuando el sidebar está visible */
+body.sidebar-visible {
+  --content-margin-left: calc(var(--sidebar-width) + var(--content-spacing)); /* 300px total */
+}
+
+/* Clase para el body cuando el sidebar está oculto */
+body.sidebar-hidden {
+  --content-margin-left: 15px; /* Margen cómodo sin desperdiciar espacio */
+}
+
+/* Estilos base para contenedores principales */
+.main-content-container {
+  margin-left: var(--content-margin-left);
+  transition: margin-left 0.3s ease-in-out;
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px; /* Margen derecho para balance visual */
+}
+
+.page-container {
+  /* No aplicamos margin-left aquí para evitar doble margen */
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px;
+}
+
+.container {
+  margin-left: var(--content-margin-left);
+  transition: margin-left 0.3s ease-in-out;
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px;
+}
+
+/* Asegurar que los sidebars no interfieran con las transiciones */
+aside.sidebar {
+  position: relative;
+  z-index: 20; /* Menor que el botón toggle pero mayor que contenido */
+}
+
+/* Estilos para la página de docentes que tiene estructura personalizada */
+.docentes-page {
+  display: flex;
+  flex-direction: row;
+}
+
+.docentes-page .main-content {
+  flex: 1;
+  margin-left: var(--content-margin-left);
+  transition: margin-left 0.3s ease-in-out;
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px; /* Margen derecho para balance visual */
+  min-width: 0;
+}
+
+
+
+.page {
+  display: block; /* Cambiar a block para evitar conflictos */
+}
+
+.page .content {
+  margin-left: var(--content-margin-left);
+  transition: margin-left 0.3s ease-in-out;
+  min-width: 0; /* Permite que el flex item se contraiga */
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px; /* Margen derecho para balance visual */
+}
+
+/* Estilos específicos para página de solicitud programas */
+.page-container .content {
+  margin-left: var(--content-margin-left);
+  transition: margin-left 0.3s ease-in-out;
+  min-width: 0;
+  padding-top: 2px; /* Espacio muy reducido para máximo aprovechamiento */
+  padding-right: 20px;
+}
+
+/* Responsive: En móviles el sidebar se superpone */
+@media (max-width: 720px) {
+  :root {
+    --content-margin-left: 15px; /* Margen cómodo en móviles */
+  }
+  
+  body.sidebar-visible {
+    --content-margin-left: 15px; /* En móviles, sidebar se superpone */
+  }
+  
+  body.sidebar-hidden {
+    --content-margin-left: 10px; /* Buen aprovechamiento sin ser muy pegado */
+  }
+
+  .page-container .content {
+    margin-left: var(--content-margin-left); /* Usar variable para consistencia */
+  }
+}

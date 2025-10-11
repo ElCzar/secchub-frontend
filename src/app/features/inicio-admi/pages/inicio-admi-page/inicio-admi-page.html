@@ -1,14 +1,18 @@
-<div class="container">
-  <h1 class="titulo-pagina">Bienvenido, Administrador Académico</h1>
-  <div class="hr-line"></div>
+<app-header></app-header>
 
-  <div class="layout">
-    <!-- Columna izquierda: Accesos rápidos -->
-    <aside class="sidebar">
-      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
-    </aside>
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
 
-    <!-- Columna derecha: contenido principal -->
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+</aside>
+
+<div class="main-content-container">
+  <div class="container">
+    <h1 class="titulo-pagina">Bienvenido, Administrador Académico</h1>
+    <div class="hr-line"></div>
+
     <main class="content">
       
 

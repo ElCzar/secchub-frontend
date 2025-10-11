@@ -1,18 +1,45 @@
+<app-header></app-header>
 
+<div class="page">
+  <!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+  <app-sidebar-toggle-button></app-sidebar-toggle-button>
 
-<div class="page-container">
-  <div class="layout-grid">
-    <main>
-      <header class="page-head">
-        <h1 class="titulo-pagina">Solicitudes de Programas</h1>
-        <div class="hr-line"></div>
+  <!-- Sidebar fijo -->
+  <aside class="sidebar" aria-label="Menú de navegación rápida">
+    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+  </aside>
 
-        <!-- Barra de búsqueda -->
-        <div class="search-container">
-          <input type="text" placeholder="Buscar por materia o programa" [(ngModel)]="searchQuery" />
-        </div>
+  <main class="content">
+    <h1 class="titulo-pagina">Solicitudes de Programas</h1>
+    <div class="hr-line"></div>
 
-      </header>
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchQuery" 
+          placeholder="Buscar por materia o programa..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="programa-select">Filtrar por Programa:</label>
+        <select id="programa-select" class="filter-select">
+          <option value="">Todos los programas</option>
+          <!-- Aquí puedes agregar las opciones dinámicamente -->
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="materia-select">Filtrar por Materia:</label>
+        <select id="materia-select" class="filter-select">
+          <option value="">Todas las materias</option>
+          <!-- Aquí puedes agregar las opciones dinámicamente -->
+        </select>
+      </div>
+    </div>
 
       <!-- Tabla de Solicitudes -->
       <section class="tabla-placeholder">
@@ -126,9 +153,4 @@
         (closed)="cancelCombine()">
       </app-combine-popup>
     </main>
-
-    <aside>
-      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
-    </aside>
-  </div>
 </div>

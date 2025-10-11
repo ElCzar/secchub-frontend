@@ -7,6 +7,7 @@ import { catchError, of } from 'rxjs';
 
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { PlanningRow, PlanningStatus } from '../../models/planificacion.models';
 import { PlanningClassesTable } from "../../components/planning-classes-table/planning-classes-table";
 import { SelectedTeachers } from '../../services/selected-teachers';
@@ -15,11 +16,12 @@ import { PopDuplicacionSemetre } from '../../components/pop-duplicacion-semetre/
 import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
 import { SelectedTeachersService } from '../../../docentes/services/selected-teachers.service';
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-planificacion-clases-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, AccesosRapidosAdmi, AccesosRapidosSeccion, PlanningClassesTable, ScheduleConflict, PopDuplicacionSemetre],
+  imports: [CommonModule, FormsModule, RouterModule, AccesosRapidosAdmi, AccesosRapidosSeccion, SidebarToggleButtonComponent, PlanningClassesTable, ScheduleConflict, PopDuplicacionSemetre, HeaderComponent],
   templateUrl: './planificacion-page.html',
   styleUrls: ['./planificacion-page.scss'],
 })

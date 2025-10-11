@@ -1,12 +1,39 @@
 .header {
+  position: sticky;
+  top: 0;
+  left: 0;
   width: 100%;
+  min-width: 100vw; /* Asegurar que cubra toda la pantalla */
   background: #2C5697;
   display: flex;
   align-items: center;
   padding: 12px 24px;
+  z-index: 1000; /* Mantener sobre otros elementos */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para separar del contenido */
 }
 
 .logo {
   height: 55px;
   object-fit: contain;
+}
+
+/* Responsive para diferentes tamaños de pantalla */
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 16px; /* Padding reducido en móviles */
+  }
+  
+  .logo {
+    height: 45px; /* Logo más pequeño en móviles */
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 6px 12px; /* Padding aún más reducido */
+  }
+  
+  .logo {
+    height: 40px; /* Logo más pequeño en pantallas muy pequeñas */
+  }
 }

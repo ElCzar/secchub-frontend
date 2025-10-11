@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { CombinePopupComponent } from '../../components/combine-popup/combine-popup.component';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
 import { newSchedule, ScheduleRow } from '../../../programas/models/schedule.models';
 import { SolicitudProgramasService, SolicitudDto } from '../../services/solicitud-programas.service';
 import { PlanningService, ClassDTO } from '../../../planificacion/services/planning.service';
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 type RowState = 'new' | 'existing' | 'deleted';
 
@@ -40,7 +42,7 @@ interface CombinedRequest {
 @Component({
   selector: 'app-solicitud-programas-pages',
   standalone: true,
-  imports: [CommonModule, FormsModule, AccesosRapidosSeccion, CombinePopupComponent, SchedulesTableComponent],
+  imports: [CommonModule, FormsModule, AccesosRapidosSeccion, SidebarToggleButtonComponent, CombinePopupComponent, SchedulesTableComponent, HeaderComponent],
   templateUrl: './solicitud-programas-pages.html',
   styleUrls: ['./solicitud-programas-pages.scss']
 })

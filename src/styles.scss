@@ -4,6 +4,12 @@
    Descripción: variables de diseño, reset básico y utilidades
    ========================================================= */
 
+/* Usar estilos para layout dinámico del sidebar */
+@use './app/shared/styles/dynamic-layout.scss';
+
+/* Eliminar bordes de debug/desarrollo */
+@use './app/shared/styles/remove-debug-borders.scss';
+
 /* ---------------------------
    1) Tipografía
    --------------------------- */
@@ -13,12 +19,95 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow-x: auto; /* Permitir scroll horizontal cuando sea necesario */
 }
 
 body {
   font-family: 'Hedvig Letters Sans', sans-serif;
   color: #1f2937; /* texto base */
   background: #fff;
+  min-width: 320px; /* Ancho mínimo para evitar problemas de layout */
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Eliminar cualquier outline o borde extraño que pueda aparecer */
+* {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+/* Eliminar bordes específicamente en elementos comunes */
+div, main, section, article, aside, header, nav, footer, app-root {
+  outline: none !important;
+}
+
+/* Asegurar que no haya bordes en contenedores de página */
+.page, .content, .main-content, .container, .page-container {
+  outline: none !important;
+}
+
+/* Eliminar bordes de desarrollo/debug potenciales */
+[style*="border"], [style*="outline"] {
+  outline: none !important;
+}
+
+/* Forzar eliminación de cualquier borde gris del navegador o herramientas de desarrollo */
+body *, html * {
+  outline: 0 !important;
+  outline: none !important;
+}
+
+/* Eliminar elementos específicos de Angular DevTools o inspectores */
+ng-probe-token, ng-container, ng-content {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Eliminar cualquier overlay de desarrollo */
+[style*="pointer-events"], 
+[style*="position: absolute"],
+[style*="z-index"] {
+  outline: none !important;
+}
+
+/* Solución definitiva para eliminar el cuadro gris extraño */
+*, *::before, *::after {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+}
+
+/* Eliminar específicamente cualquier borde en elementos de layout */
+body > *, 
+app-root, 
+app-root > *, 
+.page > *,
+.content > *,
+main > *,
+section > *,
+div > * {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Forzar eliminación de bordes en pseudo-elementos */
+::before, ::after {
+  outline: none !important;
+  border: none !important;
+}
+
+/* Eliminar cualquier borde de inspección visual */
+[style], [class] {
+  outline: none !important;
 }
 
 /* ---------------------------

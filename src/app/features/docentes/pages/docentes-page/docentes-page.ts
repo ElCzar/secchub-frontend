@@ -10,10 +10,12 @@ import { DocenteCard } from "../../components/docente-card/docente-card";
 import { TeacherSelectModal } from "../../components/teacher-select-modal/teacher-select-modal";
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
+import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-docentes-page',
-  imports: [CommonModule, FormsModule, DocenteCard, TeacherSelectModal, AccesosRapidosAdmi, AccesosRapidosSeccion],
+  imports: [CommonModule, FormsModule, DocenteCard, TeacherSelectModal, AccesosRapidosAdmi, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent],
   templateUrl: './docentes-page.html',
   styleUrls: ['./docentes-page.scss']
 })

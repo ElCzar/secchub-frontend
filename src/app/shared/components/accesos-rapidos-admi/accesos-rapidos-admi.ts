@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
 @Component({
   selector: 'app-accesos-rapidos-admi',
@@ -20,15 +21,21 @@ export class AccesosRapidosAdmi {
     { label: 'Enviar formulario a carreras', route: 'envio-correo/programas' },
     { label: 'Enviar formulario monitores', route: 'envio-correo/monitores' },
     { label: 'Ver y Editar Monitores', route: '/solicitud-monitores' },
-    { label: 'Exportar programacion a Intranet', route: '/export' },
     { label: 'Cerrar sesión', route: '/' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(
+    private readonly router: Router,
+    public readonly sidebarToggleService: SidebarToggleService
+  ) {}
 
   go(item: { label: string; route?: string }) {
     if (item.route) {
       this.router.navigateByUrl(item.route).catch(() => console.warn('Navigation failed', item));
     }
+  }
+
+  closeSidebar() {
+    this.sidebarToggleService.closeSidebar();
   }
 }

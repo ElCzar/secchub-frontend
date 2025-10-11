@@ -1,17 +1,15 @@
-<div class="docentes-page">
-  <!-- Sidebar con accesos rápidos -->
-  <div class="sidebar">
-    <div class="logo-section">
-      <img src="assets/escudoPUJ-Bogota_rgb-azul_lateral.png" alt="Universidad Javeriana" class="university-logo">
-    </div>
-    
-    <div class="sidebar-title">Accesos Rápidos</div>
-    
-    <!-- Accesos rápidos según el rol -->
-    <app-accesos-rapidos-admi *ngIf="role === 'admin'"></app-accesos-rapidos-admi>
-    <app-accesos-rapidos-seccion *ngIf="role === 'seccion'"></app-accesos-rapidos-seccion>
-  </div>
+<app-header></app-header>
 
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi *ngIf="role === 'admin'"></app-accesos-rapidos-admi>
+  <app-accesos-rapidos-seccion *ngIf="role === 'seccion'"></app-accesos-rapidos-seccion>
+</aside>
+
+<div class="docentes-page">
   <!-- Contenido principal -->
   <div class="main-content">
     <h1 class="titulo-pagina">Docentes</h1>

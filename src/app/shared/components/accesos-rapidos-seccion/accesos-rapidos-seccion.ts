@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 
 @Component({
   selector: 'app-accesos-rapidos-seccion',
@@ -18,11 +19,18 @@ export class AccesosRapidosSeccion {
     { label: 'Cerrar sesión', route: '/' }
   ];
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    public readonly sidebarToggleService: SidebarToggleService
+  ) {}
 
   go(item: { label: string; route?: string }) {
     if (item.route) {
       this.router.navigateByUrl(item.route).catch(() => console.warn('Navigation failed', item));
     }
+  }
+
+  closeSidebar() {
+    this.sidebarToggleService.closeSidebar();
   }
 }

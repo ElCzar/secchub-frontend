@@ -1,6 +1,14 @@
-<app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+<app-header></app-header>
 
-<main class="page-with-sidebar">
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+</aside>
+
+<main class="main-content-container">
   <div class="email-container">
     <h2 class="titulo-pagina">{{ title }}</h2>
      <div class="hr-line"></div>

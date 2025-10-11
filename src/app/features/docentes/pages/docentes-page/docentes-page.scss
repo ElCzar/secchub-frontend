@@ -1,17 +1,15 @@
 .docentes-page {
   display: flex;
-  height: 100vh;
+  min-height: calc(100vh - 79px); /* Altura total menos header */
   background-color: #f8fafc;
 }
 
 .sidebar {
   width: 290px;
-  background-color: var(--brand-azul);
-  color: white;
-  padding: 20px;
+  background: transparent; /* Sin fondo, el componente accesos-rapidos ya tiene su fondo */
+  padding: 0; /* Sin padding extra, el componente ya tiene el suyo */
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .main-content {

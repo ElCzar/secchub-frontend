@@ -1,16 +1,19 @@
-<div class="container">
-  <h1 class="titulo-pagina">Bienvenido, Jefe de Sección</h1>
-  <!-- Separación -->
-  <div class="hr-line"></div>
+<app-header></app-header>
 
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto --> 
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
 
-  <div class="layout">
-    <!-- Columna izquierda: Accesos rápidos -->
-    <aside class="sidebar">
-      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
-    </aside>
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+</aside>
 
-    <!-- Columna derecha: contenido principal -->
+<div class="main-content-container">
+  <div class="container">
+    <h1 class="titulo-pagina">Bienvenido, Jefe de Sección</h1>
+    <!-- Separación -->
+    <div class="hr-line"></div>
+
     <main class="content">
       <!-- Resumen de alertas y tareas pendientes -->
       <ng-container *ngIf="taskStatus$ | async as taskStatus">
