@@ -2,9 +2,7 @@
   <table class="monitores-table">
     <thead>
       <tr>
-        <th class="checkbox-column">
-          <input type="checkbox" (change)="toggleSelectAll($event)" />
-        </th>
+        <th class="approval-column">Acciones</th>
         <th>ID del<br>estudiante</th>
         <th>Nombre</th>
         <th>Apellido</th>
@@ -21,14 +19,17 @@
         <th>Correo<br>Institucional</th>
         <th>ANTIGUO</th>
         <th>Monitor<br>Administrativo</th>
-        <th>Acciones</th>
+        <th>Opciones</th>
       </tr>
     </thead>
     <tbody>
       <ng-container *ngFor="let m of monitores; let i = index">
         <tr class="monitor-row">
-          <td class="checkbox-column">
-            <input type="checkbox" [(ngModel)]="m.seleccionado" (change)="toggleSelection(m)" />
+          <td class="approval-column">
+            <div class="row-approval">
+              <button type="button" class="btn-approve" (click)="aceptarMonitor(m)" title="Aceptar">✓</button>
+              <button type="button" class="btn-reject" (click)="rechazarMonitor(m)" title="Rechazar">✕</button>
+            </div>
           </td>
           <td>{{ m.id }}</td>
           <td>{{ m.nombre }}</td>

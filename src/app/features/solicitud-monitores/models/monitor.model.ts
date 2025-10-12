@@ -21,4 +21,5 @@ export interface Monitor {
   seleccionado: boolean;
   showHorarios?: boolean; // Propiedad opcional para mostrar/ocultar horarios en la UI
   editing?: boolean; // Propiedad opcional para indicar si está en modo edición
+  estado?: 'aceptado' | 'rechazado' | 'pendiente'; // Estado de aprobación
 }

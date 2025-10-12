@@ -62,17 +62,31 @@
 }
 
 /* Columna de checkbox */
-.checkbox-column {
-  width: 50px;
+/* Columna de acciones (Aceptar / Rechazar) */
+.approval-column {
+  width: 120px;
   text-align: center;
   padding: 8px !important;
 }
 
-.checkbox-column input[type="checkbox"] {
-  margin: 0;
-  transform: scale(1.2);
-  accent-color: var(--brand-azul);
+.row-approval { display: flex; gap: 8px; justify-content: center; }
+
+.btn-approve,
+.btn-reject {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
 }
+
+.btn-approve { color: #1a7f37; border-color: #b7e0c1; background: #eaf7ee; }
+.btn-approve:hover { background: #dcf1e3; }
+
+.btn-reject { color: #b42318; border-color: #f2c6c3; background: #fdecea; }
+.btn-reject:hover { background: #fbd5d2; }
 
 /* Anchos específicos para columnas importantes */
 .monitores-table th:nth-child(2) { /* ID del estudiante */

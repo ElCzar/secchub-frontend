@@ -15,16 +15,16 @@ export class MonitoresTable {
   @Input() monitores: Monitor[] = [];
   @Output() update = new EventEmitter<Monitor[]>();
 
-  toggleSelection(monitor: Monitor) {
-    monitor.seleccionado = !monitor.seleccionado;
+  // Acciones de aprobar/rechazar
+  aceptarMonitor(monitor: Monitor) {
+    monitor.estado = 'aceptado';
+    monitor.seleccionado = false;
     this.update.emit(this.monitores);
   }
 
-  toggleSelectAll(event: any) {
-    const isChecked = event.target.checked;
-    this.monitores.forEach(monitor => {
-      monitor.seleccionado = isChecked;
-    });
+  rechazarMonitor(monitor: Monitor) {
+    monitor.estado = 'rechazado';
+    monitor.seleccionado = false;
     this.update.emit(this.monitores);
   }
 

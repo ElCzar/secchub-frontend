@@ -34,11 +34,12 @@ export class SolicitudMonitoresService {
         seleccionado: false,
         showHorarios: false,
         editing: false,
+        estado: 'pendiente',
         horarios: [
           {
             dia: 'Martes',
-            horaInicio: '8:00am',
-            horaFinal: '1:00pm',
+            horaInicio: '08:00',
+            horaFinal: '13:00',
             totalHoras: 5
           }
         ]
@@ -63,17 +64,18 @@ export class SolicitudMonitoresService {
         seleccionado: false,
         showHorarios: false,
         editing: false,
+  estado: 'pendiente',
         horarios: [
           {
             dia: 'Lunes',
-            horaInicio: '10:00am',
-            horaFinal: '12:00pm',
+            horaInicio: '10:00',
+            horaFinal: '12:00',
             totalHoras: 2
           },
           {
             dia: 'Miércoles',
-            horaInicio: '2:00pm',
-            horaFinal: '4:00pm',
+            horaInicio: '14:00',
+            horaFinal: '16:00',
             totalHoras: 2
           }
         ]
