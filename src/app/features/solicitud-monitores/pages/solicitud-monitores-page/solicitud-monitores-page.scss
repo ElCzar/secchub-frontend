@@ -6,7 +6,7 @@
 .page { 
     display: grid; 
     grid-template-columns: 280px 1fr; 
-    gap: 0px;
+    gap: 5px;
     transition: all 0.3s ease;
     margin: 0 !important;
     padding: 0 !important;
@@ -60,6 +60,91 @@
     background: var(--brand-azul);
     color: #fff;
     font-weight: 600;
+}
+
+/* ==============================
+  Estilos para filtros (idénticos a Planificación)
+  ============================== */
+.filters-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.filter-label {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--text-700);
+    margin: 0;
+}
+
+.search-bar {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    min-width: 280px;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    &::placeholder {
+        color: #999;
+    }
+}
+
+.filter-select {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    option {
+        padding: 8px 12px;
+    }
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .search-bar {
+        min-width: auto;
+    }
 }
 
 /* Ajustar layout cuando el sidebar está oculto */

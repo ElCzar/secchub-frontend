@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Monitor } from '../../models/monitor.model';
 import { HorariosMonitores } from '../horarios-monitores/horarios-monitores';
-import { MonitorRowActions } from '../monitor-row-actions/monitor-row-actions';
 
 @Component({
   selector: 'app-monitores-table',
-  imports: [CommonModule, FormsModule, HorariosMonitores, MonitorRowActions],
+  imports: [CommonModule, FormsModule, HorariosMonitores],
   templateUrl: './monitores-table.html',
   styleUrl: './monitores-table.scss'
 })
@@ -17,26 +16,18 @@ export class MonitoresTable {
 
   // Acciones de aprobar/rechazar
   aceptarMonitor(monitor: Monitor) {
-    monitor.estado = 'aceptado';
-    monitor.seleccionado = false;
+    // Si ya estaba aceptado, volver a pendiente (restablecer)
+    monitor.estado = monitor.estado === 'aceptado' ? 'pendiente' : 'aceptado';
     this.update.emit(this.monitores);
   }
 
   rechazarMonitor(monitor: Monitor) {
-    monitor.estado = 'rechazado';
-    monitor.seleccionado = false;
+    // Si ya estaba rechazado, volver a pendiente (restablecer)
+    monitor.estado = monitor.estado === 'rechazado' ? 'pendiente' : 'rechazado';
     this.update.emit(this.monitores);
   }
 
-  editMonitor(index: number) {
-    // Aquí puedes agregar lógica de edición si la necesitas
-    console.log('Editando monitor:', index);
-  }
-
-  deleteMonitor(index: number) {
-    this.monitores.splice(index, 1);
-    this.update.emit(this.monitores);
-  }
+  // Acciones de edición/eliminación removidas para esta pantalla
 
   calcularTotal(m: Monitor) {
     m.totalHoras = m.horasSemanales * m.semanas;

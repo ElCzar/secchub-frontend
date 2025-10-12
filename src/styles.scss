@@ -59,7 +59,9 @@ div, main, section, article, aside, header, nav, footer, app-root {
 }
 
 /* Forzar eliminación de cualquier borde gris del navegador o herramientas de desarrollo */
-body *, html * {
+/* Cuidado: no matar bordes de tablas funcionales */
+body *:not(.monitores-table):not(.monitores-table *),
+html *:not(.monitores-table):not(.monitores-table *) {
   outline: 0 !important;
   outline: none !important;
 }

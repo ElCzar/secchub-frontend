@@ -4,7 +4,8 @@
 app-planificacion-page,
 app-solicitud-monitores-page,
 app-solicitud-programas-pages {
-  * {
+  /* Mantener limpieza global, pero NO borrar bordes de la tabla de monitores ni sus celdas */
+  *:not(.monitores-table):not(.monitores-table *):not(.table-container):not(.table-container *) {
     outline: none !important;
     border: none !important;
     box-shadow: none !important;

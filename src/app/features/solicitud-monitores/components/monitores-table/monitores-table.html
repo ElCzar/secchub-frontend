@@ -19,12 +19,11 @@
         <th>Correo<br>Institucional</th>
         <th>ANTIGUO</th>
         <th>Monitor<br>Administrativo</th>
-        <th>Opciones</th>
       </tr>
     </thead>
     <tbody>
       <ng-container *ngFor="let m of monitores; let i = index">
-        <tr class="monitor-row">
+  <tr class="monitor-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
           <td class="approval-column">
             <div class="row-approval">
               <button type="button" class="btn-approve" (click)="aceptarMonitor(m)" title="Aceptar">✓</button>
@@ -70,17 +69,12 @@
           <td>{{ m.correo }}</td>
           <td>{{ m.antiguo ? 'Sí' : 'No' }}</td>
           <td>{{ m.administrativo ? 'Sí' : 'No' }}</td>
-          <td class="actions-column">
-            <app-monitor-row-actions
-              (edit)="editMonitor(i)"
-              (delete)="deleteMonitor(i)">
-            </app-monitor-row-actions>
-          </td>
+          
         </tr>
 
         <!-- Expander para horarios -->
-        <tr class="expander-row">
-          <td colspan="18">
+  <tr class="expander-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+          <td colspan="17">
             <div class="expander-inner">
               <button class="expander" type="button" (click)="m.showHorarios = !m.showHorarios">
                 <span class="caret" [class.open]="m.showHorarios">▸</span> Horarios
@@ -90,8 +84,8 @@
         </tr>
 
         <!-- Bloque de horarios (solo si showHorarios) -->
-        <tr *ngIf="m.showHorarios">
-          <td colspan="18">
+  <tr *ngIf="m.showHorarios" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+          <td colspan="17">
             <app-horarios-monitores [horarios]="m.horarios"></app-horarios-monitores>
           </td>
         </tr>
