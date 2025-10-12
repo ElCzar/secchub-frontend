@@ -54,10 +54,21 @@ export class TeacherService {
   getAllTeachers(): Observable<TeacherDTO[]> {
     // Primero intentar el nuevo endpoint con información completa
     return this.http.get<TeacherDTO[]>(`${this.baseUrl}/teachers`).pipe(
-      catchError(error => {
-        console.warn('🔄 Endpoint /teachers no disponible, usando workload-report como fallback');
-        // Fallback al endpoint de workload-report
-        return this.http.get<TeacherDTO[]>(`${this.baseUrl}/workload-report`);
+      catchError(() => {
+        console.warn('🔄 /teachers no disponible, usando /api/planning/teachers/available como fallback');
+  return this.http.get<any[]>(`${environment.apiUrl}/api/planning/teachers/available?requiredHours=0`).pipe(
+          map(list => (list || []).map(item => ({
+            id: Number(item.id),
+            name: item.name || item.firstName || '',
+            lastName: item.lastName || item.last || '',
+            email: item.email || undefined,
+            maxHours: Number(item.maxHours || 0),
+            assignedHours: Number(item.assignedHours || 0),
+            availableHours: Number(item.availableHours || (item.maxHours ? (item.maxHours - (item.assignedHours || 0)) : 0)),
+            extraHours: Number(item.extraHours || 0),
+            contractType: item.contractType || undefined,
+            assignments: item.assignments || []
+          } as TeacherDTO))))
       })
     );
   }

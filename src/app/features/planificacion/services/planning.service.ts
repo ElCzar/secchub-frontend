@@ -376,9 +376,28 @@ export class PlanningService {
     console.log('Datos preparados para backend:', preparedData);
     
     return this.http.post<ClassScheduleDTO>(`${this.baseUrl}/classes/${classId}/schedules`, preparedData).pipe(
+      switchMap(response => {
+        // Si el backend ya devolvió el nombre del aula, devolver tal cual
+        if (response.classroomRoom) {
+          return of(response);
+        }
+
+        // Si solo devolvió classroomId, intentar enriquecer con el nombre
+        if (response.classroomId) {
+          return this.classroomService.getClassroomById(Number(response.classroomId)).pipe(
+            map(classroom => ({ ...response, classroomRoom: classroom.name, classroomName: classroom.name } as ClassScheduleDTO)),
+            catchError(err => {
+              console.warn('No se pudo obtener aula para enriquecer respuesta de creación:', err);
+              return of(response);
+            })
+          );
+        }
+
+        return of(response);
+      }),
       tap(response => {
         console.log('=== HORARIO ASIGNADO EXITOSAMENTE ===');
-        console.log('Respuesta:', response);
+        console.log('Respuesta enriquecida:', response);
       }),
       catchError(error => {
         console.error('=== ERROR AL ASIGNAR HORARIO ===');
@@ -399,21 +418,46 @@ export class PlanningService {
     console.log(`=== OBTENIENDO HORARIOS DE CLASE ${classId} ===`);
     
     return this.http.get<ClassScheduleDTO[]>(`${this.baseUrl}/classes/${classId}/schedules`).pipe(
-      map(schedules => {
+      // Enriquecer cada schedule con el nombre del aula si el backend solo devuelve classroomId
+      switchMap(schedules => {
         console.log(`Horarios obtenidos para clase ${classId}:`, schedules);
-        
-        // Normalizar los datos para compatibilidad con el frontend
-        return schedules.map(schedule => ({
-          ...schedule,
-          // Convertir día del formato backend (Monday) a frontend (LUN)
-          day: this.classroomService.mapDayToFrontendFormat(schedule.day),
-          // Mapear modalidad para el frontend
-          modality: schedule.modalityName,
-          // Mapear información del aula para el frontend
-          room: schedule.classroomRoom,
-          // Mapear tipo de aula para el frontend
-          roomType: schedule.classroomTypeName
-        }));
+
+        if (!schedules || schedules.length === 0) {
+          return of([] as ClassScheduleDTO[]);
+        }
+
+        // Mejor: obtener todas las aulas una sola vez y mapear localmente por ID
+        return this.classroomService.getAllClassrooms().pipe(
+          map(classrooms => {
+            const classroomMap = new Map<number, string>();
+            classrooms.forEach(c => classroomMap.set(c.id, c.name));
+
+            // Normalizar los datos para compatibilidad con el frontend
+            return schedules.map(schedule => ({
+              ...schedule,
+              // Convertir día del formato backend (Monday) a frontend (LUN)
+              day: this.classroomService.mapDayToFrontendFormat(schedule.day),
+              // Mapear modalidad para el frontend (usar modalityName o mapear modalityId)
+              modality: schedule.modalityName || this.classroomService.mapModalityIdToFrontendName(schedule.modalityId || 1),
+              // Mapear información del aula para el frontend usando el mapa local
+              room: schedule.classroomRoom || (schedule.classroomId ? (classroomMap.get(Number(schedule.classroomId)) || '') : ''),
+              classroomRoom: schedule.classroomRoom || (schedule.classroomId ? (classroomMap.get(Number(schedule.classroomId)) || '') : ''),
+              // Mapear tipo de aula para el frontend
+              roomType: schedule.classroomTypeName
+            } as ClassScheduleDTO));
+          }),
+          catchError(err => {
+            console.warn('Error cargando aulas para enriquecimiento:', err);
+            // Fallback: mapear sin enriquecimiento
+            return of(schedules.map(schedule => ({
+              ...schedule,
+              day: this.classroomService.mapDayToFrontendFormat(schedule.day),
+              modality: schedule.modalityName || this.classroomService.mapModalityIdToFrontendName(schedule.modalityId || 1),
+              room: schedule.classroomRoom || '',
+              roomType: schedule.classroomTypeName
+            } as ClassScheduleDTO)));
+          })
+        );
       }),
       tap(schedules => {
         console.log(`Horarios normalizados para clase ${classId}:`, schedules);
@@ -423,7 +467,7 @@ export class PlanningService {
         console.error('Error:', error);
         console.error('Status:', error.status);
         console.error('Mensaje:', error.message);
-        return [];
+        return of([] as ClassScheduleDTO[]);
       })
     );
   }
@@ -458,8 +502,25 @@ export class PlanningService {
     console.log('Datos para actualizar:', scheduleData);
     
     return this.http.put<ClassScheduleDTO>(`${this.baseUrl}/schedules/${scheduleId}`, scheduleData).pipe(
+      switchMap(response => {
+        if (response.classroomRoom) {
+          return of(response);
+        }
+
+        if (response.classroomId) {
+          return this.classroomService.getClassroomById(Number(response.classroomId)).pipe(
+            map(classroom => ({ ...response, classroomRoom: classroom.name, classroomName: classroom.name } as ClassScheduleDTO)),
+            catchError(err => {
+              console.warn('No se pudo obtener aula para enriquecer respuesta de actualización:', err);
+              return of(response);
+            })
+          );
+        }
+
+        return of(response);
+      }),
       tap(response => {
-        console.log(`Horario ${scheduleId} actualizado exitosamente:`, response);
+        console.log(`Horario ${scheduleId} actualizado exitosamente (enriquecido):`, response);
       }),
       catchError(error => {
         console.error(`=== ERROR AL ACTUALIZAR HORARIO ${scheduleId} ===`);
