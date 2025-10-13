@@ -1006,8 +1006,23 @@ export class PlanningService {
    * Obtener docentes asignados a una clase
    */
   getAssignedTeachers(classId: number): Observable<TeacherDTO[]> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
-    return this.http.get<TeacherDTO[]>(`${assignmentUrl}/class/${classId}/teachers`).pipe(
+    // Usar el endpoint real del módulo de integración
+    const assignmentUrl = `${environment.apiUrl}/teachers/classes/class/${classId}`;
+    return this.http.get<any[]>(assignmentUrl).pipe(
+      map(teacherClassList => {
+        // Convertir TeacherClassResponseDTO a TeacherDTO
+        return teacherClassList.map(tc => ({
+          id: tc.teacherId,
+          name: tc.teacherName || 'Docente',
+          lastName: tc.teacherLastName || '',
+          email: tc.teacherEmail || '',
+          maxHours: tc.teacherMaxHours || 40,
+          assignedHours: tc.workHours || 0,
+          availableHours: (tc.teacherMaxHours || 40) - (tc.workHours || 0),
+          extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+          contractType: tc.teacherContractType || 'N/A'
+        }));
+      }),
       tap(teachers => console.log(`👨‍🏫 Docentes asignados a clase ${classId}:`, teachers)),
       catchError(error => {
         console.error(`❌ Error obteniendo docentes de clase ${classId}:`, error);
@@ -1020,19 +1035,48 @@ export class PlanningService {
    * Asignar un docente a una clase
    */
   assignTeacherToClass(classId: number, teacherId: number, workHours: number, observation?: string): Observable<TeacherDTO> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
-    let params = new HttpParams()
-      .set('teacherId', teacherId.toString())
-      .set('classId', classId.toString())
-      .set('workHours', workHours.toString());
+    // Usar el endpoint real del módulo de integración en lugar del mock
+    const assignmentUrl = `${environment.apiUrl}/teachers/classes`;
     
-    if (observation) {
-      params = params.set('observation', observation);
-    }
+    const requestBody = {
+      teacherId: teacherId,
+      classId: classId,
+      workHours: workHours,
+      observation: observation || `Asignado desde planificación - ${new Date().toLocaleString()}`
+    };
 
-    console.log(`🎯 Asignando docente ${teacherId} a clase ${classId} con ${workHours} horas`);
+    console.log(`🎯 Asignando docente ${teacherId} a clase ${classId} con ${workHours} horas usando endpoint real`);
+    console.log('Request body:', requestBody);
     
-    return this.http.post<TeacherDTO>(`${assignmentUrl}/assign`, null, { params }).pipe(
+    return this.http.post<any>(`${assignmentUrl}`, requestBody).pipe(
+      switchMap(() => {
+        // Después de crear la asignación, obtener información del docente desde el servicio de administración
+        const teacherUrl = `${environment.apiUrl}/api/admin/teachers/${teacherId}`;
+        return this.http.get<any>(teacherUrl).pipe(
+          map(teacherInfo => ({
+            id: teacherId,
+            name: teacherInfo.name || 'Docente',
+            lastName: teacherInfo.lastName || '',
+            email: teacherInfo.email || '',
+            maxHours: teacherInfo.maxHours || 40,
+            assignedHours: workHours,
+            availableHours: (teacherInfo.maxHours || 40) - workHours,
+            extraHours: 0,
+            contractType: teacherInfo.contractType || 'N/A'
+          })),
+          catchError(() => of({
+            id: teacherId,
+            name: 'Docente',
+            lastName: 'Asignado',
+            email: '',
+            maxHours: 40,
+            assignedHours: workHours,
+            availableHours: 40 - workHours,
+            extraHours: 0,
+            contractType: 'N/A'
+          }))
+        );
+      }),
       tap(response => console.log('✅ Docente asignado exitosamente:', response)),
       catchError(error => {
         console.error('❌ Error asignando docente:', error);

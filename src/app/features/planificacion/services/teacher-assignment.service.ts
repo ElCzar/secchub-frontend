@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, forkJoin } from 'rxjs';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface TeacherAssignmentDTO {
@@ -103,7 +104,28 @@ export class TeacherAssignmentService {
    * Obtener profesores asignados a una clase
    */
   getTeachersAssignedToClass(classId: number): Observable<TeacherDTO[]> {
-    return this.http.get<TeacherDTO[]>(`${this.baseUrl}/class/${classId}/teachers`);
+    // Usar el endpoint real del módulo de integración que ya incluye datos del teacher
+    const integrationUrl = `${environment.apiUrl}/teachers/classes/class/${classId}`;
+    return this.http.get<any[]>(integrationUrl).pipe(
+      map((teacherClassList: any[]) => {
+        return teacherClassList.map(tc => ({
+          id: tc.teacherId,
+          name: tc.teacherName || 'Docente',
+          lastName: tc.teacherLastName || '',
+          email: tc.teacherEmail || '',
+          maxHours: tc.teacherMaxHours || 40,
+          assignedHours: tc.workHours || 0,
+          availableHours: (tc.teacherMaxHours || 40) - (tc.workHours || 0),
+          extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+          contractType: tc.teacherContractType || 'N/A'
+        }));
+      }),
+      tap(teachers => console.log(`👨‍🏫 Docentes asignados desde backend (con nombres):`, teachers)),
+      catchError(error => {
+        console.error(`❌ Error obteniendo docentes de clase ${classId}:`, error);
+        return of([]); // Retornar array vacío en caso de error
+      })
+    );
   }
 
   /**
