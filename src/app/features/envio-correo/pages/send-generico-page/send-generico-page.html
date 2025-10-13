@@ -76,9 +76,15 @@
         ></textarea>
         <div class="buttons-container">
           @if (isAdmin()) {
-            <button class="btn btn--secondary" type="button" (click)="saveDraft()" [disabled]="emailForm.invalid">Guardar mensaje</button>
+            <button class="btn btn--secondary" type="button" (click)="saveDraft()" [disabled]="emailForm.invalid || isSendingEmail">Guardar mensaje</button>
           }
-          <button class="btn btn--primary" type="button" (click)="send()" [disabled]="emailForm.invalid">Enviar</button>
+          <button class="btn btn--primary" type="button" (click)="send()" [disabled]="emailForm.invalid || isSendingEmail">
+            @if (isSendingEmail) {
+              <span>Enviando...</span>
+            } @else {
+              <span>Enviar</span>
+            }
+          </button>
         </div>
       </div>
       @if (emailMessage.invalid && emailMessage.touched) {

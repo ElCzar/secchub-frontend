@@ -24,6 +24,7 @@ export class SendGenericoPage implements OnInit {
   templateName = '';
   emailTemplateId = '';
   currentUser: DecodedToken | null = null;
+  isSendingEmail = false;
 
   constructor(
     private readonly route: ActivatedRoute, 
@@ -82,15 +83,25 @@ export class SendGenericoPage implements OnInit {
   }
 
   send() {
-    if (this.isFormValid()) {
-      this.emailService.sendEmail(this.emailSendRequest).subscribe((response) => {
-        if (response.status === 200) {
-          alert('Correo enviado exitosamente.');
-        } else {
-          alert('Error al enviar el correo.');
+    if (this.isFormValid() && !this.isSendingEmail) {
+      this.isSendingEmail = true;
+      
+      this.emailService.sendEmail(this.emailSendRequest).subscribe({
+        next: (response) => {
+          this.isSendingEmail = false;
+          if (response.status === 200) {
+            alert('Correo enviado exitosamente.');
+          } else {
+            alert('Error al enviar el correo.');
+          }
+        },
+        error: (error) => {
+          this.isSendingEmail = false;
+          console.error('Error sending email:', error);
+          alert('Error al enviar el correo. Por favor intente nuevamente.');
         }
       });
-    } else {
+    } else if (!this.isFormValid()) {
       alert('Por favor complete todos los campos obligatorios.');
     }
   }
