@@ -1,0 +1,76 @@
+// =================================
+// Registrar Page Layout Styles
+// =================================
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.titulo-pagina {
+  font-size: var(--fs-title, 30px);
+  color: var(--brand-azul);
+  margin-bottom: 8px;
+  margin-left: 200px; /* Ajuste para el sidebar */
+  padding-bottom: 8px;
+  font-weight: 700;
+}
+
+.subtitulo-pagina {
+  font-size: var(--fs-subtitle, 16px);
+  color: var(--text-600, #6c757d);
+  margin-bottom: 24px;
+  margin-left: 200px;
+  font-style: italic;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+.sidebar {
+  position: sticky; 
+  top: 16px;
+}
+
+.main-content-container {
+  margin-left: 280px; /* Espacio para el sidebar fijo */
+}
+
+.content {
+  display: grid;
+  gap: 16px;
+  max-width: 800px; /* Ancho máximo para el formulario */
+  margin: 0 auto; /* Centrar el formulario */
+}
+
+.hr-line {
+  height: 2px;
+  background: var(--border, #cfd6e4);
+  margin-bottom: 24px;
+  margin-left: 200px;
+}
+
+// =================================
+// Responsive Design
+// =================================
+
+@media (max-width: 768px) {
+  .titulo-pagina,
+  .subtitulo-pagina,
+  .hr-line {
+    margin-left: 0;
+  }
+  
+  .main-content-container {
+    margin-left: 0;
+  }
+  
+  .sidebar {
+    position: fixed;
+    z-index: 1000;
+  }
+}

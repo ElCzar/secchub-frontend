@@ -1,0 +1,175 @@
+<div class="register-form-container">
+
+  <!-- Messages -->
+  <div *ngIf="showSuccessMessage" class="alert alert-success" role="alert">
+    <i class="icon-check-circle" aria-hidden="true"></i>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="showErrorMessage" class="alert alert-error" role="alert">
+    <i class="icon-error-circle" aria-hidden="true"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Formulario Simplificado -->
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form" novalidate>
+    
+    <!-- Datos Personales Section -->
+    <div class="form-section">
+      <h2 class="section-title">Datos Personales</h2>
+      
+      <div class="form-row">
+        <div class="form-field">
+          <label for="name" class="field-label">Nombre *</label>
+          <input 
+            id="name"
+            type="text" 
+            class="form-input"
+            [class.error]="isFieldInvalid('name')"
+            formControlName="name"
+            placeholder="Ingrese el nombre"
+            autocomplete="given-name">
+          <div *ngIf="isFieldInvalid('name')" class="field-error">
+            {{ getFieldErrorMessage('name') }}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="lastName" class="field-label">Apellido *</label>
+          <input 
+            id="lastName"
+            type="text" 
+            class="form-input"
+            [class.error]="isFieldInvalid('lastName')"
+            formControlName="lastName"
+            placeholder="Ingrese el apellido"
+            autocomplete="family-name">
+          <div *ngIf="isFieldInvalid('lastName')" class="field-error">
+            {{ getFieldErrorMessage('lastName') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="email" class="field-label">Correo Electrónico *</label>
+        <input 
+          id="email"
+          type="email" 
+          class="form-input"
+          [class.error]="isFieldInvalid('email')"
+          formControlName="email"
+          placeholder="correo@universidad.edu.co"
+          autocomplete="email">
+        <div *ngIf="isFieldInvalid('email')" class="field-error">
+          {{ getFieldErrorMessage('email') }}
+        </div>
+        <small class="field-note">
+          El correo electrónico será usado como nombre de usuario para el login
+        </small>
+      </div>
+    </div>
+
+    <!-- Datos de Cuenta Section -->
+    <div class="form-section">
+      <h2 class="section-title">Contraseña</h2>
+      
+      <div class="form-row">
+        <div class="form-field">
+          <label for="password" class="field-label">Contraseña *</label>
+          <input 
+            id="password"
+            type="password" 
+            class="form-input"
+            [class.error]="isFieldInvalid('password')"
+            formControlName="password"
+            placeholder="Mínimo 8 caracteres"
+            autocomplete="new-password">
+          <div *ngIf="isFieldInvalid('password')" class="field-error">
+            {{ getFieldErrorMessage('password') }}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="confirmPassword" class="field-label">Confirmar Contraseña *</label>
+          <input 
+            id="confirmPassword"
+            type="password" 
+            class="form-input"
+            [class.error]="isFieldInvalid('confirmPassword') || hasPasswordMismatch"
+            formControlName="confirmPassword"
+            placeholder="Repita la contraseña"
+            autocomplete="new-password">
+          <div *ngIf="isFieldInvalid('confirmPassword')" class="field-error">
+            {{ getFieldErrorMessage('confirmPassword') }}
+          </div>
+          <div *ngIf="hasPasswordMismatch" class="field-error">
+            Las contraseñas no coinciden
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rol y Sección Section -->
+    <div class="form-section">
+      <h2 class="section-title">Rol y Asignación</h2>
+      
+      <div class="form-field">
+        <label for="role" class="field-label">Rol *</label>
+        <select 
+          id="role"
+          class="form-select"
+          [class.error]="isFieldInvalid('role')"
+          formControlName="role">
+          <option value="" disabled>Seleccione el rol del usuario</option>
+          <option *ngFor="let role of userRoles" [value]="role.id">
+            {{ role.name }}
+          </option>
+        </select>
+        <div *ngIf="isFieldInvalid('role')" class="field-error">
+          {{ getFieldErrorMessage('role') }}
+        </div>
+      </div>
+
+      <!-- Section Name - Solo visible si es Jefe de Sección -->
+      <div *ngIf="role?.value === 'section_head'" class="form-field">
+        <label for="sectionName" class="field-label">Nombre de la Sección *</label>
+        <input 
+          id="sectionName"
+          type="text" 
+          class="form-input"
+          [class.error]="isFieldInvalid('sectionName')"
+          formControlName="sectionName"
+          placeholder="Ej: Ingeniería de Sistemas"
+          autocomplete="off">
+        <div *ngIf="isFieldInvalid('sectionName')" class="field-error">
+          {{ getFieldErrorMessage('sectionName') }}
+        </div>
+        <small class="field-note">
+          Se creará una nueva sección con este nombre y se asignará al usuario como jefe.
+        </small>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="isSubmitDisabled">
+        <span *ngIf="isLoading" class="loading-spinner"></span>
+        <i *ngIf="!isLoading" class="icon-user-plus" aria-hidden="true"></i>
+        {{ isLoading ? 'Registrando...' : 'Registrar Usuario' }}
+      </button>
+
+      <button 
+        type="button" 
+        class="btn btn-secondary"
+        (click)="registerForm.reset(); initializeForm()"
+        [disabled]="isLoading">
+        <i class="icon-refresh" aria-hidden="true"></i>
+        Limpiar Formulario
+      </button>
+    </div>
+
+  </form>
+</div>
