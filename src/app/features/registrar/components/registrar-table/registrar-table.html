@@ -1,16 +1,5 @@
 <div class="register-form-container">
 
-  <!-- Messages -->
-  <div *ngIf="showSuccessMessage" class="alert alert-success" role="alert">
-    <i class="icon-check-circle" aria-hidden="true"></i>
-    {{ successMessage }}
-  </div>
-
-  <div *ngIf="showErrorMessage" class="alert alert-error" role="alert">
-    <i class="icon-error-circle" aria-hidden="true"></i>
-    {{ errorMessage }}
-  </div>
-
   <!-- Formulario Simplificado -->
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form" novalidate>
     
@@ -173,3 +162,11 @@
 
   </form>
 </div>
+
+<!-- Popup de Confirmación -->
+<app-pop-confimacion
+  [isVisible]="showConfirmationPopup"
+  [result]="registrationResult"
+  (closeModal)="onCloseConfirmation()"
+  (retryRegistration)="onRetryRegistration()">
+</app-pop-confimacion>

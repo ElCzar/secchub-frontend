@@ -4,21 +4,28 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { RegisterService } from '../../services/register.service';
 import { UserRegisterRequestDTO, UserCreatedResponse } from '../../models/user.models';
 import { SectionRegisterRequestDTO, SectionResponseDTO } from '../../models/section.models';
+import { PopConfimacion } from '../pop-confimacion/pop-confimacion';
+
+export interface RegistrationResult {
+  success: boolean;
+  message: string;
+  details?: string;
+}
 
 @Component({
   selector: 'app-registrar-table',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PopConfimacion],
   templateUrl: './registrar-table.html',
   styleUrl: './registrar-table.scss'
 })
 export class RegistrarTableComponent implements OnInit {
   registerForm!: FormGroup;
   isLoading = false;
-  showSuccessMessage = false;
-  showErrorMessage = false;
-  errorMessage = '';
-  successMessage = '';
+  
+  // Popup de confirmación
+  showConfirmationPopup = false;
+  registrationResult: RegistrationResult | null = null;
 
   // Opciones para los selects
   userRoles = [
@@ -78,7 +85,6 @@ export class RegistrarTableComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid && !this.isLoading) {
       this.isLoading = true;
-      this.hideMessages();
 
       const formValue = this.registerForm.value;
       const role = formValue.role;
@@ -144,15 +150,16 @@ export class RegistrarTableComponent implements OnInit {
 
   private handleSuccess(message: string): void {
     this.isLoading = false;
-    this.successMessage = message;
-    this.showSuccessMessage = true;
+    this.registrationResult = {
+      success: true,
+      message: message,
+      details: 'El usuario ha sido creado exitosamente en el sistema.'
+    };
+    this.showConfirmationPopup = true;
+    
+    // Limpiar formulario
     this.registerForm.reset();
     this.initializeForm();
-    
-    // Ocultar mensaje después de 5 segundos
-    setTimeout(() => {
-      this.showSuccessMessage = false;
-    }, 5000);
   }
 
   private handleError(message: string, error: any): void {
@@ -160,24 +167,32 @@ export class RegistrarTableComponent implements OnInit {
     console.error(message, error);
     
     let errorMsg = message;
+    let details = 'Por favor, revise los datos e intente nuevamente.';
+    
     if (error?.error?.message) {
-      errorMsg += ': ' + error.error.message;
+      details = error.error.message;
     } else if (error?.message) {
-      errorMsg += ': ' + error.message;
+      details = error.message;
     }
     
-    this.errorMessage = errorMsg;
-    this.showErrorMessage = true;
-    
-    // Ocultar mensaje después de 8 segundos
-    setTimeout(() => {
-      this.showErrorMessage = false;
-    }, 8000);
+    this.registrationResult = {
+      success: false,
+      message: errorMsg,
+      details: details
+    };
+    this.showConfirmationPopup = true;
   }
 
-  private hideMessages(): void {
-    this.showSuccessMessage = false;
-    this.showErrorMessage = false;
+  // Métodos para manejar el popup
+  onCloseConfirmation(): void {
+    this.showConfirmationPopup = false;
+    this.registrationResult = null;
+  }
+
+  onRetryRegistration(): void {
+    this.showConfirmationPopup = false;
+    this.registrationResult = null;
+    // El formulario mantiene los datos para que el usuario pueda corregir y reintentar
   }
 
   private markAllFieldsAsTouched(): void {

@@ -1,0 +1,112 @@
+<!-- Backdrop del Modal -->
+<div 
+  *ngIf="isVisible" 
+  class="modal-backdrop"
+  (click)="onBackdropClick($event)"
+  (keydown.escape)="onClose()"
+  role="dialog"
+  aria-modal="true"
+  tabindex="-1"
+  [attr.aria-label]="result?.success ? 'Registro exitoso' : 'Error en registro'">
+  
+  <!-- Modal Container -->
+  <div class="modal-container" 
+       (click)="onModalClick($event)"
+       (keydown)="onModalClick($event)">
+    
+    <!-- Header del Modal -->
+    <div class="modal-header">
+      <div class="modal-icon">
+        <!-- Icono de éxito -->
+        <div *ngIf="result?.success" class="icon-success">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#10B981"/>
+            <path d="m9 12 2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        
+        <!-- Icono de error -->
+        <div *ngIf="!result?.success" class="icon-error">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="#EF4444"/>
+            <path d="m15 9-6 6m0-6 6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Botón de cerrar -->
+      <button 
+        type="button" 
+        class="modal-close"
+        (click)="onClose()"
+        aria-label="Cerrar modal">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="m18 6-12 12m0-12 12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido del Modal -->
+    <div class="modal-content">
+      
+      <!-- Título -->
+      <h2 class="modal-title">
+        {{ result?.success ? '¡Registro Exitoso!' : 'Error en el Registro' }}
+      </h2>
+      
+      <!-- Mensaje principal -->
+      <p class="modal-message">
+        {{ result?.message }}
+      </p>
+      
+      <!-- Detalles adicionales (si existen) -->
+      <div *ngIf="result?.details" class="modal-details">
+        <p class="details-text">{{ result?.details }}</p>
+      </div>
+      
+    </div>
+
+    <!-- Acciones del Modal -->
+    <div class="modal-actions">
+      
+      <!-- Botón para caso exitoso -->
+      <ng-container *ngIf="result?.success">
+        <button 
+          type="button" 
+          class="btn btn-primary"
+          (click)="onClose()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Continuar
+        </button>
+      </ng-container>
+      
+      <!-- Botones para caso de error -->
+      <ng-container *ngIf="!result?.success">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="onClose()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="m18 6-12 12m0-12 12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Cancelar
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn-primary"
+          (click)="onRetry()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m21 3-3 5h5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m3 21 3-5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Intentar Nuevamente
+        </button>
+      </ng-container>
+      
+    </div>
+  </div>
+</div>
