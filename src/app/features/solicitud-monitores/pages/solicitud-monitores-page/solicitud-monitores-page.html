@@ -37,12 +37,59 @@
     <!-- Botón de guardar cambios -->
     <div class="toolbar">
       <button class="btn btn--primary" (click)="guardarCambios()">Guardar cambios</button>
+      <button class="btn btn--secondary" (click)="enviarAAdministrador()">Enviar a administrador</button>
     </div>
 
-    <!-- Tabla principal de monitores -->
-    <app-monitores-table
-      [monitores]="filteredMonitores"
-      (update)="onMonitoresUpdate($event)">
-    </app-monitores-table>
+    <!-- Tabla 1: Monitores Administrativos -->
+    <button type="button" class="section-toggle" (click)="showAdminTable = !showAdminTable">
+      <span class="caret" [class.open]="showAdminTable">▸</span>
+      Monitores Administrativos
+    </button>
+    <div class="hr-line"></div>
+    <ng-container *ngIf="showAdminTable">
+      <app-monitores-table
+        [monitores]="adminMonitores"
+        [adminMode]="true"
+        [showMonitorAdministrativo]="false"
+        (update)="onMonitoresUpdate($event)">
+      </app-monitores-table>
+    </ng-container>
+
+    <!-- Tabla 2: Monitores Académicos (todas las columnas actuales excepto Monitor Administrativo) -->
+    <button type="button" class="section-toggle" (click)="showAcademicTable = !showAcademicTable">
+      <span class="caret" [class.open]="showAcademicTable">▸</span>
+      Monitores Académicos
+    </button>
+    <div class="hr-line"></div>
+    <ng-container *ngIf="showAcademicTable">
+      <app-monitores-table
+        [monitores]="nonAdminMonitores"
+        [adminMode]="false"
+        [showMonitorAdministrativo]="false"
+        (update)="onMonitoresUpdate($event)">
+      </app-monitores-table>
+    </ng-container>
   </main>
 </div>
+
+<!-- Popup de guardar cambios -->
+<app-pop-guardar-cambios 
+  [visible]="showSaveModal"
+  [isSuccess]="saveSuccess"
+  [successMessage]="saveSuccess ? 'Los cambios en los monitores se han guardado correctamente' : (cambiosCount === 0 ? 'No hay cambios de aceptación/rechazo para enviar.' : 'Envío realizado al administrador correctamente')"
+  [errorMessage]="'Error al guardar los cambios. Verifique la conexión e intente nuevamente.'"
+  (closed)="onSaveModalClosed()"
+  (retry)="onRetrySave()">
+</app-pop-guardar-cambios>
+
+<!-- Popup de confirmación de envío -->
+<app-pop-enviar-cambios 
+  [visible]="showSendModal"
+  [title]="'¿Seguro deseas enviar cambios al administrador?'"
+  [message]="'Una vez enviados, los cambios serán revisados por el administrador y no podrás editarlos hasta recibir una respuesta.'"
+  [cambiosCount]="cambiosCount"
+  [confirmText]="'Sí, enviar'"
+  [cancelText]="'Cancelar'"
+  (confirm)="onConfirmSend()"
+  (cancelled)="onCancelSend()">
+</app-pop-enviar-cambios>

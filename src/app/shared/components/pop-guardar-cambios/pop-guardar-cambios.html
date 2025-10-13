@@ -1,0 +1,20 @@
+<div *ngIf="visible" class="overlay" role="dialog" aria-modal="true" [attr.aria-label]="currentTitle" (keydown)="$event.key === 'Escape' && onClose()" tabindex="-1">
+  <div class="overlay__backdrop" (click)="onClose()"></div>
+  <div class="card" role="document">
+    <h2 class="title">{{ currentTitle }}</h2>
+    <div class="divider"></div>
+    <div class="body">
+      <div class="icon" [class.success-icon]="isSuccess" [class.error-icon]="!isSuccess">
+        {{ isSuccess ? '✓' : '⚠' }}
+      </div>
+      <p class="message">{{ currentMessage }}</p>
+    </div>
+    <div class="actions">
+      <button *ngIf="isSuccess" class="btn btn--primary" (click)="onClose()">{{ okText }}</button>
+      <div *ngIf="!isSuccess" class="error-actions">
+        <button class="btn btn--danger" (click)="onRetry()">{{ retryText }}</button>
+        <button class="btn btn--secondary" (click)="onClose()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>

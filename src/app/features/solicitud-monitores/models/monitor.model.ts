@@ -17,6 +17,7 @@ export interface Monitor {
   correo: string;
   antiguo: boolean;
   administrativo: boolean;
+  seccionAcademica?: string; // Nueva columna para administrativos
   horarios: HorarioMonitor[];
   seleccionado: boolean;
   showHorarios?: boolean; // Propiedad opcional para mostrar/ocultar horarios en la UI

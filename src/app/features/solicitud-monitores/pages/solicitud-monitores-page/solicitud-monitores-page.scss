@@ -6,7 +6,7 @@
 .page { 
     display: grid; 
     grid-template-columns: 280px 1fr; 
-    gap: 5px;
+    gap: 10px;
     transition: all 0.3s ease;
     margin: 0 !important;
     padding: 0 !important;
@@ -60,6 +60,21 @@
     background: var(--brand-azul);
     color: #fff;
     font-weight: 600;
+}
+
+/* Botón título desplegable */
+.section-toggle {
+    background: none;
+    border: none;
+    color: var(--brand-rojo);
+    font-weight: 700;
+    font-size: var(--fs-h2);
+    text-align: left;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* ==============================
@@ -196,3 +211,112 @@ app-sidebar-toggle-button {
         display: none; /* Ocultar sidebar en móviles */
     }
 }
+
+/* ==============================
+     Estilos de tabla (idénticos a MonitoresTable)
+     Se aplican a la primera tabla inline de esta página
+     ============================== */
+.table-container {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #fff;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.monitores-table {
+    width: 100%;
+    min-width: 1820px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.monitores-table thead {
+    background: #f3f6fa;
+    color: var(--brand-azul);
+    font-weight: 600;
+}
+
+.monitores-table thead th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--brand-azul);
+    white-space: normal;
+    line-height: 1.3;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fff;
+    vertical-align: middle;
+    border-bottom: 2px solid var(--border);
+}
+
+.monitores-table th,
+.monitores-table td {
+    /* Solo líneas horizontales: superior e inferior */
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-left: none;
+    border-right: none;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.monitores-table thead th:first-child,
+.monitores-table tbody td:first-child {
+    border-left: 0; /* lo maneja el borde exterior de la tabla */
+}
+
+.monitores-table thead th:last-child,
+.monitores-table tbody td:last-child {
+    border-right: 0; /* lo maneja el borde exterior de la tabla */
+}
+
+.monitores-table tbody tr:nth-child(even) td { background-color: #f9fafc; }
+.monitores-table tbody tr:hover td { background-color: #eef4fb; }
+
+/* Estados de fila */
+.row-accepted td {
+    background-color: #eaf7ee !important;
+    border-top-color: #b7e0c1;
+    border-bottom-color: #b7e0c1;
+}
+.row-rejected td {
+    background-color: #fdecea !important;
+    border-top-color: #f2c6c3;
+    border-bottom-color: #f2c6c3;
+}
+.row-accepted:hover td,
+.row-rejected:hover td { background-color: inherit; }
+
+/* Columna acciones y botones */
+.approval-column { width: 120px; text-align: center; }
+.row-approval { display: flex; gap: 8px; justify-content: center; align-items: center; }
+.btn-approve,.btn-reject {
+    width: 30px; height: 30px; border: none; border-radius: 6px; cursor: pointer;
+    font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.btn-approve { background: #2e7d32; }
+.btn-reject  { background: #c62828; }
+.btn-approve:hover,.btn-reject:hover { transform: scale(1.1); opacity: 0.9; }
+
+/* Expander/horarios */
+.expander-row td { background: #f8f9fa; padding: 0; border-top: none; border-bottom: none; }
+.monitores-table tr:has(app-horarios-monitores) td { padding: 0 !important; border-top: none; border-bottom: 1px solid var(--border); }
+.expander-row .expander-inner { padding: 8px 16px; display: flex; align-items: center; }
+.expander { background: none; border: none; padding: 0; cursor: pointer; font: inherit; color: var(--brand-azul); font-weight: 600; }
+.caret { font-size: 12px; margin-right: 8px; transition: transform 0.2s ease; display: inline-block; transform: rotate(0deg); }
+.caret.open { transform: rotate(90deg); }
+
+/* Inputs */
+.editable-cell { padding: 4px !important; }
+.table-input { width: 100%; min-width: 60px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: #fff; outline: none; transition: border-color .2s ease; text-align: center; }
+.table-input:focus { border-color: var(--brand-azul); box-shadow: 0 0 0 2px rgba(44,86,151,.15); }
+.total-horas { font-weight: 600; color: var(--brand-azul); text-align: center; }
