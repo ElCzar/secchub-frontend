@@ -20,7 +20,7 @@ export class AccesosRapidosAdmi {
     { label: 'Gestionar Materias', route: '/materias' },
     { label: 'Enviar formulario a carreras', route: 'envio-correo/programas' },
     { label: 'Enviar formulario monitores', route: 'envio-correo/monitores' },
-    { label: 'Ver y Editar Monitores', route: '/solicitud-monitores' },
+    { label: 'Ver y Editar Monitores', route: '/solicitud-monitores-admin' },
     { label: 'Cerrar sesión', route: '/' }
   ];
 

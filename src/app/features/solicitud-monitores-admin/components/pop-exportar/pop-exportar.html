@@ -1,0 +1,59 @@
+<div *ngIf="visible" class="overlay" role="dialog" aria-modal="true" [attr.aria-label]="title" (keydown)="$event.key === 'Escape' && onClose()" tabindex="-1">
+  <div class="overlay__backdrop" (click)="onClose()"></div>
+  <div class="modal-card" role="document">
+    <div class="modal-header">
+      <h2 class="modal-title">{{ title }}</h2>
+      <button type="button" class="close-btn" (click)="onClose()" title="Cerrar">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="table-container">
+        <table class="nomina-table">
+          <thead>
+            <tr>
+              <th>ID del estudiante</th>
+              <th>Documento de Identidad</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>No. Clase</th>
+              <th>Nombre Asignatura</th>
+              <th>Horas Semanales</th>
+              <th>Semanas</th>
+              <th>Total Horas</th>
+              <th>Celular</th>
+              <th>Celular Alterno</th>
+              <th>Correo Institucional</th>
+              <th>Correo Alterno</th>
+              <th>Dirección</th>
+              <th>ANTIGUO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let monitor of monitores">
+              <td>{{ monitor.id }}</td>
+              <td>{{ getDocumentoIdentidad(monitor) }}</td>
+              <td>{{ monitor.nombre }}</td>
+              <td>{{ monitor.apellido }}</td>
+              <td>{{ getNumeroClase(monitor) }}</td>
+              <td>{{ monitor.asignatura || 'Redes' }}</td>
+              <td>{{ monitor.horasSemanales }}</td>
+              <td>{{ monitor.semanas }}</td>
+              <td>{{ monitor.totalHoras }}</td>
+              <td>{{ getTelefono(monitor) }}</td>
+              <td>{{ getCelularInstitucional(monitor) }}</td>
+              <td>{{ monitor.correo }}</td>
+              <td>{{ getCorreoAlternativo(monitor) }}</td>
+              <td>{{ getDireccion(monitor) }}</td>
+              <td>{{ monitor.antiguo ? 'Sí' : 'No' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button type="button" class="btn btn--secondary" (click)="onClose()">Cancelar</button>
+      <button type="button" class="btn btn--primary" (click)="onExportar()">Exportar Nómina</button>
+    </div>
+  </div>
+</div>

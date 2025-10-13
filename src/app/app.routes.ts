@@ -12,6 +12,7 @@ import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccio
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
 import { ENVIO_CORREO_ROUTES } from './features/Envio-Correo/envio-correo.routes';
 import { SolicitudMonitoresPage } from './features/solicitud-monitores/pages/solicitud-monitores-page/solicitud-monitores-page';
+import { SolicitudMonitoresAdminPage } from './features/solicitud-monitores-admin/pages/solicitud-monitores-admin-page/solicitud-monitores-admin-page';
 
 export const routes: Routes = [
     {path: '',component: LoginPageComponent },
@@ -36,7 +37,9 @@ export const routes: Routes = [
 
     {path: 'envio-correo', children: ENVIO_CORREO_ROUTES},
 
-    {path: 'solicitud-monitores', component: SolicitudMonitoresPage}
+    {path: 'solicitud-monitores', component: SolicitudMonitoresPage},
+
+    {path: 'solicitud-monitores-admin', component: SolicitudMonitoresAdminPage}
 ];
 
 

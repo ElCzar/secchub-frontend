@@ -6,7 +6,7 @@
 
   <aside class="sidebar">
     <!-- Accesos rápidos permanente -->
-    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
   </aside>
 
   <main class="content">
@@ -45,7 +45,7 @@
     <!-- Botón de guardar cambios -->
     <div class="toolbar">
       <button class="btn btn--primary" (click)="guardarCambios()">Guardar cambios</button>
-      <button class="btn btn--secondary" (click)="enviarAAdministrador()">Enviar a administrador</button>
+      <button class="btn btn--secondary" (click)="exportarNomina()">Exportar nómina</button>
     </div>
 
     <!-- Tabla 1: Monitores Administrativos -->
@@ -84,20 +84,29 @@
 <app-pop-guardar-cambios 
   [visible]="showSaveModal"
   [isSuccess]="saveSuccess"
-  [successMessage]="saveSuccess ? 'Los cambios en los monitores se han guardado correctamente' : (cambiosCount === 0 ? 'No hay cambios de aceptación/rechazo para enviar.' : 'Envío realizado al administrador correctamente')"
+  [successMessage]="saveSuccess ? 'Los cambios en los monitores se han guardado correctamente' : (totalMonitoresActivos === 0 ? 'No hay monitores para exportar en la nómina.' : 'Nómina exportada correctamente')"
   [errorMessage]="'Error al guardar los cambios. Verifique la conexión e intente nuevamente.'"
   (closed)="onSaveModalClosed()"
   (retry)="onRetrySave()">
 </app-pop-guardar-cambios>
 
-<!-- Popup de confirmación de envío -->
+<!-- Popup de confirmación de exportar nómina -->
 <app-pop-enviar-cambios 
-  [visible]="showSendModal"
-  [title]="'¿Seguro deseas enviar cambios al administrador?'"
-  [message]="'Una vez enviados, los cambios serán revisados por el administrador y no podrás editarlos hasta recibir una respuesta.'"
-  [cambiosCount]="cambiosCount"
-  [confirmText]="'Sí, enviar'"
+  [visible]="showExportModal"
+  [title]="'¿Seguro deseas exportar la nómina de monitores?'"
+  [message]="'Se generará un archivo con la información de todos los monitores activos para el proceso de nómina.'"
+  [cambiosCount]="totalMonitoresActivos"
+  [confirmText]="'Sí, exportar'"
   [cancelText]="'Cancelar'"
-  (confirm)="onConfirmSend()"
-  (cancelled)="onCancelSend()">
+  (confirm)="onConfirmExport()"
+  (cancelled)="onCancelExport()">
 </app-pop-enviar-cambios>
+
+<!-- Popup de tabla de nómina -->
+<app-pop-exportar 
+  [visible]="showExportTable"
+  [monitores]="monitores"
+  [title]="'Nómina Monitores'"
+  (closed)="onCloseExportTable()"
+  (exportar)="onConfirmExportTable()">
+</app-pop-exportar>

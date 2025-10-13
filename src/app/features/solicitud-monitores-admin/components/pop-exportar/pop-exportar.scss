@@ -1,0 +1,225 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  padding: 20px;
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  .modal-card {
+    background: #fff;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 1400px;
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 2px solid var(--border);
+    background: #f8fafc;
+    border-radius: 12px 12px 0 0;
+
+    .modal-title {
+      color: var(--brand-azul);
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--text-500);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #e2e8f0;
+        color: var(--text-700);
+      }
+    }
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow: hidden;
+    padding: 0;
+
+    .table-container {
+      height: 100%;
+      overflow: auto;
+      max-height: 60vh;
+    }
+
+    .nomina-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 1200px;
+
+      thead {
+        position: sticky;
+        top: 0;
+        background: var(--brand-azul);
+        z-index: 10;
+
+        th {
+          color: white;
+          font-weight: 600;
+          padding: 12px 8px;
+          text-align: center;
+          border-right: 1px solid rgba(255,255,255,0.2);
+          white-space: nowrap;
+          font-size: 13px;
+
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          &:nth-child(even) {
+            background: #f8fafc;
+          }
+
+          &:hover {
+            background: #e2e8f0;
+          }
+
+          td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            color: var(--text-700);
+            font-size: 13px;
+            white-space: nowrap;
+
+            &:last-child {
+              border-right: none;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: var(--fs-base);
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      min-width: 120px;
+
+      &--primary {
+        background: var(--brand-azul);
+        color: #fff;
+        border: 0;
+
+        &:hover {
+          background: #1e4a7d;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(44, 86, 151, 0.2);
+        }
+      }
+
+      &--secondary {
+        background: transparent;
+        color: var(--text-500);
+        border: 1px solid var(--border);
+
+        &:hover {
+          background: var(--muted);
+          color: var(--text-700);
+          border-color: var(--text-500);
+        }
+      }
+    }
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .overlay {
+    .modal-card {
+      width: 98%;
+      margin: 10px;
+    }
+
+    .nomina-table {
+      font-size: 12px;
+      
+      thead th {
+        padding: 10px 6px;
+        font-size: 12px;
+      }
+
+      tbody td {
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    padding: 10px;
+
+    .modal-header {
+      padding: 16px;
+
+      .modal-title {
+        font-size: 20px;
+      }
+    }
+
+    .modal-footer {
+      padding: 16px;
+      flex-direction: column;
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    .modal-body .table-container {
+      max-height: 50vh;
+    }
+  }
+}

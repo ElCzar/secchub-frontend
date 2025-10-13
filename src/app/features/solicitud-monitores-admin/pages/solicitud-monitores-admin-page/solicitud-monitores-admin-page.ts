@@ -2,22 +2,28 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Monitor } from '../../models/monitor.model';
-import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
+
 import { MonitoresTable } from '../../components/monitores-table/monitores-table';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { PopGuardarCambios } from '../../../../shared/components/pop-guardar-cambios/pop-guardar-cambios';
 import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambios/pop-enviar-cambios';
+import { PopExportar } from '../../components/pop-exportar/pop-exportar';
+import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
+import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
+
+
+
 
 @Component({
   selector: 'app-solicitud-monitores-page',
-  imports: [CommonModule, FormsModule, MonitoresTable, AccesosRapidosSeccion, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios],
-  templateUrl: './solicitud-monitores-page.html',
-  styleUrl: './solicitud-monitores-page.scss'
+  imports: [CommonModule, FormsModule, MonitoresTable, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios, PopExportar, AccesosRapidosAdmi],
+  templateUrl: './solicitud-monitores-admin-page.html',
+  styleUrl: './solicitud-monitores-admin-page.scss'
 })
 
-export class SolicitudMonitoresPage implements OnInit {
+export class SolicitudMonitoresAdminPage implements OnInit {
   monitores: Monitor[] = [];
   filteredMonitores: Monitor[] = [];
   adminMonitores: Monitor[] = [];
@@ -37,8 +43,9 @@ export class SolicitudMonitoresPage implements OnInit {
   showSaveModal = false;
   saveSuccess = true;
 
-  // Popup enviar cambios
-  showSendModal = false;
+  // Popup exportar nómina
+  showExportModal = false;
+  showExportTable = false;
 
   constructor(private readonly monitoresService: SolicitudMonitoresService) {}
 
@@ -77,20 +84,20 @@ export class SolicitudMonitoresPage implements OnInit {
     });
   }
 
-  enviarAAdministrador() {
-    const totalSeleccionados = this.monitores.filter(m => m.estado === 'aceptado' || m.estado === 'rechazado').length;
-    if (totalSeleccionados === 0) {
+  exportarNomina() {
+    const totalMonitoresActivos = this.monitores.length;
+    if (totalMonitoresActivos === 0) {
       this.saveSuccess = false;
       this.showSaveModal = true;
       return;
     }
     
-    this.showSendModal = true;
+    this.showExportTable = true;
   }
 
-  // Método para obtener el conteo de cambios
-  get cambiosCount() {
-    return this.monitores.filter(m => m.estado === 'aceptado' || m.estado === 'rechazado').length;
+  // Método para obtener el total de monitores activos
+  get totalMonitoresActivos() {
+    return this.monitores.length;
   }
 
   // Handlers filtros
@@ -149,19 +156,34 @@ export class SolicitudMonitoresPage implements OnInit {
     this.guardarCambios();
   }
 
-  // Métodos para el popup de enviar cambios
-  onConfirmSend() {
-    this.showSendModal = false;
+  // Métodos para el popup de exportar nómina
+  onConfirmExport() {
+    this.showExportModal = false;
     
-    // Simular envío
+    // Simular exportación de nómina
     setTimeout(() => {
       this.saveSuccess = true;
       this.showSaveModal = true;
     }, 300);
   }
 
-  onCancelSend() {
-    this.showSendModal = false;
+  onCancelExport() {
+    this.showExportModal = false;
+  }
+
+  // Métodos para el popup de tabla de exportación
+  onCloseExportTable() {
+    this.showExportTable = false;
+  }
+
+  onConfirmExportTable() {
+    this.showExportTable = false;
+    
+    // Simular exportación de archivo
+    setTimeout(() => {
+      this.saveSuccess = true;
+      this.showSaveModal = true;
+    }, 300);
   }
 }
 
