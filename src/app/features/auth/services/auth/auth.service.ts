@@ -14,7 +14,7 @@ export class AuthService {
 
   private readonly baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private authState: AuthStateService) { }
+  constructor(private readonly http: HttpClient, private readonly authState: AuthStateService) { }
 
   login(dto: LoginDto): Observable<AuthTokenDto> {
     return this.http.post<AuthTokenDto>(`${this.baseUrl}/auth/login`, dto).pipe(
