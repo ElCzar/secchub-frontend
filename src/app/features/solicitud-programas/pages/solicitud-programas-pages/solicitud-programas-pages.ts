@@ -489,8 +489,20 @@ export class SolicitudProgramasPages implements OnInit {
     };
     
     const mappedSchedules = validSchedules.map((schedule, index) => {
+      // 🔧 DEBUG: Información detallada del mapeo de días
+      const originalDay = schedule.day;
+      const upperDay = schedule.day?.toUpperCase();
+      const mappedDay = dayMap[upperDay];
+      
+      console.log(`🔍 DEBUG Día ${index + 1}:`, {
+        original: originalDay,
+        uppercase: upperDay, 
+        encontradoEnMapa: mappedDay,
+        mapaCompleto: dayMap
+      });
+
       const mappedSchedule = {
-        day: dayMap[schedule.day?.toUpperCase()] || schedule.day || 'MONDAY',
+        day: mappedDay || schedule.day || 'MONDAY',
         startTime: schedule.startTime,
         endTime: schedule.endTime,
         modalityId: modalityMap[schedule.modality?.toUpperCase()] || 1, // Default: PRESENCIAL

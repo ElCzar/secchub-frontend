@@ -441,14 +441,24 @@ export class ClassroomService {
    */
   mapDayToFrontendFormat(backendDay: string): string {
     // Mapeo entre valores del backend y abreviaturas del frontend
+    // ⚠️ CORREGIDO: Manejar tanto formato "Monday" como "MONDAY"
     const dayMap: { [key: string]: string } = {
+      // Formato Title Case (Monday, Tuesday, etc.)
       'Monday': 'LUN',
       'Tuesday': 'MAR',
       'Wednesday': 'MIE',
       'Thursday': 'JUE',
       'Friday': 'VIE',
       'Saturday': 'SAB',
-      'Sunday': 'DOM'
+      'Sunday': 'DOM',
+      // Formato UPPER CASE (MONDAY, TUESDAY, etc.)
+      'MONDAY': 'LUN',
+      'TUESDAY': 'MAR',
+      'WEDNESDAY': 'MIE',
+      'THURSDAY': 'JUE',
+      'FRIDAY': 'VIE',
+      'SATURDAY': 'SAB',
+      'SUNDAY': 'DOM'
     };
     
     const result = dayMap[backendDay];

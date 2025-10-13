@@ -196,6 +196,8 @@ export class SolicitudProgramasService {
       'SATURDAY': 'SAB',
       'SUNDAY': 'DOM'
     };
+    
+    console.log(`🔄 Mapeando día del backend: "${day}" → "${dayMap[day?.toUpperCase()] || day}"`);
     return dayMap[day?.toUpperCase()] || day;
   }
 }

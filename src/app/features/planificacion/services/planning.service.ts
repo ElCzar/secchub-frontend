@@ -711,14 +711,25 @@ export class PlanningService {
    */
   private mapDayFromBackend(day: string): string {
     const dayMap: { [key: string]: string } = {
+      // Formato Title Case (Monday, Tuesday, etc.)
       'Monday': 'LUN',
       'Tuesday': 'MAR', 
       'Wednesday': 'MIE',
       'Thursday': 'JUE',
       'Friday': 'VIE',
       'Saturday': 'SAB',
-      'Sunday': 'DOM'
+      'Sunday': 'DOM',
+      // Formato UPPER CASE (MONDAY, TUESDAY, etc.)
+      'MONDAY': 'LUN',
+      'TUESDAY': 'MAR',
+      'WEDNESDAY': 'MIE',
+      'THURSDAY': 'JUE',
+      'FRIDAY': 'VIE',
+      'SATURDAY': 'SAB',
+      'SUNDAY': 'DOM'
     };
+    
+    console.log(`🔄 Mapeando día del backend a frontend: "${day}" → "${dayMap[day] || day}"`);
     return dayMap[day] || day;
   }
 
