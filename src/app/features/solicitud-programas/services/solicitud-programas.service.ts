@@ -26,6 +26,11 @@ export interface AcademicRequestResponseDTO {
   requestDate: string;
   observation: string;
   schedules: RequestScheduleResponseDTO[];
+  
+  // Campos enriquecidos desde el backend
+  userName?: string;        // Nombre completo del usuario
+  courseName?: string;      // Nombre del curso
+  programName?: string;     // Nombre del programa
 }
 
 export interface RequestScheduleResponseDTO {
@@ -127,8 +132,8 @@ export class SolicitudProgramasService {
     
     return {
       id: request.id,
-      program: `Usuario ID: ${request.userId}`, // Temporal - necesita mapeo con información de usuario/sección
-      materia: `Curso ID: ${request.courseId}`, // Temporal - necesita obtener nombre del curso
+      program: request.programName || `Usuario ID: ${request.userId}`, // Usar programName si está disponible
+      materia: request.courseName || `Curso ID: ${request.courseId}`, // Usar courseName si está disponible  
       cupos: request.capacity,
       startDate: request.startDate,
       endDate: request.endDate,
