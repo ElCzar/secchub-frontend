@@ -1,7 +1,7 @@
 
 // Importaciones necesarias para el funcionamiento del componente y sus dependencias
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { Modality, newSchedule, RoomType, ScheduleRow } from '../../../features/programas/models/schedule.models';
 import { FormsModule } from '@angular/forms';
 
@@ -17,25 +17,43 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './schedules-table.component.html',
   styleUrls: ['./schedules-table.component.scss'],
 })
-export class SchedulesTableComponent {
+export class SchedulesTableComponent implements OnInit {
   /**
    * Lista de filas de horarios a mostrar en la tabla.
    * Se recibe como input desde el componente padre.
    */
-  @Input() rows: ScheduleRow[] = [];
+  @Input() 
+  set rows(value: ScheduleRow[]) {
+    // En modo de solo lectura, crear una copia para evitar mutaciones
+    this._rows = value || [];
+  }
+  get rows(): ScheduleRow[] {
+    return this._rows;
+  }
+  private _rows: ScheduleRow[] = [];
+
   /**
    * Evento emitido cuando se modifica la lista de horarios.
    */
   @Output() rowsChange = new EventEmitter<ScheduleRow[]>();
 
   /**
+   * Indica si el componente está en modo de solo lectura.
+   * Se detecta automáticamente si no hay listeners para rowsChange.
+   */
+  get isReadOnly(): boolean {
+    return this.rowsChange.observers.length === 0;
+  }
+
+  /**
    * Inicializa el componente asegurando que siempre haya al menos una fila vacía.
+   * Solo en modo editable (no solo lectura).
    */
   ngOnInit(): void {
-    // Siempre mostrar al menos una fila vacía
-    if (!this.rows || this.rows.length === 0) {
-      this.rows = [newSchedule()];
-      this.rowsChange.emit(this.rows);
+    // Solo mostrar fila vacía si está en modo editable
+    if (!this.isReadOnly && (!this._rows || this._rows.length === 0)) {
+      this._rows = [newSchedule()];
+      this.rowsChange.emit(this._rows);
     }
   }
 
@@ -66,8 +84,9 @@ export class SchedulesTableComponent {
    * Agrega una nueva fila de horario vacía a la tabla.
    */
   add(): void {
-    this.rows = [...this.rows, newSchedule()];
-    this.rowsChange.emit(this.rows);
+    if (this.isReadOnly) return;
+    this._rows = [...this._rows, newSchedule()];
+    this.rowsChange.emit(this._rows);
   }
 
   /**
@@ -76,13 +95,14 @@ export class SchedulesTableComponent {
    * @param i Índice de la fila a eliminar
    */
   remove(i: number): void {
-    if (this.rows.length === 1) {
+    if (this.isReadOnly) return;
+    if (this._rows.length === 1) {
       // Si es la única, resetea a vacía
-      this.rows = [newSchedule()];
+      this._rows = [newSchedule()];
     } else {
-      this.rows = this.rows.filter((_, idx) => idx !== i);
+      this._rows = this._rows.filter((_, idx) => idx !== i);
     }
-    this.rowsChange.emit(this.rows);
+    this.rowsChange.emit(this._rows);
   }
 
   /**
@@ -91,9 +111,10 @@ export class SchedulesTableComponent {
    * @param data Datos parciales a actualizar en la fila
    */
   patch(i: number, data: Partial<ScheduleRow>): void {
-    const copy = [...this.rows];
+    if (this.isReadOnly) return;
+    const copy = [...this._rows];
     copy[i] = { ...copy[i], ...data };
-    this.rows = copy;
+    this._rows = copy;
     this.rowsChange.emit(copy);
   }
 
