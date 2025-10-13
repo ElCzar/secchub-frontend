@@ -114,11 +114,115 @@ app-email-preview .email-preview, .email-preview {
 
   .form-row:nth-child(1) { grid-column: 1 / span 2; }
   .form-row:nth-child(2) { grid-column: 1 / span 2; }
+  .form-row:nth-child(3) { grid-column: 1 / span 2; } /* message-container */
   .signature-row { grid-column: 1 / span 2; }
-  .buttons { grid-column: 2 / 3; }
 }
 
 @media (max-width: 720px) {
   /* On small screens the sidebar becomes static so remove left padding */
   .page-with-sidebar { padding-left: 0; }
+}
+
+/* Form validation styles */
+.required {
+  color: #d73502;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #d73502;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border-color: #d73502;
+  box-shadow: 0 0 0 2px rgba(215, 53, 2, 0.1);
+}
+
+input.ng-valid.ng-touched,
+textarea.ng-valid.ng-touched {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
+}
+
+button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button:disabled:hover {
+  background-color: #9ca3af;
+}
+
+/* Message container and textarea wrapper styles */
+.message-container {
+  .textarea-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 4px 10px rgba(16,24,40,0.04);
+    overflow: hidden;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .08s ease;
+  }
+
+  .textarea-wrapper:focus-within {
+    border-color: var(--brand-azul);
+    box-shadow: 0 10px 30px rgba(44,86,151,0.12);
+    transform: translateY(-1px);
+  }
+
+  textarea {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    resize: none;
+    overflow: hidden;
+    padding: 1rem;
+    font-family: inherit;
+    line-height: 1.6;
+    transition: none;
+  }
+
+  textarea:focus {
+    border: none;
+    box-shadow: none;
+    outline: none;
+    transform: none;
+  }
+
+  .buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(249, 249, 249, 0.5);
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .buttons-container .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* Update validation styles for the new structure */
+.message-container .textarea-wrapper:has(textarea.ng-invalid.ng-touched) {
+  border-color: #d73502;
+  box-shadow: 0 0 0 2px rgba(215, 53, 2, 0.1);
+}
+
+.message-container .textarea-wrapper:has(textarea.ng-valid.ng-touched) {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
 }

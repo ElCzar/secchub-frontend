@@ -19,9 +19,9 @@ export class LoginFormComponent {
   successMessage = '';
 
   constructor(
-    private authService: AuthService,
-    private authState: AuthStateService,
-    private router: Router
+    private readonly authService: AuthService,
+    private readonly authState: AuthStateService,
+    private readonly router: Router
   ) {}
 
   submit(email: string, password: string) {
@@ -33,18 +33,28 @@ export class LoginFormComponent {
       next: (response) => {
         this.loading = false;
         if (response.accessToken) {
+          // Save tokens to AuthStateService - pass role from backend response
+          this.authState.setTokens(response.accessToken, response.refreshToken, response.role);
+          
           this.successMessage = 'Inicio de sesión exitoso!';
-          // Suponiendo que el backend devuelve el rol en response.rol
-          const role = response.role;
-          if (role === 'ROLE_STUDENT') {
-            this.router.navigate(['/FormularioMonitores']);
-          } else if (role === 'ROLE_TEACHER') {
-            this.router.navigate(['/FormularioConfirmacionDocentes']);
-          } else if (role === 'ROLE_ADMIN') {
+          
+          // Get role from the decoded token (now available in AuthStateService)
+          const currentUser = this.authState.getCurrentUser();
+          const userRoles = currentUser?.roles || [response.role]; // Fallback to response.role
+          
+          // Navigate based on role priority (admin > teacher > program > student > user)
+          if (userRoles.includes('ROLE_ADMIN')) {
             this.router.navigate(['/inicio-admi']);
-          } else if (role === 'ROLE_PROGRAM') {
+          } else if (userRoles.includes('ROLE_TEACHER')) {
+            this.router.navigate(['/FormularioConfirmacionDocentes']);
+          } else if (userRoles.includes('ROLE_PROGRAM')) {
             this.router.navigate(['/FormularioProgramas']);
-          } else if (role === 'ROLE_USER') {
+          } else if (userRoles.includes('ROLE_STUDENT')) {
+            this.router.navigate(['/FormularioMonitores']);
+          } else if (userRoles.includes('ROLE_USER')) {
+            this.router.navigate(['/inicio-seccion']);
+          } else {
+            // Default fallback
             this.router.navigate(['/inicio-seccion']);
           }
         } else {

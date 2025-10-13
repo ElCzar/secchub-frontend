@@ -1,0 +1,100 @@
+<app-header></app-header>
+
+<!-- Toggle sidebar button -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar section -->
+<aside class="sidebar">
+  <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+</aside>
+
+<main class="main-content-container">
+  <div class="email-container">
+    <h2 class="titulo-pagina">{{ title }}</h2>
+    <div class="hr-line"></div>
+
+    <!-- Form for email sending -->
+    <form #emailForm="ngForm" class="form-grid">
+
+    <!-- Field for recipient email -->
+    <div class="form-row">
+      <label for="email-to">Enviar Correo a: <span class="required">*</span></label>
+      <input 
+        id="email-to" 
+        name="emailTo"
+        [(ngModel)]="emailSendRequest.to" 
+        placeholder="correo@javeriana.edu.co" 
+        required
+        email
+        #emailTo="ngModel"
+      />
+      @if (emailTo.invalid && emailTo.touched) {
+        <div class="error-message">
+          @if (emailTo.errors?.['required']) {
+            <span>El campo de correo es obligatorio</span>
+          }
+          @if (emailTo.errors?.['email']) {
+            <span>Por favor ingrese un correo válido</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Field for email subject -->
+    <div class="form-row">
+      <label for="email-subject">Asunto: <span class="required">*</span></label>
+      <input 
+        id="email-subject" 
+        name="emailSubject"
+        [(ngModel)]="emailSendRequest.subject" 
+        placeholder="Asunto del correo" 
+        required
+        #emailSubject="ngModel"
+      />
+      @if (emailSubject.invalid && emailSubject.touched) {
+        <div class="error-message">
+          @if (emailSubject.errors?.['required']) {
+            <span>El asunto es obligatorio</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Field for email body/message -->
+    <div class="form-row message-container">
+      <label for="email-message">Añadir mensaje: <span class="required">*</span></label>
+      <div class="textarea-wrapper">
+        <textarea 
+          id="email-message" 
+          name="emailMessage"
+          [(ngModel)]="emailSendRequest.body" 
+          required
+          #emailMessage="ngModel"
+          (input)="onTextareaInput($event)"
+          style="min-height: 120px; height: auto;"
+          placeholder="Escriba su mensaje aquí..."
+        ></textarea>
+        <div class="buttons-container">
+          @if (isAdmin()) {
+            <button class="btn btn--secondary" type="button" (click)="saveDraft()" [disabled]="emailForm.invalid || isSendingEmail">Guardar mensaje</button>
+          }
+          <button class="btn btn--primary" type="button" (click)="send()" [disabled]="emailForm.invalid || isSendingEmail">
+            @if (isSendingEmail) {
+              <span>Enviando...</span>
+            } @else {
+              <span>Enviar</span>
+            }
+          </button>
+        </div>
+      </div>
+      @if (emailMessage.invalid && emailMessage.touched) {
+        <div class="error-message">
+          @if (emailMessage.errors?.['required']) {
+            <span>El mensaje es obligatorio</span>
+          }
+        </div>
+      }
+    </div>
+    </form>
+  </div>
+</main>
