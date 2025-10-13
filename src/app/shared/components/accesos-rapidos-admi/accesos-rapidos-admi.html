@@ -17,3 +17,10 @@
     </li>
   </ul>
 </nav>
+
+<!-- Popup de Perfil del Administrador -->
+<app-pop-perfil
+  [isVisible]="showProfilePopup"
+  (closeModal)="onCloseProfile()"
+  (profileUpdated)="onProfileUpdated($event)">
+</app-pop-perfil>

@@ -1,0 +1,162 @@
+<!-- Modal backdrop -->
+<div 
+  class="modal-backdrop" 
+  [class.visible]="isVisible" 
+  (click)="onBackdropClick($event)"
+  (keydown.escape)="onClose()"
+  [attr.aria-hidden]="!isVisible">
+  
+  <!-- Modal content -->
+  <div class="modal-content" role="dialog" aria-labelledby="profile-title" aria-modal="true">
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 id="profile-title" class="modal-title">
+        <i class="icon-user" aria-hidden="true"></i>
+        Perfil de Usuario
+      </h2>
+      <button 
+        type="button" 
+        class="close-button" 
+        (click)="onClose()" 
+        aria-label="Cerrar modal">
+        <i class="icon-close" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Cargando perfil...</p>
+    </div>
+
+    <!-- Profile content -->
+    <div *ngIf="!isLoading && userProfile" class="modal-body">
+      
+      <!-- View mode -->
+      <div *ngIf="!isEditing" class="profile-view">
+        
+        <!-- Avatar section -->
+        <div class="avatar-section">
+          <div class="avatar-circle">
+            <i class="icon-user-large" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <!-- Profile info -->
+        <div class="profile-info">
+          <div class="info-field">
+            <span class="field-label">Nombre Completo:</span>
+            <p class="field-value">{{ userProfile.nombreCompleto }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Correo Electrónico:</span>
+            <p class="field-value">{{ userProfile.correo }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Rol:</span>
+            <p class="field-value">{{ getRolText() }}</p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="profile-actions">
+          <button 
+            *ngIf="canEdit"
+            type="button" 
+            class="btn btn-primary" 
+            (click)="onEditProfile()">
+            <i class="icon-edit" aria-hidden="true"></i>
+            Editar Perfil
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="onClose()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit mode -->
+      <div *ngIf="isEditing" class="profile-edit">
+        
+        <!-- Avatar section -->
+        <div class="avatar-section">
+          <div class="avatar-circle">
+            <i class="icon-user-large" aria-hidden="true"></i>
+          </div>
+          <p class="avatar-text">Editar Perfil</p>
+        </div>
+
+        <!-- Edit form -->
+        <form class="edit-form" (ngSubmit)="onSaveProfile()">
+          
+          <div class="form-field">
+            <label for="nombreCompleto" class="field-label">Nombre Completo:</label>
+            <input 
+              id="nombreCompleto"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.nombreCompleto"
+              name="nombreCompleto"
+              placeholder="Ingrese el nombre completo"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="correo" class="field-label">Correo Electrónico:</label>
+            <input 
+              id="correo"
+              type="email" 
+              class="form-input" 
+              [(ngModel)]="editForm.correo"
+              name="correo"
+              placeholder="Ingrese el correo electrónico"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Rol:</span>
+            <p class="field-value readonly">{{ getRolText() }}</p>
+            <small class="field-note">El rol no puede ser modificado</small>
+          </div>
+
+          <!-- Form actions -->
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="!editForm.nombreCompleto.trim() || !editForm.correo.trim() || isLoading">
+              <i class="icon-save" aria-hidden="true"></i>
+              {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+            
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="onCancelEdit()"
+              [disabled]="isLoading">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="!isLoading && !userProfile" class="error-container">
+      <i class="icon-error" aria-hidden="true"></i>
+      <p>Error al cargar el perfil del usuario</p>
+      <button type="button" class="btn btn-primary" (click)="loadUserProfile()">
+        Intentar de nuevo
+      </button>
+    </div>
+
+  </div>
+</div>

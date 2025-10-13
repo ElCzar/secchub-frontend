@@ -1,0 +1,49 @@
+<!-- Página de ejemplo del popup de perfil -->
+<div class="perfil-page-container">
+  <div class="page-header">
+    <h1>Gestión de Perfiles</h1>
+    <p>Ejemplo de uso del popup de perfil de usuario</p>
+  </div>
+
+  <div class="actions-section">
+    <h2>Mi Perfil</h2>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      (click)="openMyProfile()">
+      <i class="icon-user" aria-hidden="true"></i>
+      Ver Mi Perfil
+    </button>
+  </div>
+
+  <div class="users-section">
+    <h2>Otros Usuarios</h2>
+    <div class="users-grid">
+      <button 
+        *ngFor="let user of users" 
+        type="button"
+        class="user-card"
+        (click)="openUserProfile(user.id)"
+        [attr.aria-label]="'Ver perfil de ' + user.name">
+        <div class="user-avatar">
+          <i class="icon-user" aria-hidden="true"></i>
+        </div>
+        <div class="user-info">
+          <h3>{{ user.name }}</h3>
+          <p>{{ user.role }}</p>
+        </div>
+        <span class="btn-view">
+          Ver Perfil
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Popup de Perfil -->
+  <app-pop-perfil
+    [isVisible]="showProfilePopup"
+    [userId]="selectedUserId"
+    (closeModal)="onCloseProfile()"
+    (profileUpdated)="onProfileUpdated($event)">
+  </app-pop-perfil>
+</div>

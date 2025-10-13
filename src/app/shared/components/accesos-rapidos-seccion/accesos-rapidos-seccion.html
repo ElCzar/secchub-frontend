@@ -17,3 +17,10 @@
     </li>
   </ul>
 </nav>
+
+<!-- Popup de Perfil del Jefe de Sección -->
+<app-pop-perfil
+  [isVisible]="showProfilePopup"
+  (closeModal)="onCloseProfile()"
+  (profileUpdated)="onProfileUpdated($event)">
+</app-pop-perfil>

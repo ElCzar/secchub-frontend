@@ -2,17 +2,21 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
+import { PopPerfilComponent } from '../../../features/perfil/components/pop-perfil/pop-perfil';
+import { UserProfile } from '../../../features/perfil/models/user-profile.models';
 
 @Component({
   selector: 'app-accesos-rapidos-seccion',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PopPerfilComponent],
   templateUrl: './accesos-rapidos-seccion.html',
   styleUrls: ['./accesos-rapidos-seccion.scss']
 })
 export class AccesosRapidosSeccion {
+  showProfilePopup = false;
+
   items = [
-    { label: 'Perfil', route: '/perfil' },
+    { label: 'Perfil', action: 'profile' },
     { label: 'Planificar Clases', route: '/planificacion' },
     { label: 'Confirmar Disponibilidad Docente', route: '/confirmar-disponibilidad' },
     { label: 'Monitores', route: '/solicitud-monitores' },
@@ -24,10 +28,30 @@ export class AccesosRapidosSeccion {
     public readonly sidebarToggleService: SidebarToggleService
   ) {}
 
-  go(item: { label: string; route?: string }) {
-    if (item.route) {
+  go(item: { label: string; route?: string; action?: string }) {
+    if (item.action === 'profile') {
+      this.openProfile();
+    } else if (item.route) {
       this.router.navigateByUrl(item.route).catch(() => console.warn('Navigation failed', item));
     }
+  }
+
+  openProfile() {
+    // Mostrar el popup inmediatamente sin cerrar el sidebar
+    this.showProfilePopup = true;
+    
+   
+  }
+
+  onCloseProfile() {
+    this.showProfilePopup = false;
+   
+  }
+
+  onProfileUpdated(updatedProfile: UserProfile) {
+    console.log('Perfil actualizado:', updatedProfile);
+    // Para jefe de sección, esto no debería ejecutarse ya que no pueden editar
+    // Pero mantenemos el método por consistencia
   }
 
   closeSidebar() {
