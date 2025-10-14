@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Monitor } from '../../models/monitor.model';
 import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
 import { MonitoresTable } from '../../components/monitores-table/monitores-table';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
@@ -9,6 +8,7 @@ import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { PopGuardarCambios } from '../../../../shared/components/pop-guardar-cambios/pop-guardar-cambios';
 import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambios/pop-enviar-cambios';
+import { StudentApplicationResponseDTO } from '../../../../shared/model/dto/integration/StudentApplicationResponseDTO.model';
 
 @Component({
   selector: 'app-solicitud-monitores-page',
@@ -18,26 +18,27 @@ import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambi
 })
 
 export class SolicitudMonitoresPage implements OnInit {
-  monitores: Monitor[] = [];
-  filteredMonitores: Monitor[] = [];
-  adminMonitores: Monitor[] = [];
-  nonAdminMonitores: Monitor[] = [];
+  monitores: StudentApplicationResponseDTO[] = [];
+  filteredMonitores: StudentApplicationResponseDTO[] = [];
+  adminMonitores: StudentApplicationResponseDTO[] = [];
+  nonAdminMonitores: StudentApplicationResponseDTO[] = [];
 
-  // Filtros UI
+  // UI Filters
   searchQuery = '';
   selectedMateria = '';
   selectedSeccion = '';
-  materias: string[] = [];
+  materias: [] = [];
   secciones: string[] = [];
-  // Desplegables
+
+  // Toggle tables
   showAdminTable = false;
   showAcademicTable = false;
 
-  // Popup guardar cambios
+  // Popup save changes
   showSaveModal = false;
   saveSuccess = true;
 
-  // Popup enviar cambios
+  // Popup send changes
   showSendModal = false;
 
   constructor(private readonly monitoresService: SolicitudMonitoresService) {}
@@ -48,11 +49,11 @@ export class SolicitudMonitoresPage implements OnInit {
 
   loadMonitores() {
     this.monitoresService.getMonitores().subscribe(data => {
-      this.monitores = data;
-      this.materias = Array.from(new Set(this.monitores.map(m => m.asignatura).filter(Boolean as any)))
-        .sort((a: string, b: string) => a.localeCompare(b));
-      this.secciones = Array.from(new Set(this.monitores.map(m => m.seccionAcademica).filter((seccion): seccion is string => !!seccion)))
-        .sort((a: string, b: string) => a.localeCompare(b));
+      this.monitores = data as StudentApplicationResponseDTO[];
+      this.materias = Array.from(new Set(this.monitores.map(m => m.courseId).filter(Boolean as any)))
+        .sort((a: number, b: number) => a - b);
+      this.secciones = Array.from(new Set(this.monitores.map(m => m.sectionId).filter((seccion): seccion is number => !!seccion)))
+        .sort((a: number, b: number) => a - b);
       this.applyFilters();
     });
   }

@@ -6,8 +6,8 @@ import { ActivatedRoute } from '@angular/router';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
-import { EmailSendRequestDTO } from '../../../../model/dto/notification/EmailSendRequestDTO.model';
-import { EmailTemplateResponseDTO } from '../../../../model/dto/notification/EmailTemplateResponseDTO.model';
+import { EmailSendRequestDTO } from '../../../../shared/model/dto/notification/EmailSendRequestDTO.model';
+import { EmailTemplateResponseDTO } from '../../../../shared/model/dto/notification/EmailTemplateResponseDTO.model';
 import { AuthStateService, DecodedToken } from '../../../../core/services/auth-state.service';
 
 @Component({
