@@ -30,13 +30,13 @@
 
     <!-- Datos Personales Section - Componente reutilizable -->
     <app-personal-data-form 
-      *ngIf="currentRole && hasControl('name')"
-      [formGroup]="registerForm"
-      [documentTypes]="documentTypes">
+      *ngIf="currentRole && isFormReady"
+      [documentTypes]="documentTypes"
+      (dataChange)="onPersonalDataChange($event)">
     </app-personal-data-form>
 
-    <!-- Datos de Cuenta Section - Solo para roles con login -->
-    <div class="form-section" *ngIf="currentRole && hasControl('password')">
+    <!-- Datos de Cuenta Section - Inline -->
+    <div class="form-section" *ngIf="currentRole && isFormReady">
       <h2 class="section-title">Contraseña</h2>
       
       <div class="form-row">
@@ -46,13 +46,11 @@
             id="password"
             type="password" 
             class="form-input"
-            [class.error]="isFieldInvalid('password')"
-            formControlName="password"
+            [(ngModel)]="passwordData.password"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onPasswordChange()"
             placeholder="Mínimo 8 caracteres"
             autocomplete="new-password">
-          <div *ngIf="isFieldInvalid('password')" class="field-error">
-            {{ getFieldErrorMessage('password') }}
-          </div>
         </div>
 
         <div class="form-field">
@@ -61,49 +59,44 @@
             id="confirmPassword"
             type="password" 
             class="form-input"
-            [class.error]="isFieldInvalid('confirmPassword') || hasPasswordMismatch"
-            formControlName="confirmPassword"
+            [(ngModel)]="passwordData.confirmPassword"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onPasswordChange()"
             placeholder="Repita la contraseña"
             autocomplete="new-password">
-          <div *ngIf="isFieldInvalid('confirmPassword')" class="field-error">
-            {{ getFieldErrorMessage('confirmPassword') }}
-          </div>
-          <div *ngIf="hasPasswordMismatch" class="field-error">
-            Las contraseñas no coinciden
-          </div>
         </div>
       </div>
     </div>
 
     <!-- Información Específica de Administrador -->
     <app-admin-registrar 
-      *ngIf="currentRole === 'admin'" 
-      [formGroup]="registerForm">
+      *ngIf="currentRole === 'admin' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
     </app-admin-registrar>
 
     <!-- Información Específica de Jefe de Sección -->
     <app-seccion-registrar 
-      *ngIf="currentRole === 'section_head'" 
-      [formGroup]="registerForm">
+      *ngIf="currentRole === 'section_head' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
     </app-seccion-registrar>
 
     <!-- Información Específica de Docente -->
     <app-profesor-registrar 
-      *ngIf="currentRole === 'teacher'" 
-      [formGroup]="registerForm"
-      [employmentTypes]="employmentTypes">
+      *ngIf="currentRole === 'teacher' && isFormReady" 
+      [employmentTypes]="employmentTypes"
+      (dataChange)="onRoleSpecificDataChange($event)">
     </app-profesor-registrar>
 
     <!-- Información Específica de Estudiante -->
     <app-estudiante-registrar 
-      *ngIf="currentRole === 'student'" 
-      [formGroup]="registerForm">
+      *ngIf="currentRole === 'student' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
     </app-estudiante-registrar>
 
     <!-- Información Específica de Programa -->
     <app-programa-registrar 
-      *ngIf="currentRole === 'program'" 
-      [formGroup]="registerForm">
+      *ngIf="currentRole === 'program' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
     </app-programa-registrar>
 
     <!-- Submit Button -->

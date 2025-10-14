@@ -1,19 +1,17 @@
 <div class="form-section">
   <h2 class="section-title">Información de la Sección</h2>
   
-  <div class="form-field" *ngIf="formGroup">
+  <div class="form-field">
     <label for="sectionName" class="field-label">Nombre de la Sección *</label>
     <input 
       id="sectionName"
       type="text" 
       class="form-input"
-      [class.error]="isFieldInvalid('sectionName')"
-      formControlName="sectionName"
+      [(ngModel)]="data.sectionName"
+      [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="onFieldChange()"
       placeholder="Ej: Sección de Sistemas"
       autocomplete="off">
-    <div *ngIf="isFieldInvalid('sectionName')" class="field-error">
-      {{ getFieldErrorMessage('sectionName') }}
-    </div>
     <small class="field-note">
       El usuario será registrado como jefe de esta sección
     </small>

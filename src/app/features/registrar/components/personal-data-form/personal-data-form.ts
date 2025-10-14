@@ -1,32 +1,32 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { DocumentType } from '../../models/common.model';
 
 @Component({
   selector: 'app-personal-data-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './personal-data-form.html',
   styleUrls: ['./personal-data-form.scss']
 })
 export class PersonalDataForm {
-  @Input() formGroup!: FormGroup;
   @Input() documentTypes: DocumentType[] = [];
+  @Output() dataChange = new EventEmitter<any>();
 
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.formGroup.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
-  }
+  // Modelo de datos
+  data = {
+    name: '',
+    lastName: '',
+    username: '',
+    email: '',
+    documentTypeId: '',
+    documentNumber: '',
+    faculty: ''
+  };
 
-  getFieldErrorMessage(fieldName: string): string {
-    const field = this.formGroup.get(fieldName);
-    if (field?.errors) {
-      if (field.errors['required']) return `${this.getFieldLabel(fieldName)} es requerido`;
-      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} debe tener al menos ${field.errors['minlength'].requiredLength} caracteres`;
-      if (field.errors['email']) return 'Formato de correo electrónico inválido';
-    }
-    return '';
+  onFieldChange(): void {
+    this.dataChange.emit({ ...this.data });
   }
 
   private getFieldLabel(fieldName: string): string {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RegisterService } from '../../services/register.service';
 import { PersonalDataForm } from '../personal-data-form/personal-data-form';
 import { ProfesorRegistrarComponent } from '../profesor-registrar/profesor-registrar.component';
@@ -19,6 +19,7 @@ import { PopConfimacion } from '../pop-confimacion/pop-confimacion';
   standalone: true,
   imports: [
     CommonModule, 
+    FormsModule,
     ReactiveFormsModule, 
     PopConfimacion,
     PersonalDataForm,
@@ -34,6 +35,12 @@ import { PopConfimacion } from '../pop-confimacion/pop-confimacion';
 export class RegistrarTableComponent implements OnInit {
   registerForm!: FormGroup;
   isLoading = false;
+  isFormReady = false;
+  
+  // Datos de los componentes hijos
+  personalData: any = {};
+  passwordData: any = {};
+  roleSpecificData: any = {};
   
   // Popup de confirmación
   showConfirmationPopup = false;
@@ -83,20 +90,110 @@ export class RegistrarTableComponent implements OnInit {
   }
 
   initializeForm(): void {
-    // Inicializar solo con el campo de rol
+    // Crear formulario solo con el campo de rol
     this.registerForm = this.fb.group({
       role: ['', Validators.required]
     });
 
-    // Escuchar cambios en el rol para mostrar/ocultar secciones
+    // Escuchar cambios en el rol
     this.registerForm.get('role')?.valueChanges.subscribe(role => {
-      console.log('Rol cambiado a:', role); // Debug
-      this.selectedRole = role;
-      this.updateFormBasedOnRole(role);
+      if (role !== this.selectedRole) {
+        this.selectedRole = role;
+        this.resetComponentData(); // Limpiar datos cuando cambie el rol
+      }
     });
 
-    // Reset de visibilidad
-    this.resetFormVisibility();
+    // Marcar el formulario como listo
+    this.isFormReady = true;
+  }
+
+  private resetComponentData(): void {
+    this.personalData = {};
+    this.passwordData = {};
+    this.roleSpecificData = {};
+  }
+
+  // Métodos para recibir datos de componentes hijos
+  onPersonalDataChange(data: any): void {
+    this.personalData = { ...data };
+  }
+
+  onPasswordDataChange(data: any): void {
+    this.passwordData = { ...data };
+  }
+
+  onRoleSpecificDataChange(data: any): void {
+    this.roleSpecificData = { ...data };
+  }
+
+  onPasswordChange(): void {
+    // Los datos de contraseña se actualizan automáticamente por ngModel
+  }
+
+  private validateAllData(): { isValid: boolean, missingFields: string[] } {
+    const missingFields: string[] = [];
+
+    // Validar datos personales
+    if (!this.personalData.name || this.personalData.name.trim() === '') {
+      missingFields.push('Nombre');
+    }
+    if (!this.personalData.lastName || this.personalData.lastName.trim() === '') {
+      missingFields.push('Apellido');
+    }
+    if (!this.personalData.username || this.personalData.username.trim() === '') {
+      missingFields.push('Nombre de usuario');
+    }
+    if (!this.personalData.email || this.personalData.email.trim() === '') {
+      missingFields.push('Correo electrónico');
+    }
+    if (!this.personalData.documentTypeId) {
+      missingFields.push('Tipo de documento');
+    }
+    if (!this.personalData.documentNumber || this.personalData.documentNumber.trim() === '') {
+      missingFields.push('Número de documento');
+    }
+    if (!this.personalData.faculty || this.personalData.faculty.trim() === '') {
+      missingFields.push('Facultad');
+    }
+
+    // Validar contraseñas
+    if (!this.passwordData.password || this.passwordData.password.length < 8) {
+      missingFields.push('Contraseña (mínimo 8 caracteres)');
+    }
+    if (this.passwordData.password !== this.passwordData.confirmPassword) {
+      missingFields.push('Las contraseñas no coinciden');
+    }
+
+    // Validar datos específicos por rol
+    switch (this.selectedRole) {
+      case 'teacher':
+        if (!this.roleSpecificData.employmentTypeId) {
+          missingFields.push('Tipo de vinculación');
+        }
+        if (!this.roleSpecificData.maxHours) {
+          missingFields.push('Máximo de horas');
+        }
+        break;
+      case 'section_head':
+        if (!this.roleSpecificData.sectionName || this.roleSpecificData.sectionName.trim() === '') {
+          missingFields.push('Nombre de sección');
+        }
+        break;
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  }
+
+  private combineAllData(): any {
+    return {
+      role: this.selectedRole,
+      ...this.personalData,
+      ...this.passwordData,
+      ...this.roleSpecificData
+    };
   }
 
   private resetFormVisibility(): void {
@@ -106,94 +203,109 @@ export class RegistrarTableComponent implements OnInit {
     this.showRoleAssignment = false;
   }
 
-  private updateFormBasedOnRole(role: string): void {
-    // Limpiar todos los controles excepto el rol
-    const formKeys = Object.keys(this.registerForm.controls);
-    formKeys.forEach(key => {
-      if (key !== 'role') {
-        this.registerForm.removeControl(key);
-      }
-    });
-
-    // Agregar campos base para todos los roles
+  private updateValidatorsBasedOnRole(role: string): void {
+    // Limpiar todos los validadores primero
+    this.clearAllValidators();
+    
+    // Establecer validadores según el rol
     if (role && role !== '') {
-      this.addBaseFields(role);
+      this.setValidatorsForRole(role);
     }
 
     // Mostrar secciones correspondientes
     this.updateSectionVisibility(role);
   }
 
-  private addBaseFields(role: string): void {
-    // Todos los roles necesitan datos personales básicos
-    this.registerForm.addControl('name', this.fb.control('', [Validators.required, Validators.minLength(2)]));
-    this.registerForm.addControl('lastName', this.fb.control('', [Validators.required, Validators.minLength(2)]));
-    this.registerForm.addControl('username', this.fb.control('', [Validators.required, Validators.minLength(3)]));
-    this.registerForm.addControl('email', this.fb.control('', [Validators.required, Validators.email]));
+  private clearAllValidators(): void {
+    // Limpiar validadores de todos los campos excepto rol
+    const fieldsToReset = ['name', 'lastName', 'username', 'email', 'password', 'confirmPassword',
+                          'documentTypeId', 'documentNumber', 'faculty', 'employmentTypeId', 
+                          'maxHours', 'sectionName', 'programName'];
+    
+    fieldsToReset.forEach(field => {
+      const control = this.registerForm.get(field);
+      if (control) {
+        control.clearValidators();
+        control.setValue('');
+        control.markAsUntouched();
+        // No llamar updateValueAndValidity aquí para evitar bucles
+      }
+    });
+  }
 
-    // Agregar contraseña para todos los roles
-    this.addPasswordFields();
+  private setValidatorsForRole(role: string): void {
+    // Campos básicos para todos los roles
+    const nameCtrl = this.registerForm.get('name');
+    const lastNameCtrl = this.registerForm.get('lastName');
+    const usernameCtrl = this.registerForm.get('username');
+    const emailCtrl = this.registerForm.get('email');
+    const passwordCtrl = this.registerForm.get('password');
+    const confirmPasswordCtrl = this.registerForm.get('confirmPassword');
+    
+    if (nameCtrl) nameCtrl.setValidators([Validators.required, Validators.minLength(2)]);
+    if (lastNameCtrl) lastNameCtrl.setValidators([Validators.required, Validators.minLength(2)]);
+    if (usernameCtrl) usernameCtrl.setValidators([Validators.required, Validators.minLength(3)]);
+    if (emailCtrl) emailCtrl.setValidators([Validators.required, Validators.email]);
+    if (passwordCtrl) passwordCtrl.setValidators([Validators.required, Validators.minLength(8)]);
+    if (confirmPasswordCtrl) confirmPasswordCtrl.setValidators([Validators.required]);
 
-    // Campos específicos según el rol
+    // Validadores específicos según el rol
     switch (role) {
       case 'admin':
-        this.addAdminFields();
+        this.setAdminValidators();
         break;
-      
       case 'section_head':
-        this.registerForm.addControl('sectionName', this.fb.control('', [Validators.required, Validators.minLength(3)]));
-        this.addDocumentFields();
+        this.setSectionHeadValidators();
         break;
-      
       case 'teacher':
-        this.addTeacherFields();
+        this.setTeacherValidators();
         break;
-      
       case 'student':
-        this.addStudentFields();
+        this.setStudentValidators();
         break;
-      
       case 'program':
-        this.addProgramFields();
+        this.setProgramValidators();
         break;
     }
+
+    // Los validadores se actualizan automáticamente al establecerse
   }
 
-  private addDocumentFields(): void {
-    this.registerForm.addControl('documentTypeId', this.fb.control('', Validators.required));
-    this.registerForm.addControl('documentNumber', this.fb.control('', [Validators.required, Validators.minLength(6)]));
-    this.registerForm.addControl('faculty', this.fb.control('', Validators.required));
+  private setAdminValidators(): void {
+    this.setDocumentValidators();
   }
 
-  private addPasswordFields(): void {
-    this.registerForm.addControl('password', this.fb.control('', [Validators.required, Validators.minLength(8)]));
-    this.registerForm.addControl('confirmPassword', this.fb.control('', Validators.required));
+  private setSectionHeadValidators(): void {
+    this.setDocumentValidators();
+    const sectionNameCtrl = this.registerForm.get('sectionName');
+    if (sectionNameCtrl) sectionNameCtrl.setValidators([Validators.required, Validators.minLength(3)]);
+  }
+
+  private setTeacherValidators(): void {
+    this.setDocumentValidators();
+    const employmentTypeCtrl = this.registerForm.get('employmentTypeId');
+    const maxHoursCtrl = this.registerForm.get('maxHours');
     
-    // Agregar validador de coincidencia de contraseñas
-    this.registerForm.setValidators(RegistrarTableComponent.passwordMatchValidator);
+    if (employmentTypeCtrl) employmentTypeCtrl.setValidators([Validators.required]);
+    if (maxHoursCtrl) maxHoursCtrl.setValidators([Validators.required, Validators.min(1), Validators.max(48)]);
   }
 
-  private addTeacherFields(): void {
-    // Campos básicos de documento
-    this.addDocumentFields();
-    // Campos específicos para profesores
-    this.registerForm.addControl('employmentTypeId', this.fb.control('', Validators.required));
-    this.registerForm.addControl('maxHours', this.fb.control('', [Validators.required, Validators.min(1), Validators.max(48)]));
+  private setStudentValidators(): void {
+    this.setDocumentValidators();
   }
 
-  private addStudentFields(): void {
-    // Solo campos básicos de documento para estudiantes
-    this.addDocumentFields();
+  private setProgramValidators(): void {
+    this.setDocumentValidators();
   }
 
-  private addProgramFields(): void {
-    // Los programas solo necesitan campos básicos de documento
-    this.addDocumentFields();
-  }
-
-  private addAdminFields(): void {
-    // Solo campos básicos de documento para administradores
-    this.addDocumentFields();
+  private setDocumentValidators(): void {
+    const docTypeCtrl = this.registerForm.get('documentTypeId');
+    const docNumberCtrl = this.registerForm.get('documentNumber');
+    const facultyCtrl = this.registerForm.get('faculty');
+    
+    if (docTypeCtrl) docTypeCtrl.setValidators([Validators.required]);
+    if (docNumberCtrl) docNumberCtrl.setValidators([Validators.required, Validators.minLength(6)]);
+    if (facultyCtrl) facultyCtrl.setValidators([Validators.required]);
   }
 
   private updateSectionVisibility(role: string): void {
@@ -218,33 +330,89 @@ export class RegistrarTableComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.registerForm.valid && !this.isLoading) {
-      this.isLoading = true;
+    if (this.isLoading) {
+      return;
+    }
 
-      const formValue = this.registerForm.value;
-      const role = formValue.role;
+    // Validar que se haya seleccionado un rol
+    if (!this.selectedRole) {
+      alert('Por favor seleccione un rol de usuario');
+      return;
+    }
 
-      switch (role) {
-        case 'admin':
-          this.registerAdministrator(formValue);
-          break;
-        case 'student':
-          this.registerStudent(formValue);
-          break;
-        case 'teacher':
-          this.registerTeacher(formValue);
-          break;
-        case 'section_head':
-          this.registerSectionHead(formValue);
-          break;
-        case 'program':
-          this.registerProgram(formValue);
-          break;
-        default:
-          this.handleError('Rol no válido seleccionado', null);
+    // Validar datos de componentes hijos
+    const validationResult = this.validateAllData();
+    if (!validationResult.isValid) {
+      alert(`Por favor complete los siguientes campos:\n• ${validationResult.missingFields.join('\n• ')}`);
+      return;
+    }
+
+    // Combinar todos los datos
+    const completeData = this.combineAllData();
+
+    // Proceder con el registro
+    this.isLoading = true;
+
+    switch (this.selectedRole) {
+      case 'admin':
+        this.registerAdministrator(completeData);
+        break;
+      case 'student':
+        this.registerStudent(completeData);
+        break;
+      case 'teacher':
+        this.registerTeacher(completeData);
+        break;
+      case 'section_head':
+        this.registerSectionHead(completeData);
+        break;
+      case 'program':
+        this.registerProgram(completeData);
+        break;
+      default:
+        this.handleError('Rol no válido seleccionado', null);
+    }
+  }
+
+  private showValidationMessage(): void {
+    const missingFields: string[] = [];
+    const fieldLabels: { [key: string]: string } = {
+      'role': 'Rol de usuario',
+      'username': 'Nombre de usuario',
+      'firstName': 'Nombre',
+      'lastName': 'Apellido',
+      'name': 'Nombre', // Agregar mapeo para 'name'
+      'email': 'Correo electrónico',
+      'password': 'Contraseña',
+      'confirmPassword': 'Confirmar contraseña',
+      'employmentType': 'Tipo de vinculación',
+      'faculty': 'Facultad',
+      'program': 'Programa',
+      'semester': 'Semestre',
+      'sectionName': 'Nombre de sección',
+      'programName': 'Nombre del programa',
+      'documentTypeId': 'Tipo de documento',
+      'documentNumber': 'Número de documento',
+      'maxHours': 'Máximo de horas'
+    };
+
+    // Revisar todos los controles del formulario
+    Object.keys(this.registerForm.controls).forEach(controlName => {
+      const control = this.registerForm.get(controlName);
+      
+      if (control && control.invalid && control.errors) {
+        const label = fieldLabels[controlName] || controlName;
+        if (control.errors['required']) {
+          missingFields.push(label);
+        }
       }
+    });
+
+    if (missingFields.length > 0) {
+      const message = `Por favor complete los siguientes campos requeridos:\n• ${missingFields.join('\n• ')}`;
+      alert(message);
     } else {
-      this.markAllFieldsAsTouched();
+      alert('Por favor revise que todos los campos estén correctamente completados.');
     }
   }
 
@@ -484,6 +652,7 @@ export class RegistrarTableComponent implements OnInit {
   }
 
   get isSubmitDisabled(): boolean {
-    return this.registerForm.invalid || this.isLoading;
+    // Solo deshabilitar el botón cuando está cargando
+    return this.isLoading;
   }
 }
