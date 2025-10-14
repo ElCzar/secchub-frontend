@@ -561,6 +561,59 @@ export class PlanningService {
   // ==========================================
 
   /**
+   * Obtener vista previa de la planificación de un semestre específico
+   */
+  getSemesterPlanningPreview(semesterId: number): Observable<{totalClasses: number, semesterId: number, classes: ClassDTO[]}> {
+    console.log(`=== OBTENIENDO VISTA PREVIA DEL SEMESTRE ${semesterId} ===`);
+    
+    return this.http.get<{totalClasses: number, semesterId: number, classes: ClassDTO[]}>(`${this.baseUrl}/semesters/${semesterId}/preview`).pipe(
+      tap(response => {
+        console.log('Vista previa obtenida:', response);
+        console.log(`Total de clases: ${response.totalClasses}`);
+      }),
+      catchError(error => {
+        console.error(`Error obteniendo vista previa del semestre ${semesterId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Aplicar planificación de un semestre anterior al semestre actual
+   */
+  applySemesterPlanningToCurrent(sourceSemesterId: number): Observable<{message: string, classesApplied: number}> {
+    console.log(`=== APLICANDO PLANIFICACIÓN DEL SEMESTRE ${sourceSemesterId} AL ACTUAL ===`);
+    
+    return this.http.post<{message: string, classesApplied: number}>(`${this.baseUrl}/semesters/${sourceSemesterId}/apply-to-current`, {}).pipe(
+      tap(response => {
+        console.log('Planificación aplicada exitosamente:', response);
+        console.log(`Clases aplicadas: ${response.classesApplied}`);
+      }),
+      catchError(error => {
+        console.error(`Error aplicando planificación del semestre ${sourceSemesterId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Obtener semestres pasados disponibles para duplicación
+   */
+  getPastSemesters(): Observable<{id: number, name: string, year: number, period: number}[]> {
+    console.log('=== OBTENIENDO SEMESTRES PASADOS ===');
+    
+    return this.http.get<{id: number, name: string, year: number, period: number}[]>(`${this.baseUrl}/semesters/past`).pipe(
+      tap(response => {
+        console.log('Semestres pasados obtenidos:', response);
+      }),
+      catchError(error => {
+        console.error('Error obteniendo semestres pasados:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
    * Duplicar planificación completa de un semestre a otro
    */
   duplicateSemesterPlanning(sourceSemesterId: number, targetSemesterId: number): Observable<ClassDTO[]> {
