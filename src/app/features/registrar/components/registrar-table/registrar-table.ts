@@ -2,20 +2,32 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RegisterService } from '../../services/register.service';
-import { UserRegisterRequestDTO, UserCreatedResponse } from '../../models/user.models';
+import { PersonalDataForm } from '../personal-data-form/personal-data-form';
+import { ProfesorRegistrarComponent } from '../profesor-registrar/profesor-registrar.component';
+import { SeccionRegistrarComponent } from '../seccion-registrar/seccion-registrar';
+import { EstudianteRegistrarComponent } from '../estudiante-registrar/estudiante-registrar.component';
+import { AdminRegistrarComponent } from '../administrador-registrar/administrador-registrar';
+import { ProgramaRegistrarComponent } from '../programa-registrar/programa-registrar.component';
+import { UserRegisterRequestDTO } from '../../models/user.model';
+import { TeacherRegisterRequestDTO, TeacherResponseDTO } from '../../models/teacher.model';
 import { SectionRegisterRequestDTO, SectionResponseDTO } from '../../models/section.models';
+import { RegistrationResult } from '../../models/common.model';
 import { PopConfimacion } from '../pop-confimacion/pop-confimacion';
-
-export interface RegistrationResult {
-  success: boolean;
-  message: string;
-  details?: string;
-}
 
 @Component({
   selector: 'app-registrar-table',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PopConfimacion],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    PopConfimacion,
+    PersonalDataForm,
+    ProfesorRegistrarComponent,
+    SeccionRegistrarComponent,
+    EstudianteRegistrarComponent,
+    AdminRegistrarComponent,
+    ProgramaRegistrarComponent
+  ],
   templateUrl: './registrar-table.html',
   styleUrl: './registrar-table.scss'
 })
@@ -27,11 +39,39 @@ export class RegistrarTableComponent implements OnInit {
   showConfirmationPopup = false;
   registrationResult: RegistrationResult | null = null;
 
-  // Opciones para los selects
+  // Opciones para los selects  
   userRoles = [
     { id: 'admin', name: 'Administrador' },
-    { id: 'section_head', name: 'Jefe de Sección' }
+    { id: 'student', name: 'Estudiante' },
+    { id: 'teacher', name: 'Profesor' },
+    { id: 'section_head', name: 'Jefe de Sección' },
+    { id: 'program', name: 'Programa' }
   ];
+
+  // Opciones para tipos de empleo (para profesores)
+  employmentTypes = [
+    { id: 1, name: 'Tiempo Completo' },
+    { id: 2, name: 'Medio Tiempo' },
+    { id: 3, name: 'Cátedra' }
+  ];
+
+  // Opciones para tipos de documento
+  documentTypes = [
+    { id: '1', name: 'Cédula de Ciudadanía' },
+    { id: '2', name: 'Cédula de Extranjería' },
+    { id: '3', name: 'Pasaporte' }
+  ];
+
+  // Control de visibilidad de secciones
+  selectedRole: string = '';
+  showPersonalData: boolean = false;
+  showPasswordSection: boolean = false;
+  showRoleAssignment: boolean = false;
+
+  // Getter para obtener el rol actual del formulario
+  get currentRole(): string {
+    return this.registerForm?.get('role')?.value || '';
+  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -43,36 +83,131 @@ export class RegistrarTableComponent implements OnInit {
   }
 
   initializeForm(): void {
+    // Inicializar solo con el campo de rol
     this.registerForm = this.fb.group({
-      // Datos personales simplificados
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      
-      // Datos de cuenta simplificados
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', Validators.required],
-      
-      // Rol y sección
-      role: ['', Validators.required],
-      sectionName: [''] // Solo requerido si el rol es jefe de sección
-    }, {
-      validators: this.passwordMatchValidator
+      role: ['', Validators.required]
     });
 
-    // Agregar validador condicional para sectionName
+    // Escuchar cambios en el rol para mostrar/ocultar secciones
     this.registerForm.get('role')?.valueChanges.subscribe(role => {
-      const sectionNameControl = this.registerForm.get('sectionName');
-      if (role === 'section_head') {
-        sectionNameControl?.setValidators([Validators.required, Validators.minLength(3)]);
-      } else {
-        sectionNameControl?.clearValidators();
-      }
-      sectionNameControl?.updateValueAndValidity();
+      console.log('Rol cambiado a:', role); // Debug
+      this.selectedRole = role;
+      this.updateFormBasedOnRole(role);
     });
+
+    // Reset de visibilidad
+    this.resetFormVisibility();
   }
 
-  private passwordMatchValidator(form: FormGroup) {
+  private resetFormVisibility(): void {
+    this.selectedRole = '';
+    this.showPersonalData = false;
+    this.showPasswordSection = false;
+    this.showRoleAssignment = false;
+  }
+
+  private updateFormBasedOnRole(role: string): void {
+    // Limpiar todos los controles excepto el rol
+    const formKeys = Object.keys(this.registerForm.controls);
+    formKeys.forEach(key => {
+      if (key !== 'role') {
+        this.registerForm.removeControl(key);
+      }
+    });
+
+    // Agregar campos base para todos los roles
+    if (role && role !== '') {
+      this.addBaseFields(role);
+    }
+
+    // Mostrar secciones correspondientes
+    this.updateSectionVisibility(role);
+  }
+
+  private addBaseFields(role: string): void {
+    // Todos los roles necesitan datos personales básicos
+    this.registerForm.addControl('name', this.fb.control('', [Validators.required, Validators.minLength(2)]));
+    this.registerForm.addControl('lastName', this.fb.control('', [Validators.required, Validators.minLength(2)]));
+    this.registerForm.addControl('username', this.fb.control('', [Validators.required, Validators.minLength(3)]));
+    this.registerForm.addControl('email', this.fb.control('', [Validators.required, Validators.email]));
+
+    // Agregar contraseña para todos los roles
+    this.addPasswordFields();
+
+    // Campos específicos según el rol
+    switch (role) {
+      case 'admin':
+        this.addAdminFields();
+        break;
+      
+      case 'section_head':
+        this.registerForm.addControl('sectionName', this.fb.control('', [Validators.required, Validators.minLength(3)]));
+        this.addDocumentFields();
+        break;
+      
+      case 'teacher':
+        this.addTeacherFields();
+        break;
+      
+      case 'student':
+        this.addStudentFields();
+        break;
+      
+      case 'program':
+        this.addProgramFields();
+        break;
+    }
+  }
+
+  private addDocumentFields(): void {
+    this.registerForm.addControl('documentTypeId', this.fb.control('', Validators.required));
+    this.registerForm.addControl('documentNumber', this.fb.control('', [Validators.required, Validators.minLength(6)]));
+    this.registerForm.addControl('faculty', this.fb.control('', Validators.required));
+  }
+
+  private addPasswordFields(): void {
+    this.registerForm.addControl('password', this.fb.control('', [Validators.required, Validators.minLength(8)]));
+    this.registerForm.addControl('confirmPassword', this.fb.control('', Validators.required));
+    
+    // Agregar validador de coincidencia de contraseñas
+    this.registerForm.setValidators(RegistrarTableComponent.passwordMatchValidator);
+  }
+
+  private addTeacherFields(): void {
+    // Campos básicos de documento
+    this.addDocumentFields();
+    // Campos específicos para profesores
+    this.registerForm.addControl('employmentTypeId', this.fb.control('', Validators.required));
+    this.registerForm.addControl('maxHours', this.fb.control('', [Validators.required, Validators.min(1), Validators.max(48)]));
+  }
+
+  private addStudentFields(): void {
+    // Solo campos básicos de documento para estudiantes
+    this.addDocumentFields();
+  }
+
+  private addProgramFields(): void {
+    // Los programas solo necesitan campos básicos de documento
+    this.addDocumentFields();
+  }
+
+  private addAdminFields(): void {
+    // Solo campos básicos de documento para administradores
+    this.addDocumentFields();
+  }
+
+  private updateSectionVisibility(role: string): void {
+    // Mostrar datos personales para todos los roles
+    this.showPersonalData = role !== '';
+    
+    // Mostrar contraseña para todos los roles
+    this.showPasswordSection = role !== '';
+    
+    // Mostrar asignación de rol para section_head
+    this.showRoleAssignment = role === 'section_head';
+  }
+
+  static passwordMatchValidator(form: any) {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
     
@@ -89,10 +224,24 @@ export class RegistrarTableComponent implements OnInit {
       const formValue = this.registerForm.value;
       const role = formValue.role;
 
-      if (role === 'admin') {
-        this.registerAdministrator(formValue);
-      } else if (role === 'section_head') {
-        this.registerSectionHead(formValue);
+      switch (role) {
+        case 'admin':
+          this.registerAdministrator(formValue);
+          break;
+        case 'student':
+          this.registerStudent(formValue);
+          break;
+        case 'teacher':
+          this.registerTeacher(formValue);
+          break;
+        case 'section_head':
+          this.registerSectionHead(formValue);
+          break;
+        case 'program':
+          this.registerProgram(formValue);
+          break;
+        default:
+          this.handleError('Rol no válido seleccionado', null);
       }
     } else {
       this.markAllFieldsAsTouched();
@@ -101,23 +250,96 @@ export class RegistrarTableComponent implements OnInit {
 
   private registerAdministrator(formValue: any): void {
     const adminPayload: UserRegisterRequestDTO = {
-      username: formValue.email, // Usar email como username
+      username: formValue.username,
       password: formValue.password,
-      faculty: 'N/A', // Campo requerido por el backend pero no por el negocio
+      faculty: formValue.faculty,
       name: formValue.name,
       lastName: formValue.lastName,
       email: formValue.email,
-      documentTypeId: '1', // Valor por defecto
-      documentNumber: 'N/A' // Campo requerido por el backend pero no por el negocio
+      documentTypeId: formValue.documentTypeId,
+      documentNumber: formValue.documentNumber
     };
 
     this.registerService.registerAdmin(adminPayload).subscribe({
-      next: (response: UserCreatedResponse) => {
-        this.handleSuccess('Administrador registrado exitosamente');
-        console.log('Administrador creado:', response);
+      next: (userId: number) => {
+        this.handleSuccess(`Administrador registrado exitosamente con ID: ${userId}`);
+        console.log('Administrador creado con ID:', userId);
       },
       error: (error) => {
         this.handleError('Error al registrar administrador', error);
+      }
+    });
+  }
+
+  private registerStudent(formValue: any): void {
+    const studentPayload: UserRegisterRequestDTO = {
+      username: formValue.username,
+      password: formValue.password,
+      faculty: formValue.faculty,
+      name: formValue.name,
+      lastName: formValue.lastName,
+      email: formValue.email,
+      documentTypeId: formValue.documentTypeId,
+      documentNumber: formValue.documentNumber
+    };
+
+    this.registerService.registerStudent(studentPayload).subscribe({
+      next: (userId: number) => {
+        this.handleSuccess(`Estudiante registrado exitosamente con ID: ${userId}`);
+        console.log('Estudiante creado con ID:', userId);
+      },
+      error: (error) => {
+        this.handleError('Error al registrar estudiante', error);
+      }
+    });
+  }
+
+  private registerProgram(formValue: any): void {
+    const programPayload: UserRegisterRequestDTO = {
+      username: formValue.username,
+      password: formValue.password,
+      faculty: formValue.faculty,
+      name: formValue.name,
+      lastName: formValue.lastName,
+      email: formValue.email,
+      documentTypeId: formValue.documentTypeId,
+      documentNumber: formValue.documentNumber
+    };
+
+    this.registerService.registerProgram(programPayload).subscribe({
+      next: (userId: number) => {
+        this.handleSuccess(`Programa registrado exitosamente con ID: ${userId}`);
+        console.log('Programa creado con ID:', userId);
+      },
+      error: (error) => {
+        this.handleError('Error al registrar programa', error);
+      }
+    });
+  }
+
+  private registerTeacher(formValue: any): void {
+    const teacherPayload: TeacherRegisterRequestDTO = {
+      employmentTypeId: Number(formValue.employmentTypeId),
+      maxHours: Number(formValue.maxHours),
+      user: {
+        username: formValue.username,
+        password: formValue.password,
+        faculty: formValue.faculty,
+        name: formValue.name,
+        lastName: formValue.lastName,
+        email: formValue.email,
+        documentTypeId: formValue.documentTypeId,
+        documentNumber: formValue.documentNumber
+      }
+    };
+
+    this.registerService.registerTeacher(teacherPayload).subscribe({
+      next: (response: TeacherResponseDTO) => {
+        this.handleSuccess(`Profesor registrado exitosamente con ID: ${response.id}`);
+        console.log('Profesor creado:', response);
+      },
+      error: (error) => {
+        this.handleError('Error al registrar profesor', error);
       }
     });
   }
@@ -126,20 +348,20 @@ export class RegistrarTableComponent implements OnInit {
     const sectionPayload: SectionRegisterRequestDTO = {
       name: formValue.sectionName,
       user: {
-        username: formValue.email, // Usar email como username
+        username: formValue.username,
         password: formValue.password,
-        faculty: 'N/A', // Campo requerido por el backend pero no por el negocio
+        faculty: formValue.faculty,
         name: formValue.name,
         lastName: formValue.lastName,
         email: formValue.email,
-        documentTypeId: '1', // Valor por defecto
-        documentNumber: 'N/A' // Campo requerido por el backend pero no por el negocio
+        documentTypeId: formValue.documentTypeId,
+        documentNumber: formValue.documentNumber
       }
     };
 
     this.registerService.registerSectionHead(sectionPayload).subscribe({
       next: (response: SectionResponseDTO) => {
-        this.handleSuccess(`Jefe de sección registrado exitosamente. Sección "${response.name}" creada.`);
+        this.handleSuccess(`Jefe de sección registrado exitosamente. Sección "${response.name}" creada con ID: ${response.id}`);
         console.log('Jefe de sección y sección creados:', response);
       },
       error: (error) => {
@@ -201,14 +423,25 @@ export class RegistrarTableComponent implements OnInit {
     });
   }
 
+  // Método para verificar si existe un control
+  hasControl(controlName: string): boolean {
+    return this.registerForm?.get(controlName) !== null;
+  }
+
   // Getters para facilitar la validación en el template
   get name() { return this.registerForm.get('name'); }
   get lastName() { return this.registerForm.get('lastName'); }
+  get username() { return this.registerForm.get('username'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
   get role() { return this.registerForm.get('role'); }
   get sectionName() { return this.registerForm.get('sectionName'); }
+  get documentTypeId() { return this.registerForm.get('documentTypeId'); }
+  get documentNumber() { return this.registerForm.get('documentNumber'); }
+  get faculty() { return this.registerForm.get('faculty'); }
+  get employmentTypeId() { return this.registerForm.get('employmentTypeId'); }
+  get maxHours() { return this.registerForm.get('maxHours'); }
 
   // Validadores de campo
   isFieldInvalid(fieldName: string): boolean {
@@ -230,11 +463,17 @@ export class RegistrarTableComponent implements OnInit {
     const labels: { [key: string]: string } = {
       name: 'Nombre',
       lastName: 'Apellido',
+      username: 'Nombre de usuario',
       email: 'Correo electrónico',
       password: 'Contraseña',
       confirmPassword: 'Confirmación de contraseña',
       role: 'Rol',
-      sectionName: 'Nombre de la sección'
+      sectionName: 'Nombre de la sección',
+      documentTypeId: 'Tipo de documento',
+      documentNumber: 'Número de documento',
+      faculty: 'Facultad',
+      employmentTypeId: 'Tipo de vinculación',
+      maxHours: 'Horas máximas'
     };
     return labels[fieldName] || fieldName;
   }
