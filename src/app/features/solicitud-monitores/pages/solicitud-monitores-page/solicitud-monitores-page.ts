@@ -9,6 +9,11 @@ import { SidebarToggleButtonComponent } from '../../../../shared/components/side
 import { PopGuardarCambios } from '../../../../shared/components/pop-guardar-cambios/pop-guardar-cambios';
 import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambios/pop-enviar-cambios';
 import { StudentApplicationResponseDTO } from '../../../../shared/model/dto/integration/StudentApplicationResponseDTO.model';
+import { StatusDTO } from '../../../../shared/model/dto/parametric';
+import { ParametricService } from '../../../../shared/services/parametric.service';
+import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-solicitud-monitores-page',
@@ -19,16 +24,20 @@ import { StudentApplicationResponseDTO } from '../../../../shared/model/dto/inte
 
 export class SolicitudMonitoresPage implements OnInit {
   monitores: StudentApplicationResponseDTO[] = [];
+  monitoresInfo: UserInformationResponseDTO[] = [];
   filteredMonitores: StudentApplicationResponseDTO[] = [];
   adminMonitores: StudentApplicationResponseDTO[] = [];
   nonAdminMonitores: StudentApplicationResponseDTO[] = [];
+
+  // Parametric statuses
+  statuses: StatusDTO[] = [];
 
   // UI Filters
   searchQuery = '';
   selectedMateria = '';
   selectedSeccion = '';
-  materias: [] = [];
-  secciones: string[] = [];
+  materias: number[] = [];
+  secciones: number[] = [];
 
   // Toggle tables
   showAdminTable = false;
@@ -41,16 +50,23 @@ export class SolicitudMonitoresPage implements OnInit {
   // Popup send changes
   showSendModal = false;
 
-  constructor(private readonly monitoresService: SolicitudMonitoresService) {}
+  constructor(
+    private readonly monitoresService: SolicitudMonitoresService, 
+    private readonly parametricService: ParametricService,
+    private readonly userInformationService: UserInformationService
+  ) {}
 
   ngOnInit(): void {
     this.loadMonitores();
+    this.loadMonitoresInfo();
+    this.loadStatuses();
   }
 
+  // Load data for Student Applications
   loadMonitores() {
     this.monitoresService.getMonitores().subscribe(data => {
       this.monitores = data as StudentApplicationResponseDTO[];
-      this.materias = Array.from(new Set(this.monitores.map(m => m.courseId).filter(Boolean as any)))
+      this.materias = Array.from(new Set(this.monitores.map(m => m.courseId).filter((materia): materia is number => !!materia)))
         .sort((a: number, b: number) => a - b);
       this.secciones = Array.from(new Set(this.monitores.map(m => m.sectionId).filter((seccion): seccion is number => !!seccion)))
         .sort((a: number, b: number) => a - b);
@@ -58,7 +74,32 @@ export class SolicitudMonitoresPage implements OnInit {
     });
   }
 
-  onMonitoresUpdate(updatedMonitores: Monitor[]) {
+  // Load user information for all monitors
+  loadMonitoresInfo() {
+    this.monitoresService.getMonitores().subscribe(data => {
+      const monitores = data as StudentApplicationResponseDTO[];
+      const userIds = Array.from(new Set(monitores.map(m => m.userId).filter((id): id is number => !!id)));
+      // Fetch user information for each unique userId
+      const userInfoObservables = userIds.map(id => this.userInformationService.getUserInformationById(id));
+
+      // Combine all observables and subscribe to get the results
+      Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))).then(results => {
+        this.monitoresInfo = results.filter((info): info is UserInformationResponseDTO => info !== null);
+      }).catch(error => {
+        console.error('Error loading user information for monitors:', error);
+      });
+    });
+  }
+
+  // Load parametric statuses
+  loadStatuses() {
+    this.parametricService.getAllStatuses().subscribe(data => {
+      this.statuses = data;
+    });
+  }
+
+  // Handler when a student application is updated in any of the tables
+  onMonitoresUpdate(updatedMonitores: StudentApplicationResponseDTO[]) {
     // Ya no reemplazamos el arreglo fuente para evitar que un cambio en una tabla
     // afecte la otra. Los cambios de estado/editables están vinculados por referencia.
     this.applyFilters();
@@ -79,7 +120,8 @@ export class SolicitudMonitoresPage implements OnInit {
   }
 
   enviarAAdministrador() {
-    const totalSeleccionados = this.monitores.filter(m => m.estado === 'aceptado' || m.estado === 'rechazado').length;
+    // Search for the name of the corresponding status id
+    const totalSeleccionados = this.monitores.filter(m => m.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id || m.statusId === this.statuses.find(s => s.name === 'Rejected')?.id).length;
     if (totalSeleccionados === 0) {
       this.saveSuccess = false;
       this.showSaveModal = true;
@@ -91,7 +133,7 @@ export class SolicitudMonitoresPage implements OnInit {
 
   // Método para obtener el conteo de cambios
   get cambiosCount() {
-    return this.monitores.filter(m => m.estado === 'aceptado' || m.estado === 'rechazado').length;
+    return this.monitores.filter(m => m.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id || m.statusId === this.statuses.find(s => s.name === 'Rejected')?.id).length;
   }
 
   // Handlers filtros
@@ -113,11 +155,17 @@ export class SolicitudMonitoresPage implements OnInit {
     const sec = this.selectedSeccion;
 
     const base = this.monitores.filter(m => {
-      const matchesQuery = !q || [m.id, m.nombre, m.apellido, m.correo]
+      const matchesQuery = !q || 
+        [
+          m.id, this.monitoresInfo.find(info => info.id === m.userId)?.name, 
+          this.monitoresInfo.find(info => info.id === m.userId)?.lastName, 
+          this.monitoresInfo.find(info => info.id === m.userId)?.email
+        ]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(q));
-      const matchesMateria = !mat || m.asignatura === mat;
-      const matchesSeccion = !sec || m.seccionAcademica === sec;
+      
+      const matchesMateria = !mat || m.courseId === Number(mat);
+      const matchesSeccion = !sec || m.sectionId === Number(sec);
       return matchesQuery && matchesMateria && matchesSeccion;
     });
 
