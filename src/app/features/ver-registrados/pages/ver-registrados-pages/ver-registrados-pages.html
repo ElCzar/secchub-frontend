@@ -1,0 +1,160 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+  <app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+
+<div class="page-with-sidebar">
+  
+   <!-- Sidebar -->
+  <aside class="quick-access-sidebar">
+    <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <!-- Page Title -->
+    <div class="page-header">
+      <h1 class="titulo-pagina">Usuarios Registrados</h1>
+      <div class="hr-line"></div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <span class="stat-number">{{ getTotalUsersCount() }}</span>
+          <span class="stat-label">Total Usuarios</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👩‍🏫</div>
+        <div class="stat-info">
+          <span class="stat-number">{{ getUserCountByRole(UserRole.TEACHER) }}</span>
+          <span class="stat-label">Docentes</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👔</div>
+        <div class="stat-info">
+          <span class="stat-number">{{ getUserCountByRole(UserRole.SECTION_HEAD) }}</span>
+          <span class="stat-label">Jefes de Sección</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⚙️</div>
+        <div class="stat-info">
+          <span class="stat-number">{{ getUserCountByRole(UserRole.ADMIN) }}</span>
+          <span class="stat-label">Administradores</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section (style similar to planificacion) -->
+    <div class="filters-container">
+      <!-- Search Bar -->
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchText" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar por nombre, email, documento..." 
+          class="search-bar">
+      </div>
+      
+      <!-- Role Filter -->
+      <div class="filter-group">
+        <label class="filter-label" for="role-select">Filtrar por Rol:</label>
+        <select 
+          id="role-select" 
+          [(ngModel)]="roleFilter" 
+          (ngModelChange)="applyFilters()" 
+          class="filter-select">
+          <option value="">Todos los roles</option>
+          <option *ngFor="let option of roleOptions" [value]="option.id">
+            {{ option.name }} ({{ option.count }})
+          </option>
+        </select>
+      </div>
+      
+      <!-- Faculty Filter -->
+      <div class="filter-group">
+        <label class="filter-label" for="faculty-select">Filtrar por Facultad:</label>
+        <select 
+          id="faculty-select" 
+          [(ngModel)]="facultyFilter" 
+          (ngModelChange)="applyFilters()" 
+          class="filter-select">
+          <option value="">Todas las facultades</option>
+          <option *ngFor="let option of facultyOptions" [value]="option.id">
+            {{ option.name }} ({{ option.count }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-group">
+        <label class="filter-label" for="status-select">Filtrar por Estado:</label>
+        <select 
+          id="status-select" 
+          [(ngModel)]="statusFilter" 
+          (ngModelChange)="applyFilters()" 
+          class="filter-select">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let option of statusOptions" [value]="option.id">
+            {{ option.name }} ({{ option.count }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Clear Filters Button -->
+      <div class="filter-actions">
+        <button 
+          class="btn btn-clear" 
+          (click)="clearFilters()"
+          [disabled]="!searchText && !roleFilter && !facultyFilter && !statusFilter">
+          🗑️ Limpiar Filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+      <p *ngIf="!loading">
+        Mostrando {{ getFilteredUsersCount() }} de {{ getTotalUsersCount() }} usuarios
+        <span *ngIf="getFilteredUsersCount() !== getTotalUsersCount()">
+          (filtrados)
+        </span>
+      </p>
+    </div>
+
+    <!-- Users Cards Component -->
+    <app-cards-registrados
+      [users]="filteredUsers"
+      [loading]="loading"
+      (userSelected)="onUserSelected($event)"
+      (editUser)="onEditUser($event)"
+      (deleteUser)="onDeleteUser($event)">
+    </app-cards-registrados>
+
+    <!-- Actions Toolbar -->
+    <div class="toolbar" *ngIf="!loading">
+      <button class="btn btn--primary" routerLink="/registrar">
+        ➕ Registrar Nuevo Usuario
+      </button>
+      
+      <button class="btn btn--secondary" (click)="loadUsers()">
+        🔄 Actualizar Lista
+      </button>
+      
+      <button class="btn btn--secondary">
+        📊 Exportar Datos
+      </button>
+    </div>
+  </main>
+</div>
