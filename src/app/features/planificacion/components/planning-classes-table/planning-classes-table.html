@@ -211,7 +211,12 @@
         <!-- Bloque de horarios (solo si _open) -->
         <tr *ngIf="row._open">
           <td colspan="14">
-            <app-schedules-table-room [(rows)]="row.schedules" [editable]="row._editing || false"></app-schedules-table-room>
+            <app-schedules-table-room
+              [(rows)]="row.schedules"
+              [editable]="row._editing || false"
+              (rowsChange)="onSchedulesChange(i, $event)"
+              (scheduleDeleted)="onScheduleDeleted(i, $event)">
+            </app-schedules-table-room>
           </td>
         </tr>
       </ng-container>

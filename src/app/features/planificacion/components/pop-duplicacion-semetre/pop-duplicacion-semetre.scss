@@ -156,7 +156,223 @@
   background: #1d4ed8;
 }
 
+/* =========================================================
+   VISTA PREVIA DEL SEMESTRE
+   ========================================================= */
+
+/* Ajustar tamaño del modal para vista previa */
+.modal-container:has(.semester-preview) {
+  min-width: 600px;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content:has(.semester-preview) {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-right: -8px;
+  padding-right: 8px;
+}
+
+/* Encabezado de la vista previa */
+.preview-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--brand-azul);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.preview-summary {
+  margin: 0;
+  color: var(--text-600);
+  font-size: var(--fs-base);
+}
+
+/* Contenedor de clases */
+.preview-classes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Elemento de clase individual */
+.class-item {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.class-item:hover {
+  background: #f1f5f9;
+  border-color: var(--brand-azul);
+}
+
+/* Encabezado de la clase */
+.class-header {
+  margin-bottom: 12px;
+}
+
+.course-name {
+  margin: 0 0 8px 0;
+  color: var(--text-800);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.class-details {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.class-details span {
+  color: var(--text-600);
+  font-size: var(--fs-sm);
+  padding: 4px 8px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.capacity {
+  color: var(--brand-azul);
+  font-weight: 500;
+}
+
+.dates {
+  color: var(--text-700);
+}
+
+/* Horarios de la clase */
+.schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 6px;
+  border-left: 3px solid var(--brand-azul);
+  font-size: var(--fs-sm);
+}
+
+.schedule-item .day {
+  font-weight: 600;
+  color: var(--brand-azul);
+  min-width: 80px;
+}
+
+.schedule-item .time {
+  color: var(--text-700);
+  font-family: 'Courier New', monospace;
+  min-width: 120px;
+}
+
+.schedule-item .modality {
+  color: var(--text-600);
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.schedule-item .room {
+  color: var(--text-600);
+  background: #f0f9ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* Estado sin clases */
+.no-classes {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-500);
+  font-style: italic;
+}
+
+/* Indicador de carga */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--text-600);
+}
+
+/* Mensaje de error */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #dc2626;
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+}
+
+/* Contenedor de botones de acción */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Botón de contorno */
+.btn--outline {
+  background: transparent;
+  border: 1px solid var(--brand-azul);
+  color: var(--brand-azul);
+}
+
+.btn--outline:hover:not(:disabled) {
+  background: var(--brand-azul);
+  color: white;
+}
+
 /* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+  .modal-container:has(.semester-preview) {
+    min-width: unset;
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .class-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .schedule-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .schedule-item .day,
+  .schedule-item .time {
+    min-width: unset;
+  }
+}
+
 @media (max-width: 480px) {
   .modal-container {
     min-width: unset;
@@ -169,7 +385,13 @@
     gap: 8px;
   }
   
-  .modal-actions .btn {
+  .modal-actions .btn,
+  .action-buttons {
     width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
   }
 }
