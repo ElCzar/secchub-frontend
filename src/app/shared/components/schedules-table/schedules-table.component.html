@@ -70,10 +70,8 @@
           [ngModel]="r.roomType" 
           (ngModelChange)="patch(i,{roomType:$event})"
           [disabled]="isReadOnly">
-          <option value="Laboratorio">Laboratorio</option>
-          <option value="Aulas">Aulas</option>
-          <option value="Aulas Móviles">Aulas Móviles</option>
-          <option value="Aulas Accesibles">Aulas Accesibles</option>
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let rt of roomTypeOptions" [value]="rt.value">{{ rt.label }}</option>
         </select>
       </div>
 
@@ -98,7 +96,8 @@
           [ngModel]="r.modality" 
           (ngModelChange)="patch(i,{modality:$event})"
           [disabled]="isReadOnly">
-          <option *ngFor="let m of modalities" [value]="m">{{ m }}</option>
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let m of modalityOptions" [value]="m.value">{{ m.label }}</option>
         </select>
       </div>
     </div>

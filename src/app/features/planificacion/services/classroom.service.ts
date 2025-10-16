@@ -38,6 +38,10 @@ export interface ClassroomTypeDTO {
 })
 export class ClassroomService {
   private apiUrl = `${environment.apiUrl}/api`;
+  // Prefijo real para endpoints paramétricos (modalities, classroom-types)
+  private parametricUrl = (environment as any).parametricBaseUrl && (environment as any).parametricBaseUrl.trim().length > 0
+    ? (environment as any).parametricBaseUrl.replace(/\/$/, '')
+    : `${environment.apiUrl}${(environment as any).parametricPath || ''}`.replace(/\/$/, '');
   
   // Valores por defecto para cuando la API falla
   private defaultModalities: ModalityDTO[] = [
@@ -150,10 +154,11 @@ export class ClassroomService {
 
   /**
    * Obtiene todas las modalidades disponibles desde el backend
-   * Endpoint: GET /api/modalities
+   * Endpoint real: GET /v1/api/parametric/modalities
    */
   getAllModalities(): Observable<ModalityDTO[]> {
-    return this.http.get<ModalityDTO[]>(`${this.apiUrl}/modalities`).pipe(
+  const url = `${this.parametricUrl}/modalities`;
+  return this.http.get<ModalityDTO[]>(url).pipe(
       map(modalities => {
         if (!modalities || !Array.isArray(modalities)) {
           console.error('Formato de respuesta inválido para modalidades:', modalities);
@@ -171,11 +176,23 @@ export class ClassroomService {
   }
 
   /**
+   * Variante estricta: no usa valores por defecto; devuelve [] en error
+   */
+  getAllModalitiesStrict(): Observable<ModalityDTO[]> {
+  const url = `${this.parametricUrl}/modalities`;
+  return this.http.get<ModalityDTO[]>(url).pipe(
+      map(modalities => Array.isArray(modalities) ? modalities : []),
+      catchError(() => of([]))
+    );
+  }
+
+  /**
    * Obtiene todos los tipos de aula disponibles desde el backend
-   * Endpoint: GET /api/classroom-types
+   * Endpoint real: GET /v1/api/parametric/classroom-types
    */
   getAllClassroomTypes(): Observable<ClassroomTypeDTO[]> {
-    return this.http.get<ClassroomTypeDTO[]>(`${this.apiUrl}/classroom-types`).pipe(
+  const url = `${this.parametricUrl}/classroom-types`;
+  return this.http.get<ClassroomTypeDTO[]>(url).pipe(
       map(types => {
         if (!types || !Array.isArray(types)) {
           console.error('Formato de respuesta inválido para tipos de aula:', types);
@@ -189,6 +206,17 @@ export class ClassroomService {
         console.log('Usando tipos de aula por defecto debido al error');
         return of(this.getFallbackClassroomTypes());
       })
+    );
+  }
+  
+  /**
+   * Variante estricta: no usa valores por defecto; devuelve [] en error
+   */
+  getAllClassroomTypesStrict(): Observable<ClassroomTypeDTO[]> {
+  const url = `${this.parametricUrl}/classroom-types`;
+  return this.http.get<ClassroomTypeDTO[]>(url).pipe(
+      map(types => Array.isArray(types) ? types : []),
+      catchError(() => of([]))
     );
   }
   

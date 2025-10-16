@@ -475,7 +475,7 @@ export class SolicitudProgramasPages implements OnInit {
     const modalityMap: { [key: string]: number } = {
       'PRESENCIAL': 1,
       'VIRTUAL': 2,
-      'HÍBRIDA': 3,
+      'HÍBRIDO': 3,
       'HIBRIDO': 3  // Variante sin acento
     };
 
@@ -505,7 +505,7 @@ export class SolicitudProgramasPages implements OnInit {
         day: mappedDay || schedule.day || 'MONDAY',
         startTime: schedule.startTime,
         endTime: schedule.endTime,
-        modalityId: modalityMap[schedule.modality?.toUpperCase()] || 1, // Default: PRESENCIAL
+        modalityId: modalityMap[(schedule.modality || '').toString().toUpperCase()] || 1, // Default: PRESENCIAL
         classroomId: null, // Se asignará después en planificación
         disability: schedule.disability || false,
         // Mapear tipo de aula si está disponible
