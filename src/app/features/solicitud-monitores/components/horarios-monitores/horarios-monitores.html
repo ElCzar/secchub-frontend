@@ -12,45 +12,41 @@
       <div>Total Horas</div>
     </div>
 
-    @for (h of horarios; track trackByFn($index, h); let i = $index) {
-      <div class="sched-row">
-        <!-- Acciones -->
-        <div class="actions">
-          <button class="btn-icon" type="button" (click)="deleteHorario(i)" title="Eliminar horario">−</button>
-          <button class="btn-icon" type="button" (click)="addHorario()" title="Agregar horario">+</button>
-        </div>
-
-        <!-- Día -->
-        <div>
-          <select class="input" [(ngModel)]="h.dia">
-            <option value="">Seleccione…</option>
-            @for (d of days; track d.v) {
-              <option [value]="d.v">{{ d.t }}</option>
-            }
-          </select>
-        </div>
-
-        <!-- Hora inicio -->
-        <div class="time-cell">
-          <input type="time" class="input" [(ngModel)]="h.horaInicio" (ngModelChange)="calculateTotalHours(h)">
-        </div>
-
-        <!-- Hora final -->
-        <div class="time-cell">
-          <input type="time" class="input" [(ngModel)]="h.horaFinal" (ngModelChange)="calculateTotalHours(h)">
-        </div>
-
-        <!-- Total Horas -->
-        <div>
-          <input 
-            type="text" 
-            class="input readonly-input" 
-            [value]="h.totalHoras || 0"
-            readonly
-            placeholder="0"
-          />
-        </div>
+    <div class="sched-row" *ngFor="let h of horarios; let i = index; trackBy: trackByFn">
+      <!-- Acciones -->
+      <div class="actions">
+        <button class="btn-icon" type="button" (click)="deleteHorario(i)" title="Eliminar horario">−</button>
+        <button class="btn-icon" type="button" (click)="addHorario()" title="Agregar horario">+</button>
       </div>
-    }
+
+      <!-- Día -->
+      <div>
+        <select class="input" [(ngModel)]="h.dia" (ngModelChange)="onDayChange()">
+          <option value="">Seleccione…</option>
+          <option *ngFor="let d of days" [value]="d.v">{{ d.t }}</option>
+        </select>
+      </div>
+
+      <!-- Hora inicio -->
+      <div class="time-cell">
+        <input type="time" class="input" [(ngModel)]="h.horaInicio" (ngModelChange)="calculateTotalHours(h)">
+      </div>
+
+      <!-- Hora final -->
+      <div class="time-cell">
+        <input type="time" class="input" [(ngModel)]="h.horaFinal" (ngModelChange)="calculateTotalHours(h)">
+      </div>
+
+      <!-- Total Horas -->
+      <div>
+        <input 
+          type="text" 
+          class="input readonly-input" 
+          [value]="h.totalHoras || 0"
+          readonly
+          placeholder="0"
+        />
+      </div>
+    </div>
   </div>
 </div>

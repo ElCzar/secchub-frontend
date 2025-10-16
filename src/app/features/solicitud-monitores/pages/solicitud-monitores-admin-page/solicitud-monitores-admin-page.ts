@@ -168,29 +168,45 @@ export class SolicitudMonitoresAdminPage implements OnInit {
     const userIds = Array.from(new Set(studentApplications.map(m => m.userId).filter((id): id is number => !!id)));
     const studentApplicationIds = studentApplications.map(sa => sa.id).filter((id): id is number => typeof id === 'number');
 
+    console.log('Loading info for student applications:', studentApplicationIds);
+
     // Fetch user information for each unique userId
     const userInfoObservables = userIds.map(id => this.userInformationService.getUserInformationById(id));
     // Fetch existing teaching assistants for the student applications
     const teachingAssistantObservables = studentApplicationIds.map(saId => this.monitoresService.getTeachingAssistantByStudentApplicationId(saId));
 
-    // Combine all observables and subscribe to get the results
-    Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))).then(results => {
-      this.userInformation = results.filter((info): info is UserInformationResponseDTO => info !== null);
+    // After both user information and teaching assistants are loaded, convert to Monitor model
+    Promise.all([
+      Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))),
+      Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs)))
+    ]).then(([userInfos, teachingAssistantResponses]) => {
+      this.userInformation = userInfos.filter((info): info is UserInformationResponseDTO => info !== null);
       
-      // Process the data after user information is loaded
-      this.processMonitorData();
-    }).catch(error => {
-      console.error('Error loading user information for monitors:', error);
-    });
+      // Extract teaching assistants from HTTP response bodies
+      this.teachingAssistants = teachingAssistantResponses
+        .map(response => {
+          const responseBody = response?.body;
+          // Check if the response body is an array or a single object
+          if (Array.isArray(responseBody)) {
+            // If it's an array, take the first element (or return null if empty)
+            return responseBody.length > 0 ? responseBody[0] as TeachingAssistantResponseDTO : null;
+          } else {
+            // If it's a single object, use it directly
+            return responseBody as TeachingAssistantResponseDTO;
+          }
+        })
+        .filter((ta): ta is TeachingAssistantResponseDTO => ta !== null && ta !== undefined);
 
-    // Fetch existing teaching assistants for the student applications
-    Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs))).then(results => {
-      this.teachingAssistants = results.filter((info): info is TeachingAssistantResponseDTO => info !== null);
-      
-      // Process the data after teaching assistants are loaded
+      for (const ta of this.teachingAssistants) {
+        console.log(`Teaching Assistant loaded:`, ta);
+        console.log(`TA Properties:`, Object.keys(ta));
+        console.log(`ID=${ta.id}, StudentApplicationID=${ta.studentApplicationId}`);
+      }
+
+      // Process the data after all information is loaded
       this.processMonitorData();
     }).catch(error => {
-      console.error('Error loading teaching assistants for monitors:', error);
+      console.error('Error processing monitors data:', error);
     });
   }
 

@@ -160,43 +160,58 @@ export class SolicitudMonitoresPage implements OnInit {
     const userIds = Array.from(new Set(studentApplications.map(m => m.userId).filter((id): id is number => !!id)));
     const studentApplicationIds = studentApplications.map(sa => sa.id).filter((id): id is number => typeof id === 'number');
 
+    console.log('Loading info for student applications:', studentApplicationIds);
+
     // Fetch user information for each unique userId
     const userInfoObservables = userIds.map(id => this.userInformationService.getUserInformationById(id));
     // Fetch existing teaching assistants for the student applications
     const teachingAssistantObservables = studentApplicationIds.map(saId => this.monitoresService.getTeachingAssistantByStudentApplicationId(saId));
 
-    // Combine all observables and subscribe to get the results
-    Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))).then(results => {
-      this.userInformation = results.filter((info): info is UserInformationResponseDTO => info !== null);
-    }).catch(error => {
-      console.error('Error loading user information for monitors:', error);
-    });
-
-    // Fetch existing teaching assistants for the student applications
-    Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs))).then(results => {
-      this.teachingAssistants = results.filter((info): info is TeachingAssistantResponseDTO => info !== null);
-    }).catch(error => {
-      console.error('Error loading teaching assistants for monitors:', error);
-    });
-
     // After both user information and teaching assistants are loaded, convert to Monitor model
     Promise.all([
       Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))),
       Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs)))
-    ]).then(([userInfos, teachingAssistants]) => {
+    ]).then(([userInfos, teachingAssistantResponses]) => {
       this.userInformation = userInfos.filter((info): info is UserInformationResponseDTO => info !== null);
-      this.teachingAssistants = teachingAssistants.filter((info): info is TeachingAssistantResponseDTO => info !== null);
+      
+      // Extract teaching assistants from HTTP response bodies
+      this.teachingAssistants = teachingAssistantResponses
+        .map(response => {
+          const responseBody = response?.body;
+          // Check if the response body is an array or a single object
+          if (Array.isArray(responseBody)) {
+            // If it's an array, take the first element (or return null if empty)
+            return responseBody.length > 0 ? responseBody[0] as TeachingAssistantResponseDTO : null;
+          } else {
+            // If it's a single object, use it directly
+            return responseBody as TeachingAssistantResponseDTO;
+          }
+        })
+        .filter((ta): ta is TeachingAssistantResponseDTO => ta !== null && ta !== undefined);
+
+      for (const ta of this.teachingAssistants) {
+        console.log(`Teaching Assistant loaded:`, ta);
+        console.log(`TA Properties:`, Object.keys(ta));
+        console.log(`ID=${ta.id}, StudentApplicationID=${ta.studentApplicationId}`);
+      }
 
       this.monitores = this.studentApplications.map(sa => {
         const userInfo = this.userInformation.find(ui => ui.id === sa.userId);
-        const teachingAssistant = this.teachingAssistants.find(ta => ta.studentApplicationId === sa.id) || null;
+        const teachingAssistant = this.teachingAssistants.find(ta => ta.studentApplicationId === sa.id);
         if (userInfo) {
-          return this.convertToMonitor(sa, userInfo, teachingAssistant);
+          return this.convertToMonitor(sa, userInfo, teachingAssistant || null);
         } else {
           console.warn(`No user information found for student application ID ${sa.id} with user ID ${sa.userId}`);
           return null;
         }
       }).filter((m): m is Monitor => m !== null);
+
+      // Update filter options after monitors are created
+      this.materias = Array.from(new Set(this.monitores.map(m => m.courseId).filter((materia): materia is number => !!materia)))
+        .sort((a: number, b: number) => a - b);
+      this.secciones = Array.from(new Set(this.monitores.map(m => m.sectionId).filter((seccion): seccion is number => !!seccion)))
+        .sort((a: number, b: number) => a - b);
+
       this.applyFilters();
     }).catch(error => {
       console.error('Error processing monitors data:', error);
@@ -228,28 +243,20 @@ export class SolicitudMonitoresPage implements OnInit {
 
     for (const monitor of this.monitores) {
       if (monitor.estado === 'aceptado' && monitor.id) {
+        // Save approval of student application
         approvePromises.push(
           firstValueFrom(this.monitoresService.approveStudentApplication(monitor.id))
         );
-      } else if (monitor.estado === 'rechazado' && monitor.id) {
-        rejectPromises.push(
-          firstValueFrom(this.monitoresService.rejectStudentApplication(monitor.id))
-        );
-      }
-    }
-
-    // For the changes inside the tables (horario and hours/weeks) need to create/update teaching assistant
-    for (const monitor of this.monitores) {
-      if (monitor.estado === 'aceptado' && monitor.id) {
+        // Save TeachingAssistant creation/update will be handled below
         const existingTA = this.teachingAssistants.find(ta => ta.studentApplicationId === monitor.id);
         const teachingAssistantRequestDTO = {
           studentApplicationId: monitor.id,
           weeklyHours: monitor.horasSemanales || 0,
           weeks: monitor.semanas || 0,
-          schedules: (monitor.horarios ?? []).map(h => ({
+          schedules: (monitor.horarios ?? []).filter(h => h.dia && h.horaInicio && h.horaFinal).map(h => ({
             day: h.dia,
-            startTime: h.horaInicio,
-            endTime: h.horaFinal
+            startTime: h.horaInicio + ":00",
+            endTime: h.horaFinal + ":00"
           }))
         };
         if (existingTA) {
@@ -261,6 +268,17 @@ export class SolicitudMonitoresPage implements OnInit {
           // Create new teaching assistant
           approvePromises.push(
             firstValueFrom(this.monitoresService.createTeachingAssistant(teachingAssistantRequestDTO))
+          );
+        }
+      } else if (monitor.estado === 'rechazado' && monitor.id) {
+        rejectPromises.push(
+          firstValueFrom(this.monitoresService.rejectStudentApplication(monitor.id))
+        );
+                const existingTA = this.teachingAssistants.find(ta => ta.studentApplicationId === monitor.id);
+        if (existingTA) {
+          // Delete existing teaching assistant if monitor is rejected
+          rejectPromises.push(
+            firstValueFrom(this.monitoresService.deleteTeachingAssistant(existingTA.id))
           );
         }
       }
@@ -277,7 +295,7 @@ export class SolicitudMonitoresPage implements OnInit {
         this.saveSuccess = false;
         this.showSaveModal = true;
       });
-  }
+}
 
   enviarAAdministrador() {
     // Search for the name of the corresponding status id

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HorarioMonitor } from '../../model/horario-monitor.model';
@@ -9,9 +9,14 @@ import { HorarioMonitor } from '../../model/horario-monitor.model';
   templateUrl: './horarios-monitores.html',
   styleUrl: './horarios-monitores.scss'
 })
-export class HorariosMonitores {
+export class HorariosMonitores implements OnInit {
 
   @Input() horarios: HorarioMonitor[] = [];
+
+  ngOnInit() {
+    // Ensure there's always at least one empty row
+    this.ensureEmptyRow();
+  }
 
   days = [
     { v: 'Lunes', t: 'Lunes' },
@@ -35,6 +40,27 @@ export class HorariosMonitores {
 
   deleteHorario(index: number) {
     this.horarios.splice(index, 1);
+    // Ensure there's always at least one empty row
+    this.ensureEmptyRow();
+  }
+
+  /**
+   * Ensures there's always at least one empty row for adding new schedules
+   */
+  private ensureEmptyRow() {
+    // Check if there's at least one completely empty row
+    const hasEmptyRow = this.horarios.some(h => !h.dia && !h.horaInicio && !h.horaFinal);
+    
+    if (!hasEmptyRow) {
+      this.addHorario();
+    }
+  }
+
+  /**
+   * Called when a day is selected to ensure empty row availability
+   */
+  onDayChange() {
+    this.ensureEmptyRow();
   }
 
   calculateTotalHours(horario: HorarioMonitor) {
@@ -51,6 +77,9 @@ export class HorariosMonitores {
     } else {
       horario.totalHoras = 0;
     }
+    
+    // Ensure there's always an empty row available
+    this.ensureEmptyRow();
   }
 
   private timeStringToMinutes(timeString: string): number {
