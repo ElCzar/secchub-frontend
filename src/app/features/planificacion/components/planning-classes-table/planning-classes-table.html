@@ -160,17 +160,30 @@
           <!-- Docente -->
           <td>
             <ng-container *ngIf="row._editing; else showTeacher">
-              <div class="teacher-edit-container" *ngIf="getTeacherName(row); else showSelectInEdit">
+              <div class="teacher-edit-container" *ngIf="(row.teachers && row.teachers.length) || getTeacherName(row); else showSelectInEdit">
+                <!-- Render inputs for the primary teacher name (legacy) -->
                 <input class="input" #teacherInput [value]="getTeacherName(row)" (input)="updateTeacherName(row, $any($event.target).value)" placeholder="Nombre del docente" />
-                <button type="button" class="btn-icon btn-add-teacher" *ngIf="teacherInput.value?.trim()" (click)="selectAdditionalTeacher(i)" title="Agregar docente adicional">+</button>
+                <!-- Button to open selector to add another teacher for this class -->
+                <button type="button" class="btn-icon btn-add-teacher" (click)="selectAdditionalTeacher(i)" title="Agregar docente adicional">+</button>
+
+                <!-- Show list of additional teachers if present -->
+                <div class="additional-teachers" *ngIf="row.teachers && row.teachers.length">
+                  <span *ngFor="let t of row.teachers; let ti = index" class="additional-teacher">{{ t.name }}<small *ngIf="ti===0">, </small></span>
+                </div>
               </div>
               <ng-template #showSelectInEdit>
                 <button type="button" class="btn--primary" (click)="selectTeacher(i)">Seleccionar Docente</button>
               </ng-template>
             </ng-container>
             <ng-template #showTeacher>
-              <ng-container *ngIf="hasTeacher(row); else noTeacher">
-                <span>{{ row.teacher?.name }}</span>
+              <ng-container *ngIf="(row.teachers && row.teachers.length) || hasTeacher(row); else noTeacher">
+                <!-- Prefer to show teachers[] if present, otherwise fallback to legacy teacher -->
+                <ng-container *ngIf="row.teachers && row.teachers.length; else legacyTeacher">
+                  <span *ngFor="let t of row.teachers; let ti = index">{{ t.name }}<span *ngIf="ti < row.teachers.length-1">, </span></span>
+                </ng-container>
+                <ng-template #legacyTeacher>
+                  <span>{{ row.teacher?.name }}</span>
+                </ng-template>
               </ng-container>
               <ng-template #noTeacher>
                 <button type="button" class="btn--primary" (click)="selectTeacher(i)" [disabled]="!row._editing">Seleccionar Docente</button>

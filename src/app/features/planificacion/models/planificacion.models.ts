@@ -54,7 +54,10 @@ export interface PlanningRow {
   endDate: string;     // "YYYY-MM-DD"
   weeks: number;
 
-  teacher?: TeacherRef;
+  // NOTE: support multiple teachers per class. Keep `teacher` compatibility in other code paths
+  // by using the first element of `teachers` where a single teacher is expected.
+  teachers?: TeacherRef[];
+  teacher?: TeacherRef; // legacy single-teacher field (kept for compatibility)
   status: PlanningStatus;   // ⏳/✅/❌
   notes: string[];          // observaciones acumuladas
 
