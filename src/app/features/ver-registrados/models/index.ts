@@ -13,4 +13,4 @@ export * from './admin.model';
 export * from './registered-user.model';
 
 // DTOs
-export * from '../../../model/dto/registrados';
+export * from '../../../model';

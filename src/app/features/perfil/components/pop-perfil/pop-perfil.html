@@ -51,13 +51,52 @@
           </div>
 
           <div class="info-field">
+            <span class="field-label">Usuario:</span>
+            <p class="field-value">{{ userProfile.username }}</p>
+          </div>
+
+          <div class="info-field">
             <span class="field-label">Correo Electrónico:</span>
             <p class="field-value">{{ userProfile.correo }}</p>
           </div>
 
           <div class="info-field">
+            <span class="field-label">Facultad:</span>
+            <p class="field-value">{{ userProfile.faculty }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Tipo de Documento:</span>
+            <p class="field-value">{{ userProfile.documentType }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Número de Documento:</span>
+            <p class="field-value">{{ userProfile.documentNumber }}</p>
+          </div>
+
+          <div class="info-field">
             <span class="field-label">Rol:</span>
             <p class="field-value">{{ getRolText() }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Estado:</span>
+            <p class="field-value">
+              <span [class]="userProfile.isActive ? 'status-active' : 'status-inactive'">
+                {{ userProfile.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Fecha de Registro:</span>
+            <p class="field-value">{{ userProfile.createdDate | date:'medium' }}</p>
+          </div>
+
+          <div *ngIf="userProfile.updatedDate" class="info-field">
+            <span class="field-label">Última Actualización:</span>
+            <p class="field-value">{{ userProfile.updatedDate | date:'medium' }}</p>
           </div>
         </div>
 
@@ -96,14 +135,27 @@
         <form class="edit-form" (ngSubmit)="onSaveProfile()">
           
           <div class="form-field">
-            <label for="nombreCompleto" class="field-label">Nombre Completo:</label>
+            <label for="name" class="field-label">Nombre:</label>
             <input 
-              id="nombreCompleto"
+              id="name"
               type="text" 
               class="form-input" 
-              [(ngModel)]="editForm.nombreCompleto"
-              name="nombreCompleto"
-              placeholder="Ingrese el nombre completo"
+              [(ngModel)]="editForm.name"
+              name="name"
+              placeholder="Ingrese el nombre"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="lastName" class="field-label">Apellido:</label>
+            <input 
+              id="lastName"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.lastName"
+              name="lastName"
+              placeholder="Ingrese el apellido"
               required
               [disabled]="isLoading">
           </div>
@@ -122,6 +174,44 @@
           </div>
 
           <div class="form-field">
+            <label for="documentType" class="field-label">Tipo de Documento:</label>
+            <input 
+              id="documentType"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.documentType"
+              name="documentType"
+              placeholder="Tipo de documento"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="documentNumber" class="field-label">Número de Documento:</label>
+            <input 
+              id="documentNumber"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.documentNumber"
+              name="documentNumber"
+              placeholder="Número de documento"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Usuario:</span>
+            <p class="field-value readonly">{{ userProfile.username }}</p>
+            <small class="field-note">El nombre de usuario no puede ser modificado</small>
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Facultad:</span>
+            <p class="field-value readonly">{{ userProfile.faculty }}</p>
+            <small class="field-note">La facultad no puede ser modificada</small>
+          </div>
+
+          <div class="form-field">
             <span class="field-label">Rol:</span>
             <p class="field-value readonly">{{ getRolText() }}</p>
             <small class="field-note">El rol no puede ser modificado</small>
@@ -132,7 +222,7 @@
             <button 
               type="submit" 
               class="btn btn-primary"
-              [disabled]="!editForm.nombreCompleto.trim() || !editForm.correo.trim() || isLoading">
+              [disabled]="!editForm.name.trim() || !editForm.lastName.trim() || !editForm.correo.trim() || !editForm.documentType.trim() || !editForm.documentNumber.trim() || isLoading">
               <i class="icon-save" aria-hidden="true"></i>
               {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
             </button>

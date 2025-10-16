@@ -23,7 +23,7 @@ import {
   UserRegisterRequestDTO,
   TeacherCreateRequestDTO,
   SectionCreateRequestDTO
-} from '../../../model/dto/registrados';
+} from '../../../model';
 
 @Injectable({
   providedIn: 'root'

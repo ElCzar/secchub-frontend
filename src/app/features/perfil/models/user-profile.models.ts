@@ -1,13 +1,26 @@
 export interface UserProfile {
-  id: string;
+  id: number;
+  username: string;
+  faculty: string;
   nombreCompleto: string;
   correo: string;
+  documentType: string;
+  documentNumber: string;
+  isActive: boolean;
+  createdDate: string;
+  updatedDate?: string;
   rol: 'administrador' | 'jefe_seccion';
-  seccion?: string; // Solo para jefe de sección
+  seccion?: {
+    id: number;
+    name: string;
+    description?: string;
+  };
 }
 
 export interface EditUserProfileRequest {
-  id: string;
-  nombreCompleto: string;
+  name: string;
+  lastName: string;
   correo: string;
+  documentType: string;
+  documentNumber: string;
 }

@@ -1,56 +1,74 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { UserProfile, EditUserProfileRequest } from '../models/user-profile.models';
+import { UserProfileResponseDTO, UserProfileUpdateRequestDTO } from '../../../model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
+  private readonly baseUrl = environment.apiUrl;
 
-  constructor() { }
+  constructor(private readonly http: HttpClient) { }
 
-  // Simular obtener el perfil del usuario actual
+  // Obtener el perfil del usuario actual
   getCurrentUserProfile(): Observable<UserProfile> {
-    // En una implementación real, esto vendría de una API
-    const mockProfile: UserProfile = {
-      id: '1',
-      nombreCompleto: 'Juan Carlos Pérez',
-      correo: 'juan.perez@universidad.edu.co',
-      rol: 'administrador'
-    };
-
-    return of(mockProfile);
+    return this.http.get<UserProfileResponseDTO>(`${this.baseUrl}/profile/me`)
+      .pipe(
+        map(dto => this.mapDTOToUserProfile(dto))
+      );
   }
 
-  // Simular obtener perfil por ID
-  getUserProfile(userId: string): Observable<UserProfile> {
-    // En una implementación real, esto vendría de una API
-    const mockProfile: UserProfile = {
-      id: userId,
-      nombreCompleto: 'María García López',
-      correo: 'maria.garcia@universidad.edu.co',
-      rol: 'jefe_seccion',
-      seccion: 'Ingeniería de Sistemas'
-    };
-
-    return of(mockProfile);
+  // Obtener perfil por ID
+  getUserProfile(userId: number): Observable<UserProfile> {
+    return this.http.get<UserProfileResponseDTO>(`${this.baseUrl}/profile/${userId}`)
+      .pipe(
+        map(dto => this.mapDTOToUserProfile(dto))
+      );
   }
 
-  // Actualizar perfil del usuario
+  // Actualizar perfil del usuario actual
   updateUserProfile(profileData: EditUserProfileRequest): Observable<UserProfile> {
-    // En una implementación real, esto sería una llamada HTTP
-    const updatedProfile: UserProfile = {
-      id: profileData.id,
-      nombreCompleto: profileData.nombreCompleto,
-      correo: profileData.correo,
-      rol: 'administrador' // Este dato vendría del backend
+    const updateDTO: UserProfileUpdateRequestDTO = {
+      name: profileData.name,
+      lastName: profileData.lastName,
+      email: profileData.correo,
+      documentTypeId: profileData.documentType,
+      documentNumber: profileData.documentNumber
     };
 
-    return of(updatedProfile);
+    return this.http.put<UserProfileResponseDTO>(`${this.baseUrl}/profile/me`, updateDTO)
+      .pipe(
+        map(dto => this.mapDTOToUserProfile(dto))
+      );
   }
 
-  // Verificar si el usuario puede editar perfil
-  canEditProfile(userRole: string): boolean {
-    return userRole === 'administrador';
+  // Verificar si el usuario puede editar el perfil
+  canEditProfile(role: string): boolean {
+    return role === 'administrador';
+  }
+
+  // Mapear DTO a modelo local
+  private mapDTOToUserProfile(dto: UserProfileResponseDTO): UserProfile {
+    return {
+      id: dto.id,
+      username: dto.username,
+      faculty: dto.faculty,
+      nombreCompleto: `${dto.name} ${dto.lastName}`,
+      correo: dto.email,
+      documentType: dto.documentTypeId,
+      documentNumber: dto.documentNumber,
+      isActive: dto.isActive,
+      createdDate: dto.createdDate,
+      updatedDate: dto.updatedDate,
+      rol: dto.role === 'ADMIN' ? 'administrador' : 'jefe_seccion',
+      seccion: dto.sectionInfo ? {
+        id: dto.sectionInfo.id,
+        name: dto.sectionInfo.name,
+        description: dto.sectionInfo.description
+      } : undefined
+    };
   }
 }
