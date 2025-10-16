@@ -6,7 +6,11 @@
 
   <aside class="sidebar">
     <!-- Accesos rápidos permanente -->
-    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    @if (isAdministrator()) {
+      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+    } @else {
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    }
   </aside>
 
   <main class="content">
@@ -49,7 +53,11 @@
     <!-- Botón de guardar cambios -->
     <div class="toolbar">
       <button class="btn btn--primary" (click)="guardarCambios()">Guardar cambios</button>
-      <button class="btn btn--secondary" (click)="enviarAAdministrador()">Enviar a administrador</button>
+      @if (isAdministrator()) {
+        <button class="btn btn--secondary" (click)="exportarNomina()">Obtener Nómina</button>
+      } @else {
+        <button class="btn btn--secondary" (click)="enviarAAdministrador()">Enviar a administrador</button>
+      }
     </div>
 
     <!-- Tabla 1: Monitores Administrativos -->

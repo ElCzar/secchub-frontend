@@ -22,10 +22,11 @@ import { SectionInformationService } from '../../../../shared/services/section-i
 import { HorarioMonitor } from '../../model/horario-monitor.model';
 import { TeachingAssistantScheduleResponseDTO } from '../../../../shared/model/dto/planning/TeachingAssistantScheduleResponseDTO.model';
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
+import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
 
 @Component({
   selector: 'app-solicitud-monitores-page',
-  imports: [CommonModule, FormsModule, MonitoresTable, AccesosRapidosSeccion, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios],
+  imports: [CommonModule, FormsModule, MonitoresTable, AccesosRapidosSeccion, AccesosRapidosAdmi, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios],
   templateUrl: './solicitud-monitores-page.html',
   styleUrl: './solicitud-monitores-page.scss'
 })
@@ -198,7 +199,9 @@ export class SolicitudMonitoresPage implements OnInit {
       this.monitores = this.studentApplications.map(sa => {
         const userInfo = this.userInformation.find(ui => ui.id === sa.userId);
         const teachingAssistant = this.teachingAssistants.find(ta => ta.studentApplicationId === sa.id);
-        if (userInfo) {
+        if (userInfo && this.isAdministrator() && sa.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id) {
+          return this.convertToMonitor(sa, userInfo, teachingAssistant || null);
+        } else if (userInfo && !this.isAdministrator()) {
           return this.convertToMonitor(sa, userInfo, teachingAssistant || null);
         } else {
           console.warn(`No user information found for student application ID ${sa.id} with user ID ${sa.userId}`);
@@ -255,8 +258,8 @@ export class SolicitudMonitoresPage implements OnInit {
           weeks: monitor.semanas || 0,
           schedules: (monitor.horarios ?? []).filter(h => h.dia && h.horaInicio && h.horaFinal).map(h => ({
             day: h.dia,
-            startTime: h.horaInicio + ":00",
-            endTime: h.horaFinal + ":00"
+            startTime: (h.horaInicio.split(':').length === 2) ? h.horaInicio + ":00" : h.horaInicio,
+            endTime: (h.horaFinal.split(':').length === 2) ? h.horaFinal + ":00" : h.horaFinal
           }))
         };
         if (existingTA) {
@@ -310,12 +313,20 @@ export class SolicitudMonitoresPage implements OnInit {
     // TODO: Implementar lógica de envío real de alerta
   }
 
+  exportarNomina() {
+    // TODO: lógica de exportación de nómina
+  }
+
   // Método para obtener el conteo de cambios
   get cambiosCount() {
     return this.monitores.filter(m => m.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id || m.statusId === this.statuses.find(s => s.name === 'Rejected')?.id).length;
   }
 
   // Handlers filtros
+  isAdministrator() {
+    return localStorage.getItem('userRole') === 'ROLE_ADMIN';
+  }
+
   onSearchChange() {
     this.applyFilters();
   }

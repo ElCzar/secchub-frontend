@@ -21,7 +21,7 @@
 
       <!-- Día -->
       <div>
-        <select class="input" [(ngModel)]="h.dia" (ngModelChange)="onDayChange()">
+        <select class="input" [(ngModel)]="h.dia">
           <option value="">Seleccione…</option>
           <option *ngFor="let d of days" [value]="d.v">{{ d.t }}</option>
         </select>

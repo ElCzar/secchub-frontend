@@ -45,23 +45,16 @@ export class HorariosMonitores implements OnInit {
   }
 
   /**
-   * Ensures there's always at least one empty row for adding new schedules
+   * Ensures there's at least one empty row when no rows exist
    */
   private ensureEmptyRow() {
-    // Check if there's at least one completely empty row
-    const hasEmptyRow = this.horarios.some(h => !h.dia && !h.horaInicio && !h.horaFinal);
-    
-    if (!hasEmptyRow) {
+    // Only add an empty row if there are no rows at all
+    if (this.horarios.length === 0) {
       this.addHorario();
     }
   }
 
-  /**
-   * Called when a day is selected to ensure empty row availability
-   */
-  onDayChange() {
-    this.ensureEmptyRow();
-  }
+
 
   calculateTotalHours(horario: HorarioMonitor) {
     if (horario.horaInicio && horario.horaFinal) {
@@ -77,9 +70,6 @@ export class HorariosMonitores implements OnInit {
     } else {
       horario.totalHoras = 0;
     }
-    
-    // Ensure there's always an empty row available
-    this.ensureEmptyRow();
   }
 
   private timeStringToMinutes(timeString: string): number {
