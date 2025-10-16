@@ -11,10 +11,10 @@ import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/in
 import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
 import { ENVIO_CORREO_ROUTES } from './features/envio-correo/envio-correo.routes';
+import { VER_REGISTRADOS_ROUTES } from './features/ver-registrados/ver-registrados.routes';
 import { SolicitudMonitoresPage } from './features/solicitud-monitores/pages/solicitud-monitores-page/solicitud-monitores-page';
 import { SolicitudMonitoresAdminPage } from './features/solicitud-monitores-admin/pages/solicitud-monitores-admin-page/solicitud-monitores-admin-page';
 import { RegistrarPage } from './features/registrar/pages/registrar-page/registrar-page';
-import { VerRegistradosPages } from './features/ver-registrados/pages/ver-registrados-pages/ver-registrados-pages';
 
 export const routes: Routes = [
     {path: '',component: LoginPageComponent },
@@ -45,7 +45,7 @@ export const routes: Routes = [
 
     {path: 'registrar', component: RegistrarPage},
 
-    {path: 'ver-registrados', component: VerRegistradosPages}
+    {path: 'ver-registrados', children: VER_REGISTRADOS_ROUTES}
 ];
 
 

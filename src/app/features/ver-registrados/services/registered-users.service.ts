@@ -1,85 +1,117 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, map, forkJoin, of, catchError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
+
+// Importar los nuevos modelos y DTOs
 import { 
   RegisteredUser, 
   UserFilter, 
-  UserRole, 
-  TeacherInfo, 
-  SectionInfo,
-  FilterOption 
-} from '../models/user-registered.model';
+  UserRole,
+  UserStatus,
+  Teacher,
+  SectionHead,
+  FilterOption,
+  UserSearchResult
+} from '../models';
+
+// Importar DTOs desde la nueva ubicación
+import {
+  TeacherResponseDTO,
+  SectionResponseDTO,
+  UserRegisterRequestDTO,
+  TeacherCreateRequestDTO,
+  SectionCreateRequestDTO
+} from '../../../model/dto/registrados';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RegisteredUsersService {
-  private readonly baseUrl = 'http://localhost:8080'; // Ajustar según configuración
+  private readonly baseUrl = environment.apiUrl || 'http://localhost:8080';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   /**
-   * Obtiene todos los usuarios registrados
+   * Obtiene todos los usuarios registrados desde el backend
    */
   getAllRegisteredUsers(): Observable<RegisteredUser[]> {
-    // En un escenario real, habría un endpoint específico para esto
-    // Por ahora simulamos combinando los endpoints existentes
     return forkJoin({
       teachers: this.getAllTeachers(),
       sections: this.getAllSections()
+      // Note: Agregar endpoint para administradores cuando esté disponible en el backend
     }).pipe(
       map(results => {
         const users: RegisteredUser[] = [];
         
         // Procesar docentes
         results.teachers.forEach(teacher => {
-          users.push({
+          const teacherUser: Teacher = {
             id: teacher.id,
             userInfo: {
               id: teacher.userId,
-              username: `user_${teacher.userId}`, // En real vendría del backend
-              faculty: 'Facultad por definir', // En real vendría del backend
-              name: `Docente ${teacher.id}`, // En real vendría del backend
-              lastName: 'Apellido', // En real vendría del backend
-              email: `docente${teacher.id}@universidad.edu.co`, // En real vendría del backend
+              username: `teacher_${teacher.userId}`,
+              faculty: 'Facultad por definir',
+              name: `Docente ${teacher.id}`,
+              lastName: 'Apellido',
+              email: `docente${teacher.id}@universidad.edu.co`,
               documentTypeId: '1',
-              documentNumber: `${1000000 + teacher.id}`
+              documentNumber: `${1000000 + teacher.id}`,
+              createdDate: teacher.createdDate
             },
             role: UserRole.TEACHER,
-            teacherInfo: teacher,
-            createdDate: new Date().toISOString(),
-            status: 'Activo'
-          });
+            status: UserStatus.ACTIVE,
+            createdDate: teacher.createdDate || new Date().toISOString(),
+            teacherInfo: {
+              id: teacher.id,
+              userId: teacher.userId,
+              employmentTypeId: teacher.employmentTypeId,
+              employmentTypeName: teacher.employmentTypeName,
+              maxHours: teacher.maxHours,
+              createdDate: teacher.createdDate,
+              updatedDate: teacher.updatedDate
+            }
+          };
+          users.push(teacherUser);
         });
 
         // Procesar jefes de sección
         results.sections.forEach(section => {
-          users.push({
+          const sectionHeadUser: SectionHead = {
             id: section.id,
             userInfo: {
               id: section.userId,
-              username: `jefe_${section.userId}`,
+              username: `section_head_${section.userId}`,
               faculty: 'Facultad por definir',
-              name: `Jefe ${section.id}`,
+              name: `Jefe Sección ${section.id}`,
               lastName: 'Apellido',
               email: `jefe${section.id}@universidad.edu.co`,
               documentTypeId: '1',
-              documentNumber: `${2000000 + section.id}`
+              documentNumber: `${2000000 + section.id}`,
+              createdDate: section.createdDate
             },
             role: UserRole.SECTION_HEAD,
-            sectionInfo: section,
-            createdDate: new Date().toISOString(),
-            status: 'Activo'
-          });
+            status: UserStatus.ACTIVE,
+            createdDate: section.createdDate || new Date().toISOString(),
+            sectionInfo: {
+              id: section.id,
+              name: section.name,
+              userId: section.userId,
+              description: section.description,
+              createdDate: section.createdDate,
+              updatedDate: section.updatedDate
+            }
+          };
+          users.push(sectionHeadUser);
         });
 
         return users;
       }),
       catchError(error => {
-        console.error('Error al obtener usuarios:', error);
-        return of(this.getMockUsers()); // Fallback a datos mock
+        console.error('Error al obtener usuarios registrados:', error);
+        // En caso de error, devolver array vacío en lugar de datos mock
+        return of([]);
       })
     );
   }
@@ -87,8 +119,8 @@ export class RegisteredUsersService {
   /**
    * Obtiene todos los docentes del backend
    */
-  private getAllTeachers(): Observable<TeacherInfo[]> {
-    return this.http.get<TeacherInfo[]>(`${this.baseUrl}/admin/teachers`)
+  private getAllTeachers(): Observable<TeacherResponseDTO[]> {
+    return this.http.get<TeacherResponseDTO[]>(`${this.baseUrl}/admin/teachers`)
       .pipe(
         catchError(error => {
           console.error('Error al obtener docentes:', error);
@@ -100,14 +132,93 @@ export class RegisteredUsersService {
   /**
    * Obtiene todas las secciones del backend
    */
-  private getAllSections(): Observable<SectionInfo[]> {
-    return this.http.get<SectionInfo[]>(`${this.baseUrl}/sections`)
+  private getAllSections(): Observable<SectionResponseDTO[]> {
+    return this.http.get<SectionResponseDTO[]>(`${this.baseUrl}/admin/sections`)
       .pipe(
         catchError(error => {
           console.error('Error al obtener secciones:', error);
           return of([]);
         })
       );
+  }
+
+  /**
+   * Crea un nuevo docente
+   */
+  createTeacher(teacherData: TeacherCreateRequestDTO): Observable<TeacherResponseDTO> {
+    return this.http.post<TeacherResponseDTO>(`${this.baseUrl}/admin/teachers`, teacherData);
+  }
+
+  /**
+   * Crea una nueva sección
+   */
+  createSection(sectionData: SectionCreateRequestDTO): Observable<SectionResponseDTO> {
+    return this.http.post<SectionResponseDTO>(`${this.baseUrl}/admin/sections`, sectionData);
+  }
+
+  /**
+   * Registra un nuevo usuario
+   */
+  registerUser(userData: UserRegisterRequestDTO): Observable<any> {
+    return this.http.post(`${this.baseUrl}/admin/register`, userData);
+  }
+
+  /**
+   * Obtiene un usuario por ID
+   */
+  getUserById(id: number): Observable<RegisteredUser | null> {
+    return this.getAllRegisteredUsers().pipe(
+      map(users => users.find(user => user.id === id) || null)
+    );
+  }
+
+  /**
+   * Actualiza un docente
+   */
+  updateTeacher(id: number, teacherData: Partial<TeacherCreateRequestDTO>): Observable<TeacherResponseDTO> {
+    return this.http.put<TeacherResponseDTO>(`${this.baseUrl}/admin/teachers/${id}`, teacherData);
+  }
+
+  /**
+   * Elimina un docente
+   */
+  deleteTeacher(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/admin/teachers/${id}`);
+  }
+
+  /**
+   * Búsqueda paginada de usuarios
+   */
+  searchUsers(filter: UserFilter, page: number = 1, pageSize: number = 10): Observable<UserSearchResult> {
+    // Preparar parámetros para cuando el backend implemente la búsqueda
+    const searchParams = {
+      page: page.toString(),
+      size: pageSize.toString(),
+      ...(filter.role && { role: filter.role }),
+      ...(filter.searchTerm && { search: filter.searchTerm }),
+      ...(filter.faculty && { faculty: filter.faculty }),
+      ...(filter.status && { status: filter.status })
+    };
+    
+    console.log('Parámetros de búsqueda preparados:', searchParams);
+
+    // Por ahora usamos el método local hasta que haya un endpoint de búsqueda
+    return this.getAllRegisteredUsers().pipe(
+      map(allUsers => {
+        const filteredUsers = this.filterUsers(allUsers, filter);
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+        return {
+          users: paginatedUsers,
+          totalCount: filteredUsers.length,
+          currentPage: page,
+          pageSize: pageSize,
+          totalPages: Math.ceil(filteredUsers.length / pageSize)
+        };
+      })
+    );
   }
 
   /**
@@ -141,7 +252,7 @@ export class RegisteredUsersService {
       }
 
       // Filtro por estado
-      if (filter.status && user.status !== filter.status) {
+      if (filter.status && user.status.toString() !== filter.status) {
         return false;
       }
 
@@ -188,7 +299,7 @@ export class RegisteredUsersService {
       })),
       statuses: Object.entries(statusCounts).map(([status, count]) => ({
         id: status,
-        name: status,
+        name: this.getStatusLabel(status as UserStatus),
         count
       }))
     };
@@ -209,70 +320,15 @@ export class RegisteredUsersService {
   }
 
   /**
-   * Datos mock para desarrollo/fallback
+   * Obtiene la etiqueta legible del estado
    */
-  private getMockUsers(): RegisteredUser[] {
-    return [
-      {
-        id: 1,
-        userInfo: {
-          id: 1,
-          username: 'jperez',
-          faculty: 'Facultad de Ingeniería',
-          name: 'Juan',
-          lastName: 'Pérez',
-          email: 'jperez@universidad.edu.co',
-          documentTypeId: '1',
-          documentNumber: '12345678'
-        },
-        role: UserRole.TEACHER,
-        teacherInfo: {
-          id: 1,
-          userId: 1,
-          employmentTypeId: 1,
-          employmentTypeName: 'Tiempo Completo',
-          maxHours: 40
-        },
-        createdDate: '2024-01-15T10:30:00Z',
-        status: 'Activo'
-      },
-      {
-        id: 2,
-        userInfo: {
-          id: 2,
-          username: 'mgomez',
-          faculty: 'Facultad de Ciencias',
-          name: 'María',
-          lastName: 'Gómez',
-          email: 'mgomez@universidad.edu.co',
-          documentTypeId: '1',
-          documentNumber: '87654321'
-        },
-        role: UserRole.SECTION_HEAD,
-        sectionInfo: {
-          id: 1,
-          name: 'Sección de Matemáticas',
-          userId: 2
-        },
-        createdDate: '2024-01-20T14:15:00Z',
-        status: 'Activo'
-      },
-      {
-        id: 3,
-        userInfo: {
-          id: 3,
-          username: 'admin',
-          faculty: 'Administración',
-          name: 'Carlos',
-          lastName: 'Administrator',
-          email: 'admin@universidad.edu.co',
-          documentTypeId: '1',
-          documentNumber: '11111111'
-        },
-        role: UserRole.ADMIN,
-        createdDate: '2024-01-01T08:00:00Z',
-        status: 'Activo'
-      }
-    ];
+  private getStatusLabel(status: UserStatus): string {
+    const labels = {
+      [UserStatus.ACTIVE]: 'Activo',
+      [UserStatus.INACTIVE]: 'Inactivo',
+      [UserStatus.PENDING]: 'Pendiente',
+      [UserStatus.SUSPENDED]: 'Suspendido'
+    };
+    return labels[status] || status;
   }
 }

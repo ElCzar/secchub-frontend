@@ -133,14 +133,40 @@
       </p>
     </div>
 
-    <!-- Users Cards Component -->
-    <app-cards-registrados
-      [users]="filteredUsers"
-      [loading]="loading"
-      (userSelected)="onUserSelected($event)"
-      (editUser)="onEditUser($event)"
-      (deleteUser)="onDeleteUser($event)">
-    </app-cards-registrados>
+    <!-- Users Cards Section -->
+    <div class="users-grid" *ngIf="!loading">
+      <app-user-card-container
+        *ngFor="let user of filteredUsers; trackBy: trackByUserId"
+        [user]="user"
+        [actions]="cardActions"
+        [showActions]="true"
+        [loading]="false"
+        (userSelected)="onUserSelected($event)"
+        (editUser)="onEditUser($event)"
+        (deleteUser)="onDeleteUser($event)">
+      </app-user-card-container>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="loading-spinner"></div>
+      <p>Cargando usuarios...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredUsers.length === 0">
+      <div class="empty-icon">📭</div>
+      <h3>No se encontraron usuarios</h3>
+      <p *ngIf="allUsers.length === 0">
+        No hay usuarios registrados en el sistema.
+      </p>
+      <p *ngIf="allUsers.length > 0">
+        No hay usuarios que coincidan con los filtros aplicados.
+      </p>
+      <button class="btn btn--primary" (click)="clearFilters()" *ngIf="allUsers.length > 0">
+        Limpiar filtros
+      </button>
+    </div>
 
     <!-- Actions Toolbar -->
     <div class="toolbar" *ngIf="!loading">

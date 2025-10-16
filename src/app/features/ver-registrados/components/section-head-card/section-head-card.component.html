@@ -1,0 +1,79 @@
+<!-- Card específica para Jefes de Sección -->
+<button class="user-card section-head-card" 
+        [class.loading]="loading"
+        [class.inactive]="!isActive()"
+        (click)="onCardClick()"
+        [attr.aria-label]="'Información del jefe de sección ' + getFullName()">
+  
+  <!-- Header del jefe de sección -->
+  <div class="card-header">
+    <div class="user-avatar">
+      <span class="role-icon">{{ getRoleIcon(UserRole.SECTION_HEAD) }}</span>
+    </div>
+    <div class="user-info">
+      <h3 class="user-name">{{ getFullName() }}</h3>
+      <span class="user-role">{{ getRoleLabel(UserRole.SECTION_HEAD) }}</span>
+    </div>
+    <div class="user-status" [class]="getStatusClass(user.status)">
+      {{ getStatusLabel(user.status) }}
+    </div>
+  </div>
+
+  <!-- Información específica del jefe de sección -->
+  <div class="card-body">
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Email:</span>
+        <span class="info-value">{{ user.userInfo.email }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Facultad:</span>
+        <span class="info-value">{{ user.userInfo.faculty }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Sección:</span>
+        <span class="info-value">{{ sectionHeadUser.sectionInfo.name }}</span>
+      </div>
+      <div class="info-item" *ngIf="sectionHeadUser.sectionInfo.description">
+        <span class="info-label">Descripción:</span>
+        <span class="info-value">{{ sectionHeadUser.sectionInfo.description }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Documento:</span>
+        <span class="info-value">{{ user.userInfo.documentNumber }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Fecha Registro:</span>
+        <span class="info-value">{{ formatDate(user.createdDate) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones disponibles -->
+  <div class="card-actions" *ngIf="showActions">
+    <button class="btn btn-view" 
+            (click)="onCardClick()"
+            title="Ver detalles del jefe de sección"
+            [attr.aria-label]="'Ver detalles de ' + getFullName()">
+      👁️
+    </button>
+    <button class="btn btn-edit" 
+            (click)="onEditClick($event)"
+            title="Editar información del jefe de sección"
+            [attr.aria-label]="'Editar ' + getFullName()">
+      ✏️
+    </button>
+    <button class="btn btn-delete" 
+            (click)="onDeleteClick($event)"
+            title="Eliminar jefe de sección del sistema"
+            [attr.aria-label]="'Eliminar ' + getFullName()">
+      🗑️
+    </button>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <span class="sr-only">Cargando información del jefe de sección...</span>
+  </div>
+</button>
