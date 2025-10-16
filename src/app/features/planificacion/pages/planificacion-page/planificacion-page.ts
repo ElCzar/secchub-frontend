@@ -1222,4 +1222,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       })
     );
   }
+
+  public isAdministrator(): boolean {
+    return localStorage.getItem('userRole') === 'ROLE_ADMIN';
+  }
 }
