@@ -33,6 +33,7 @@ import {
 import { RegisteredUsersService } from '../../services/registered-users.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
 import { SidebarToggleButtonComponent } from "../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button";
+import { UserInformationResponseDTO } from '../../models/UserInformationResponseDTO.model';
 
 @Component({
   selector: 'app-ver-registrados-pages',
@@ -55,12 +56,12 @@ export class VerRegistradosPages implements OnInit {
   /**
    * Lista completa de usuarios registrados obtenida del backend
    */
-  allUsers: RegisteredUser[] = [];
+  allUsers: UserInformationResponseDTO[] = [];
   
   /**
    * Lista filtrada de usuarios que se muestra en la interfaz
    */
-  filteredUsers: RegisteredUser[] = [];
+  filteredUsers: UserInformationResponseDTO[] = [];
   
   /**
    * Indica si está cargando datos del servidor
@@ -148,7 +149,7 @@ export class VerRegistradosPages implements OnInit {
   loadUsers(): void {
     this.loading = true;
     
-    this.usersService.getAllRegisteredUsers().subscribe({
+    this.usersService.getAllUsers().subscribe({
       next: (users) => {
         this.allUsers = users;
         this.filteredUsers = [...users];

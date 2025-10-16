@@ -120,7 +120,7 @@ export class RegisteredUsersService {
    * Obtiene todos los docentes del backend
    */
   private getAllTeachers(): Observable<TeacherResponseDTO[]> {
-    return this.http.get<TeacherResponseDTO[]>(`${this.baseUrl}/admin/teachers`)
+    return this.http.get<TeacherResponseDTO[]>(`${this.baseUrl}/teachers`)
       .pipe(
         catchError(error => {
           console.error('Error al obtener docentes:', error);
@@ -133,7 +133,7 @@ export class RegisteredUsersService {
    * Obtiene todas las secciones del backend
    */
   private getAllSections(): Observable<SectionResponseDTO[]> {
-    return this.http.get<SectionResponseDTO[]>(`${this.baseUrl}/admin/sections`)
+    return this.http.get<SectionResponseDTO[]>(`${this.baseUrl}/sections`)
       .pipe(
         catchError(error => {
           console.error('Error al obtener secciones:', error);
@@ -146,21 +146,21 @@ export class RegisteredUsersService {
    * Crea un nuevo docente
    */
   createTeacher(teacherData: TeacherCreateRequestDTO): Observable<TeacherResponseDTO> {
-    return this.http.post<TeacherResponseDTO>(`${this.baseUrl}/admin/teachers`, teacherData);
+    return this.http.post<TeacherResponseDTO>(`${this.baseUrl}/teachers`, teacherData);
   }
 
   /**
    * Crea una nueva sección
    */
   createSection(sectionData: SectionCreateRequestDTO): Observable<SectionResponseDTO> {
-    return this.http.post<SectionResponseDTO>(`${this.baseUrl}/admin/sections`, sectionData);
+    return this.http.post<SectionResponseDTO>(`${this.baseUrl}/sections`, sectionData);
   }
 
   /**
    * Registra un nuevo usuario
    */
   registerUser(userData: UserRegisterRequestDTO): Observable<any> {
-    return this.http.post(`${this.baseUrl}/admin/register`, userData);
+    return this.http.post(`${this.baseUrl}/register`, userData);
   }
 
   /**
@@ -176,14 +176,21 @@ export class RegisteredUsersService {
    * Actualiza un docente
    */
   updateTeacher(id: number, teacherData: Partial<TeacherCreateRequestDTO>): Observable<TeacherResponseDTO> {
-    return this.http.put<TeacherResponseDTO>(`${this.baseUrl}/admin/teachers/${id}`, teacherData);
+    return this.http.put<TeacherResponseDTO>(`${this.baseUrl}/teachers/${id}`, teacherData);
   }
 
   /**
    * Elimina un docente
    */
   deleteTeacher(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/admin/teachers/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/teachers/${id}`);
+  }
+
+  /**
+   * Get all users
+   */
+  getAllUsers(): Observable<RegisteredUser[]> {
+    return this.http.get<RegisteredUser[]>(`${this.baseUrl}/user/all`);
   }
 
   /**
