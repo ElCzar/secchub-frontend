@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MonitoresTable } from './monitores-table';
+import { MonitoresTable } from './monitores-table-admin';
 
 describe('MonitoresTable', () => {
   let component: MonitoresTable;

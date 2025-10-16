@@ -29,7 +29,9 @@
         <label class="filter-label" for="sm-materia">Filtrar por Materia:</label>
         <select id="sm-materia" [(ngModel)]="selectedMateria" (ngModelChange)="onMateriaChange()" class="filter-select">
           <option value="">Todas las materias</option>
-          <option *ngFor="let mat of materias" [value]="mat">{{mat}}</option>
+          @for (mat of materias; track mat) {
+            <option [value]="mat">{{mat}}</option>
+          }
         </select>
       </div>
 
@@ -37,7 +39,9 @@
         <label class="filter-label" for="sm-seccion">Filtrar por Sección:</label>
         <select id="sm-seccion" [(ngModel)]="selectedSeccion" (ngModelChange)="onSeccionChange()" class="filter-select">
           <option value="">Todas las secciones</option>
-          <option *ngFor="let sec of secciones" [value]="sec">{{sec}}</option>
+          @for (sec of secciones; track sec) {
+            <option [value]="sec">{{sec}}</option>
+          }
         </select>
       </div>
     </div>
@@ -54,14 +58,14 @@
       Monitores Administrativos
     </button>
     <div class="hr-line"></div>
-    <ng-container *ngIf="showAdminTable">
+    @if (showAdminTable) {
       <app-monitores-table
         [monitores]="adminMonitores"
         [adminMode]="true"
         [showMonitorAdministrativo]="false"
         (update)="onMonitoresUpdate($event)">
       </app-monitores-table>
-    </ng-container>
+    }
 
     <!-- Tabla 2: Monitores Académicos (todas las columnas actuales excepto Monitor Administrativo) -->
     <button type="button" class="section-toggle" (click)="showAcademicTable = !showAcademicTable">
@@ -69,14 +73,14 @@
       Monitores Académicos
     </button>
     <div class="hr-line"></div>
-    <ng-container *ngIf="showAcademicTable">
+    @if (showAcademicTable) {
       <app-monitores-table
         [monitores]="nonAdminMonitores"
         [adminMode]="false"
         [showMonitorAdministrativo]="false"
         (update)="onMonitoresUpdate($event)">
       </app-monitores-table>
-    </ng-container>
+    }
   </main>
 </div>
 

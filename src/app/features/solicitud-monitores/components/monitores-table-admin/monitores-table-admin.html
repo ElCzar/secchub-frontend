@@ -87,7 +87,7 @@
         <!-- Bloque de horarios (solo si showHorarios) -->
         <tr *ngIf="m.showHorarios" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
           <td [attr.colspan]="getColspan()">
-            <app-horarios-monitores [horarios]="m.horarios"></app-horarios-monitores>
+            <app-horarios-monitores [horarios]="m.horarios ?? []"></app-horarios-monitores>
           </td>
         </tr>
       </ng-container>

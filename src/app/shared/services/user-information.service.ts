@@ -146,4 +146,17 @@ export class UserInformationService {
         map(user => user ? `${user.name} ${user.lastName}` : null)
     );
     }
+
+    /**
+     * Get all users information (admin only).
+     * @returns Observable<UserInformationResponseDTO[]> with all users details
+     */
+    getAllUsersInformation(): Observable<UserInformationResponseDTO[]> {
+    return this.http.get<UserInformationResponseDTO[]>(`${this.baseUrl}/all`).pipe(
+        catchError((error) => {
+        console.error('Error loading all users information:', error);
+        return of([]);
+        })
+    );
+    }
 }

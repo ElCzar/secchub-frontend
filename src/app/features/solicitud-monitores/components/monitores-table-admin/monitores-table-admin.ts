@@ -1,15 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Monitor } from '../../models/monitor.model';
-import { HorariosMonitores } from '../horarios-monitores/horarios-monitores';
+import { HorariosMonitores } from '../horarios-monitores-admin/horarios-monitores-admin';
 import { PopEliminar } from '../pop-eliminar/pop-eliminar';
+import { Monitor } from '../../model/monitor.model';
 
 @Component({
   selector: 'app-monitores-table',
   imports: [CommonModule, FormsModule, HorariosMonitores, PopEliminar],
-  templateUrl: './monitores-table.html',
-  styleUrl: './monitores-table.scss'
+  templateUrl: './monitores-table-admin.html',
+  styleUrl: './monitores-table-admin.scss'
 })
 export class MonitoresTable {
   @Input() monitores: Monitor[] = [];
@@ -42,7 +42,11 @@ export class MonitoresTable {
   // Acciones de edición/eliminación removidas para esta pantalla
 
   calcularTotal(m: Monitor) {
-    m.totalHoras = m.horasSemanales * m.semanas;
+    if (typeof m.horasSemanales === 'number' && typeof m.semanas === 'number') {
+      m.totalHoras = m.horasSemanales * m.semanas;
+    } else {
+      m.totalHoras = 0;
+    }
   }
 
   // Calcula el colspan correcto del expander/horarios según las columnas visibles

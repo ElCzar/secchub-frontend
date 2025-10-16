@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -13,19 +13,57 @@ export class SolicitudMonitoresService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getMonitores(): Observable<any> {
+  getStudentApplications(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/current-semester`,{
       observe: 'response'
     });
   }
 
-  updateMonitores(monitores: any[]): Observable<void> {
-    console.log('Guardando monitores:', monitores);
-    
-    // Simular guardado exitoso - reemplazar con llamada HTTP real
-    return of(void 0);
-    
-    // Descomenta para usar la llamada HTTP real:
-    // return this.http.put<void>(`${this.baseUrl}/actualizar`, monitores);
+  approveStudentApplication(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/${id}/approve`, null,{
+      observe: 'response'
+    });
+  }
+
+  rejectStudentApplication(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/${id}/reject`, null,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistantByStudentApplicationId(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/student-application/${id}`,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistantById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistants(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/current-semester`,{
+      observe: 'response'
+    });
+  }
+
+  createTeachingAssistant(teachingAssistantRequestDTO: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}`, teachingAssistantRequestDTO,{
+      observe: 'response'
+    });
+  }
+
+  updateTeachingAssistant(id: number, teachingAssistantRequestDTO: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`, teachingAssistantRequestDTO,{
+      observe: 'response'
+    });
+  }
+
+  deleteTeachingAssistant(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`,{
+      observe: 'response'
+    });
   }
 }

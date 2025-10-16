@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Monitor } from '../../models/monitor.model';
+import { Monitor } from '../../model/monitor.model';
 
 @Component({
   selector: 'app-pop-exportar',
@@ -27,33 +27,38 @@ export class PopExportar {
 
   // Generar número de documento ficticio basado en ID
   getDocumentoIdentidad(monitor: Monitor): string {
-    return `544${monitor.id.padStart(5, '0')}`;
+    const idStr = (monitor.id || 0).toString();
+    return `544${idStr.padStart(5, '0')}`;
   }
 
   // Generar número de clase basado en ID
   getNumeroClase(monitor: Monitor): string {
-    return `102${monitor.id.padStart(3, '0')}`;
+    const idStr = (monitor.id || 0).toString();
+    return `102${idStr.padStart(3, '0')}`;
   }
 
   // Generar teléfono ficticio
   getTelefono(monitor: Monitor): string {
-    return `32154798${monitor.id.slice(-2).padStart(2, '0')}`;
+    const idStr = (monitor.id || 0).toString();
+    return `32154798${idStr.slice(-2).padStart(2, '0')}`;
   }
 
   // Generar correo alternativo
   getCorreoAlternativo(monitor: Monitor): string {
-    return `${monitor.nombre.toLowerCase()}@gmail.com`;
+    const nombre = monitor.nombre?.toLowerCase() || 'monitor';
+    return `${nombre}@gmail.com`;
   }
 
   // Generar dirección ficticia
   getDireccion(monitor: Monitor): string {
-    return `Car 58#5-${monitor.id.slice(-1)}`;
+    const idStr = (monitor.id || 0).toString();
+    return `Car 58#5-${idStr.slice(-1)}`;
   }
 
   // Generar celular institucional
   getCelularInstitucional(monitor: Monitor): string {
     const baseTelefono = this.getTelefono(monitor);
-    const idNum = parseInt(monitor.id, 10);
+    const idNum = monitor.id || 0;
     const suffix = (idNum + 10).toString().slice(-2);
     return baseTelefono.slice(0, -2) + suffix;
   }

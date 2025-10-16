@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HorarioMonitor } from '../../models/horario-monitor.model';
+import { HorarioMonitor } from '../../model/horario-monitor.model';
 
 @Component({
   selector: 'app-horarios-monitores',
@@ -27,7 +27,10 @@ export class HorariosMonitores {
   }
 
   addHorario() {
-    this.horarios.push({ dia: '', horaInicio: '', horaFinal: '', totalHoras: 0 });
+    this.horarios.push({
+      dia: '', horaInicio: '', horaFinal: '', totalHoras: 0,
+      id: 0
+    });
   }
 
   deleteHorario(index: number) {
@@ -51,7 +54,7 @@ export class HorariosMonitores {
   }
 
   private timeStringToMinutes(timeString: string): number {
-    const [hours, minutes] = timeString.split(':').map(num => parseInt(num));
+    const [hours, minutes] = timeString.split(':').map(num => Number.parseInt(num));
     return hours * 60 + minutes;
   }
 

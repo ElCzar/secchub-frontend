@@ -1,36 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
-import { MonitoresTable } from '../../components/monitores-table/monitores-table';
-import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
+import { Monitor } from '../../model/monitor.model';
+import { MonitoresTable } from '../../components/monitores-table-admin/monitores-table-admin';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { PopGuardarCambios } from '../../../../shared/components/pop-guardar-cambios/pop-guardar-cambios';
 import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambios/pop-enviar-cambios';
+import { PopExportar } from '../../components/pop-exportar/pop-exportar';
+import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
+import { SolicitudMonitoresService } from '../../services/solicitud-monitores.service';
 import { StudentApplicationResponseDTO } from '../../../../shared/model/dto/integration/StudentApplicationResponseDTO.model';
 import { StatusDTO } from '../../../../shared/model/dto/parametric';
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
 import { UserInformationService } from '../../../../shared/services/user-information.service';
-import { Monitor } from '../../model/monitor.model';
-import { firstValueFrom } from 'rxjs';
 import { TeachingAssistantResponseDTO } from '../../../../shared/model/dto/planning/TeachingAssistantResponseDTO.model';
 import { CourseResponseDTO } from '../../../../shared/model/dto/admin/CourseResponseDTO.model';
 import { CourseInformationService } from '../../../../shared/services/course-information.service';
 import { SectionInformationService } from '../../../../shared/services/section-information.service';
+import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
 import { HorarioMonitor } from '../../model/horario-monitor.model';
 import { TeachingAssistantScheduleResponseDTO } from '../../../../shared/model/dto/planning/TeachingAssistantScheduleResponseDTO.model';
-import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
+import { firstValueFrom } from 'rxjs';
+
+
+
 
 @Component({
   selector: 'app-solicitud-monitores-page',
-  imports: [CommonModule, FormsModule, MonitoresTable, AccesosRapidosSeccion, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios],
-  templateUrl: './solicitud-monitores-page.html',
-  styleUrl: './solicitud-monitores-page.scss'
+  imports: [CommonModule, FormsModule, MonitoresTable, HeaderComponent, SidebarToggleButtonComponent, PopGuardarCambios, PopEnviarCambios, PopExportar, AccesosRapidosAdmi],
+  templateUrl: './solicitud-monitores-admin-page.html',
+  styleUrl: './solicitud-monitores-admin-page.scss'
 })
 
-export class SolicitudMonitoresPage implements OnInit {
+export class SolicitudMonitoresAdminPage implements OnInit {
   // Information obtained
   studentApplications: StudentApplicationResponseDTO[] = [];
   studentInformation: UserInformationResponseDTO[] = [];
@@ -55,16 +59,17 @@ export class SolicitudMonitoresPage implements OnInit {
   materias: number[] = [];
   secciones: number[] = [];
 
-  // Toggle tables
+  // Desplegables
   showAdminTable = false;
   showAcademicTable = false;
 
-  // Popup save changes
+  // Popup guardar cambios
   showSaveModal = false;
   saveSuccess = true;
 
-  // Popup send changes
-  showSendModal = false;
+  // Popup exportar nómina
+  showExportModal = false;
+  showExportTable = false;
 
   constructor(
     private readonly monitoresService: SolicitudMonitoresService, 
@@ -90,6 +95,7 @@ export class SolicitudMonitoresPage implements OnInit {
     } else {
       statusName = "pendiente";
     }
+
     return {
       // Basic info
       id: studentApplicationDTO.id,
@@ -100,7 +106,7 @@ export class SolicitudMonitoresPage implements OnInit {
       // Personal info
       nombre: userInformationDTO.name,
       apellido: userInformationDTO.lastName,
-      carrera: studentApplicationDTO.program,
+      carrera: userInformationDTO.faculty,
       semestre: studentApplicationDTO.studentSemester,
       promedio: studentApplicationDTO.academicAverage,
       correo: userInformationDTO.email,
@@ -140,17 +146,19 @@ export class SolicitudMonitoresPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadParameters();
     this.loadMonitores();
-    this.applyFilters();
+    this.loadMonitoresInfo();
+    this.loadParameters();
   }
 
   // Load data for Student Applications
   loadMonitores() {
-    this.monitoresService.getStudentApplications().subscribe(response => {
-      const dtoArray = response.body as StudentApplicationResponseDTO[];
-      this.studentApplications = dtoArray || [];
-      this.loadMonitoresInfo();
+    this.monitoresService.getStudentApplications().subscribe(data => {
+      const dtoArray = data as StudentApplicationResponseDTO[];
+      this.studentApplications = dtoArray;
+      
+      // Process the data after all information is loaded
+      this.processMonitorData();
     });
   }
 
@@ -168,6 +176,9 @@ export class SolicitudMonitoresPage implements OnInit {
     // Combine all observables and subscribe to get the results
     Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))).then(results => {
       this.userInformation = results.filter((info): info is UserInformationResponseDTO => info !== null);
+      
+      // Process the data after user information is loaded
+      this.processMonitorData();
     }).catch(error => {
       console.error('Error loading user information for monitors:', error);
     });
@@ -175,18 +186,39 @@ export class SolicitudMonitoresPage implements OnInit {
     // Fetch existing teaching assistants for the student applications
     Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs))).then(results => {
       this.teachingAssistants = results.filter((info): info is TeachingAssistantResponseDTO => info !== null);
+      
+      // Process the data after teaching assistants are loaded
+      this.processMonitorData();
     }).catch(error => {
       console.error('Error loading teaching assistants for monitors:', error);
     });
+  }
 
-    // After both user information and teaching assistants are loaded, convert to Monitor model
-    Promise.all([
-      Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))),
-      Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs)))
-    ]).then(([userInfos, teachingAssistants]) => {
-      this.userInformation = userInfos.filter((info): info is UserInformationResponseDTO => info !== null);
-      this.teachingAssistants = teachingAssistants.filter((info): info is TeachingAssistantResponseDTO => info !== null);
+  // Load parametric data: statuses, courses, sections
+  loadParameters() {
+    this.parametricService.getAllStatuses().subscribe(data => {
+      this.statuses = data;
+      this.processMonitorData();
+    });
+    this.courseInformationService.findAllCourses().subscribe(data => {
+      this.courses = data;
+      this.processMonitorData();
+    });
+    this.sectionInformationService.findAllSections().subscribe(data => {
+      this.sections = data;
+      this.processMonitorData();
+    });
+  }
 
+  // Process and convert all data to Monitor model
+  private processMonitorData() {
+    // Only process if we have all required data
+    if (this.studentApplications.length > 0 && 
+        this.userInformation.length > 0 && 
+        this.statuses.length > 0 && 
+        this.courses.length > 0 && 
+        this.sections.length > 0) {
+      
       this.monitores = this.studentApplications.map(sa => {
         const userInfo = this.userInformation.find(ui => ui.id === sa.userId);
         const teachingAssistant = this.teachingAssistants.find(ta => ta.studentApplicationId === sa.id) || null;
@@ -197,23 +229,13 @@ export class SolicitudMonitoresPage implements OnInit {
           return null;
         }
       }).filter((m): m is Monitor => m !== null);
-      this.applyFilters();
-    }).catch(error => {
-      console.error('Error processing monitors data:', error);
-    });
-  }
 
-  // Load parametric data: statuses, courses, sections
-  loadParameters() {
-    this.parametricService.getAllStatuses().subscribe(data => {
-      this.statuses = data;
-    });
-    this.courseInformationService.findAllCourses().subscribe(data => {
-      this.courses = data;
-    });
-    this.sectionInformationService.findAllSections().subscribe(data => {
-      this.sections = data;
-    });
+      this.materias = Array.from(new Set(this.monitores.map(m => m.courseId).filter((materia): materia is number => !!materia)))
+        .sort((a: number, b: number) => a - b);
+      this.secciones = Array.from(new Set(this.monitores.map(m => m.sectionId).filter((seccion): seccion is number => !!seccion)))
+        .sort((a: number, b: number) => a - b);
+      this.applyFilters();
+    }
   }
 
   // Handler when a student application is updated in any of the tables
@@ -238,34 +260,6 @@ export class SolicitudMonitoresPage implements OnInit {
       }
     }
 
-    // For the changes inside the tables (horario and hours/weeks) need to create/update teaching assistant
-    for (const monitor of this.monitores) {
-      if (monitor.estado === 'aceptado' && monitor.id) {
-        const existingTA = this.teachingAssistants.find(ta => ta.studentApplicationId === monitor.id);
-        const teachingAssistantRequestDTO = {
-          studentApplicationId: monitor.id,
-          weeklyHours: monitor.horasSemanales || 0,
-          weeks: monitor.semanas || 0,
-          schedules: (monitor.horarios ?? []).map(h => ({
-            day: h.dia,
-            startTime: h.horaInicio,
-            endTime: h.horaFinal
-          }))
-        };
-        if (existingTA) {
-          // Update existing teaching assistant
-          approvePromises.push(
-            firstValueFrom(this.monitoresService.updateTeachingAssistant(existingTA.id, teachingAssistantRequestDTO))
-          );
-        } else {
-          // Create new teaching assistant
-          approvePromises.push(
-            firstValueFrom(this.monitoresService.createTeachingAssistant(teachingAssistantRequestDTO))
-          );
-        }
-      }
-    }
-
     // Execute all approve/reject operations
     Promise.all([...approvePromises, ...rejectPromises])
       .then(() => {
@@ -279,22 +273,20 @@ export class SolicitudMonitoresPage implements OnInit {
       });
   }
 
-  enviarAAdministrador() {
-    // Search for the name of the corresponding status id
-    const totalSeleccionados = this.monitores.filter(m => m.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id || m.statusId === this.statuses.find(s => s.name === 'Rejected')?.id).length;
-    if (totalSeleccionados === 0) {
+  exportarNomina() {
+    const totalMonitoresActivos = this.monitores.length;
+    if (totalMonitoresActivos === 0) {
       this.saveSuccess = false;
       this.showSaveModal = true;
       return;
     }
     
-    this.showSendModal = true;
-    // TODO: Implementar lógica de envío real de alerta
+    this.showExportTable = true;
   }
 
-  // Método para obtener el conteo de cambios
-  get cambiosCount() {
-    return this.monitores.filter(m => m.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id || m.statusId === this.statuses.find(s => s.name === 'Rejected')?.id).length;
+  // Método para obtener el total de monitores activos
+  get totalMonitoresActivos() {
+    return this.monitores.length;
   }
 
   // Handlers filtros
@@ -316,15 +308,9 @@ export class SolicitudMonitoresPage implements OnInit {
     const sec = this.selectedSeccion;
 
     const base = this.monitores.filter(m => {
-      const matchesQuery = !q || 
-        [
-          m.id, this.monitores.find(info => info.id === m.userId)?.nombre, 
-          this.monitores.find(info => info.id === m.userId)?.apellido, 
-          this.monitores.find(info => info.id === m.userId)?.correo
-        ]
+      const matchesQuery = !q || [m.id, m.nombre, m.apellido, m.correo]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(q));
-      
       const matchesMateria = !mat || m.courseId === Number(mat);
       const matchesSeccion = !sec || m.sectionId === Number(sec);
       return matchesQuery && matchesMateria && matchesSeccion;
@@ -359,19 +345,34 @@ export class SolicitudMonitoresPage implements OnInit {
     this.guardarCambios();
   }
 
-  // Métodos para el popup de enviar cambios
-  onConfirmSend() {
-    this.showSendModal = false;
+  // Métodos para el popup de exportar nómina
+  onConfirmExport() {
+    this.showExportModal = false;
     
-    // Simular envío
+    // Simular exportación de nómina
     setTimeout(() => {
       this.saveSuccess = true;
       this.showSaveModal = true;
     }, 300);
   }
 
-  onCancelSend() {
-    this.showSendModal = false;
+  onCancelExport() {
+    this.showExportModal = false;
+  }
+
+  // Métodos para el popup de tabla de exportación
+  onCloseExportTable() {
+    this.showExportTable = false;
+  }
+
+  onConfirmExportTable() {
+    this.showExportTable = false;
+    
+    // Simular exportación de archivo
+    setTimeout(() => {
+      this.saveSuccess = true;
+      this.showSaveModal = true;
+    }, 300);
   }
 }
 
