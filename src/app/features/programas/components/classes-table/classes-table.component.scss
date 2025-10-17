@@ -28,8 +28,17 @@
   border-radius: var(--radius);
   background: #fff;
   /* NO barras verticales internas; sólo horizontal si hiciera falta */
+  position: relative;
   overflow-x: auto;
   overflow-y: visible;
+  /* ayuda a stacking cuando hay overlays */
+  will-change: transform;
+}
+
+/* Cuando hay sugerencias abiertas dentro, permitir que se desborde por encima del bloque */
+.tabla-wrap:has(.suggest) {
+  overflow: visible;
+  z-index: 3000;
 }
 
 /* ==============================
@@ -58,6 +67,18 @@
   min-width: 1200px;
   border-collapse: collapse;
   table-layout: fixed;
+
+  /* Asegura que los elementos posicionados dentro de celdas puedan salir sin ser recortados */
+  overflow: visible;
+
+  tbody {
+    position: relative;
+    overflow: visible;
+  }
+
+  tbody tr {
+    position: relative; /* permite controlar stacking si es necesario */
+  }
 
   thead th {
     height: 44px;
@@ -183,7 +204,14 @@
 /* ==============================
   Autocompletado de cursos (sugerencias)
   ============================== */
-.cell-autocomplete { position: relative; }
+.cell-autocomplete {
+  position: relative;
+}
+
+/* Cuando la lista está visible, eleva la celda para que sobreponga filas adyacentes */
+.cell-autocomplete:has(.suggest) {
+  z-index: 2000;
+}
 
 .suggest {
   position: absolute;
@@ -193,9 +221,23 @@
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 8px;
-  z-index: 10;
+  /* z-index alto para sobreponer al bloque grande (expander/horarios) */
+  z-index: 9999;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 
+  /* ayuda a crear nueva capa de composición y evitar artefactos */
+  will-change: transform;
+
+
+/* El bloque del expander no debe tapar los overlays */
+.expander-row,
+.expander-row td {
+  position: relative;
+  z-index: 1;
+}
+
+/* En algunos navegadores, las tablas pueden recortar descendientes posicionados; asegura overflow visible */
+.tabla { overflow: visible; }
   li {
     display: grid;
     grid-template-columns: 100px 1fr;
