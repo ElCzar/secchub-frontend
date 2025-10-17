@@ -350,13 +350,14 @@ export class SolicitudProgramasPages implements OnInit {
     
     console.log('Horarios convertidos para clase:', schedules);
     
+    const obs = ((solicitud.comments ?? solicitud.comentarios ?? '') as string).trim();
     const classData: ClassDTO = {
       courseName: solicitud.materia,
       courseId: parseInt(courseId) || 1, // Convertir a number para el backend
       startDate: solicitud.startDate,
       endDate: solicitud.endDate,
       capacity: solicitud.cupos,
-      observation: solicitud.comments || solicitud.comentarios || `Solicitud de: ${solicitud.program}`,
+      observation: obs || `Solicitud de: ${solicitud.program}`,
       statusId: 1, // Estado inicial (pendiente)
       semesterId: 1, // ID del semestre actual
       sectionName: solicitud.program,
@@ -509,7 +510,8 @@ export class SolicitudProgramasPages implements OnInit {
         classroomId: null, // Se asignará después en planificación
         disability: schedule.disability || false,
         // Mapear tipo de aula si está disponible
-        classRoomTypeId: roomTypeMap[schedule.roomType] || 1 // Default: Aulas
+        // Tipo de aula requerido por el backend (estándar con 'R' mayúscula)
+        classRoomTypeId: (schedule as any).roomTypeId ?? roomTypeMap[schedule.roomType] ?? 1
       };
 
       console.log(`📝 Horario ${index + 1} mapeado:`, {

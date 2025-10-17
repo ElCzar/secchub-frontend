@@ -51,50 +51,6 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
   constructor(private classroomService: ClassroomService) {
     // Inicialización de valores por defecto para evitar errores si la API falla
     this.modalities_local = ['In-Person', 'Online', 'Hybrid'];
-    
-    // Función global para debug del botón +
-    (window as any).debugScheduleAddButton = () => {
-      console.log('🔍 === DEBUG DEL BOTÓN + ===');
-      console.log('📊 Estado del componente schedules-table-room:', {
-        editable: this.editable,
-        rowsLength: this.rows?.length || 0,
-        rows: this.rows
-      });
-      
-      console.log('🖱️ Simulando click en addNewSchedule...');
-      this.addNewSchedule();
-      
-      console.log('📊 Estado después del addNewSchedule:', {
-        editable: this.editable,
-        rowsLength: this.rows?.length || 0,
-        rows: this.rows
-      });
-    };
-    
-    // Función global para debug cuando desaparecen filas
-    (window as any).debugRowDisappearance = () => {
-      console.log('�️ === DEBUG FILAS QUE DESAPARECEN ===');
-      console.log('📊 Estado actual del componente schedules-table-room:', {
-        editable: this.editable,
-        rowsLength: this.rows?.length || 0,
-        rows: this.rows.map((row, i) => ({
-          index: i,
-          id: row.id,
-          day: row.day,
-          startTime: row.startTime,
-          endTime: row.endTime,
-          modality: row.modality,
-          isEmpty: !row.day && !row.startTime && !row.endTime && !row.modality,
-          isPartial: !row.id && (row.day || row.startTime || row.endTime || row.modality)
-        }))
-      });
-      
-      console.log('🔍 Próximo: Selecciona un día y observa los logs...');
-    };
-    
-    console.log('�🔧 Debug functions loaded:');
-    console.log('   - debugScheduleAddButton() - Testear botón +');
-    console.log('   - debugRowDisappearance() - Rastrear filas que desaparecen');
   }
 
   ngOnInit() {
@@ -104,7 +60,6 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['rows'] && changes['rows'].currentValue) {
-      console.log('🔄 schedules-table-room: Recibiendo nuevos rows:', changes['rows'].currentValue);
       // Solo validar si ya tenemos los datos del backend cargados
       if (this.modalities_local.length > 0 && this.roomTypes.length > 0) {
         this.validateRowsCompatibility(changes['rows'].currentValue);
@@ -121,7 +76,6 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
    */
   private validateRowsIfReady() {
     if (this.rows.length > 0 && this.modalities_local.length > 0 && this.roomTypes.length > 0) {
-      console.log('✅ Todos los datos cargados, validando compatibilidad...');
       this.validateRowsCompatibility(this.rows);
     }
   }
@@ -480,29 +434,15 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
     const hasEmptyRow = emptyRows.some(r => r.isEmpty);
     
     if (hasEmptyRow) {
-      console.log('⚠️ Ya existe una fila vacía, no se agregará otra');
-      console.log('🔍 Filas vacías encontradas:', emptyRows.filter(r => r.isEmpty));
-      console.log('💡 Consejo: Complete la fila vacía existente antes de agregar una nueva');
       return;
     }
     
-    console.log('✅ No hay filas vacías, agregando nueva fila...');
     const newRow = newScheduleRow();
-    console.log('🆕 Nueva fila creada:', newRow);
     
     const oldRowsLength = this.rows.length;
     this.rows = [...this.rows, newRow];
     
-    console.log('📋 Estado después del add:', {
-      oldLength: oldRowsLength,
-      newLength: this.rows.length,
-      newRow: newRow,
-      allRows: this.rows
-    });
-    
-    console.log('📤 Emitiendo rowsChange...');
     this.rowsChange.emit(this.rows);
-    console.log('✅ === BOTÓN + COMPLETADO ===');
   }
 
   /**
@@ -510,98 +450,39 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
    * Versión más directa sin validaciones complejas
    */
   addNewSchedule(): void {
-    console.log('🚀 === MÉTODO SIMPLIFICADO: AGREGAR HORARIO ===');
-    console.log('🔍 Estado inicial:', {
-      editable: this.editable,
-      rowsLength: this.rows.length,
-      componentType: 'schedules-table-room'
-    });
-
+    
     // Verificación básica de estado editable
     if (!this.editable) {
-      console.error('❌ ERROR: El componente no es editable');
-      console.log('💡 Asegúrate de que la fila de la clase esté en modo edición');
-      console.log('🔧 DEBUG: Para forzar agregar horario, usa el botón DEBUG + rojo');
-      
-      // En lugar de mostrar alert, simplemente logear el problema
-      console.warn('⚠️ BLOQUEADO: Para agregar horarios, la clase debe estar en modo edición');
       return;
     }
-
-    console.log('✅ Componente editable - procediendo a agregar horario');
 
     // Verificar si ya hay filas completamente vacías
     const emptyRows = this.rows.filter(row => 
       !row.day && !row.startTime && !row.endTime && !row.modality
     );
     
-    if (emptyRows.length > 0) {
-      console.log('⚠️ Ya existe una fila completamente vacía, no se agregará otra');
-      console.log('🔍 Filas vacías encontradas:', emptyRows.length);
-      return;
-    }
+    if (emptyRows.length > 0) return;
 
     // Crear nueva fila directamente
     const newRow = newScheduleRow();
-    console.log('🆕 Nueva fila creada:', newRow);
 
     // Agregar la nueva fila al array
     const previousLength = this.rows.length;
     this.rows = [...this.rows, newRow]; // Usar spread operator para inmutabilidad
-    
-    console.log('📊 Filas después de agregar:', {
-      previousLength,
-      newLength: this.rows.length,
-      lastRow: this.rows[this.rows.length - 1]
-    });
 
     // Notificar al componente padre
-    console.log('📡 Emitiendo cambios al componente padre...');
-    console.log('🎯 IMPORTANTE: La nueva fila vacía debería conservarse después del procesamiento');
     this.rowsChange.emit([...this.rows]); // Crear nueva referencia
-    
-    console.log('🎉 === HORARIO AGREGADO EXITOSAMENTE ===');
   }
 
-  /**
-   * Método de debug que siempre agrega una fila sin validaciones
-   * Solo para debugging - remover en producción
-   */
-  debugAddSchedule(): void {
-    console.log('🐛 === MÉTODO DEBUG: FORZAR AGREGAR HORARIO ===');
-    
-    const newRow = newScheduleRow();
-    console.log('🆕 DEBUG: Nueva fila creada (sin validaciones):', newRow);
-    
-    console.log('📊 DEBUG: Estado ANTES:', {
-      editable: this.editable,
-      rowsLength: this.rows.length,
-      rows: [...this.rows]
-    });
-    
-    // Forzar agregado sin validaciones
-    this.rows = [...this.rows, newRow];
-    
-    console.log('📊 DEBUG: Estado DESPUÉS:', {
-      editable: this.editable,
-      rowsLength: this.rows.length,
-      rows: [...this.rows]
-    });
-    
-    // Emitir cambio
-    this.rowsChange.emit([...this.rows]);
-    console.log('🎉 DEBUG: Horario agregado forzadamente');
-  }
+  // debugAddSchedule(): removed (only used for temporary debugging)
   
   remove(i: number): void { 
     if (!this.editable) return;
     
-    const rowToRemove = this.rows[i];
-    console.log('schedules-table-room: eliminando fila', { i, row: rowToRemove });
+  const rowToRemove = this.rows[i];
     
     // Si tiene ID (es un horario guardado), notificar al padre para que maneje la eliminación
     if (rowToRemove.id) {
-      console.log('schedules-table-room: emitiendo scheduleDelete para ID:', rowToRemove.id);
       this.scheduleDeleted.emit(rowToRemove.id);
     }
     
@@ -620,20 +501,10 @@ export class SchedulesTableRoom implements OnInit, OnChanges {
    * Realiza validaciones para garantizar consistencia de los datos
    */
   patch(i: number, data: Partial<ScheduleRow>) {
-    console.log('🔧 schedules-table-room: patch llamado con', i, data);
-    
     // Validar que el índice sea válido
     if (i < 0 || i >= this.rows.length) {
-      console.error('❌ Índice de fila inválido:', i, 'Filas totales:', this.rows.length);
       return;
     }
-    
-    // DEBUG: Mostrar estado actual de la fila antes de actualizar
-    console.log('📊 Estado ANTES de patch:', {
-      index: i,
-      row: this.rows[i],
-      dataToApply: data
-    });
     
     // Validación de datos antes de aplicar cambios
     const validatedData: Partial<ScheduleRow> = {};

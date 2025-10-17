@@ -17,6 +17,7 @@ interface ClaseRow extends ProgramaRowDto {
   _state: RowState;
   schedules: ScheduleRow[];
   _open?: boolean;
+  comments?: string;
 }
 
 @Component({
@@ -118,7 +119,7 @@ export class ProgramasPageComponent implements OnInit {
       capacity: row.seats,
       startDate: row.startDate,
       endDate: row.endDate,
-      observation: '', // Agregar si tienes un campo de observaciones
+      observation: (row.comments?.trim() || undefined),
       schedules: row.schedules.map(schedule => this.convertToRequestSchedule(schedule)),
       weeks: row.weeks,
       sectionId: row.section ? parseInt(row.section) : undefined
@@ -139,7 +140,7 @@ export class ProgramasPageComponent implements OnInit {
       day: schedule.day,
       startTime: schedule.startTime + ':00', // Agregar segundos si es necesario
       endTime: schedule.endTime + ':00',
-      classroomTypeId: this.getRoomTypeId(schedule.roomType),
+      classRoomTypeId: this.getRoomTypeId(schedule.roomType),
       modalityId: this.getModalityId(schedule.modality),
       disability: schedule.disability
     };
@@ -150,12 +151,13 @@ export class ProgramasPageComponent implements OnInit {
    */
   private getRoomTypeId(roomType: string): number {
     const mapping: Record<string, number> = {
-      'Laboratorio': 1,
-      'Aulas': 2,
-      'Aulas Moviles': 3,
-      'Aulas Accesibles': 4
+      'Aulas': 1,
+      'Laboratorio': 2,
+      'Auditorio': 3,
+      'Aulas Moviles': 4,
+      'Aulas Accesibles': 5
     };
-    return mapping[roomType] || 2; // Default a 'Aulas'
+    return mapping[roomType] ?? 1; // Default a 'Aulas'
   }
 
   /**
@@ -244,6 +246,7 @@ export class ProgramasPageComponent implements OnInit {
     _state: 'new',
     schedules: [],
     _open: false,
+    comments: '',
   };
 }
 

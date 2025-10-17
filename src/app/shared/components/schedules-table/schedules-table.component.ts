@@ -83,9 +83,9 @@ export class SchedulesTableComponent implements OnInit {
   modalityOptions: Array<{ value: Modality; label: string }> = [];
 
   /**
-   * Opciones de tipos de aula obtenidas desde el backend.
+   * Opciones de tipos de aula obtenidas desde el backend, con ID real del backend.
    */
-  roomTypeOptions: Array<{ value: RoomType; label: string }> = [];
+  roomTypeOptions: Array<{ id: number; value: RoomType; label: string }> = [];
 
   private loadModalitiesFromApi(): void {
     this.classroomService.getAllModalitiesStrict().subscribe({
@@ -120,39 +120,45 @@ export class SchedulesTableComponent implements OnInit {
   private loadRoomTypesFromApi(): void {
     this.classroomService.getAllClassroomTypesStrict().subscribe({
       next: (items: ClassroomTypeDTO[]) => {
-        // Mapear nombres del backend a los valores internos, usando como label el nombre del backend
-        const mapped: Array<{ value: RoomType; label: string }> = [];
-        const pushIfMissing = (value: RoomType, label: string) => {
-          if (!mapped.find((m) => m.value === value)) mapped.push({ value, label });
+        // Mapear nombres del backend a los valores internos manteniendo el ID real
+        const mapped: Array<{ id: number; value: RoomType; label: string }> = [];
+        const pushIfMissing = (id: number, value: RoomType, label: string) => {
+          if (!mapped.find((m) => m.value === value)) mapped.push({ id, value, label });
         };
 
         items.forEach((t) => {
           const rawName = t.name || '';
           const name = rawName.toLowerCase();
           if (name.includes('lab')) {
-            pushIfMissing('Laboratorio', rawName);
+            pushIfMissing(t.id, 'Laboratorio', rawName);
           } else if (name.includes('lecture') || name.includes('aula') || name.includes('regular')) {
-            pushIfMissing('Aulas', rawName);
+            pushIfMissing(t.id, 'Aulas', rawName);
           } else if (name.includes('mobile') || name.includes('móvil') || name.includes('movil')) {
-            pushIfMissing('Aulas Moviles', rawName);
+            pushIfMissing(t.id, 'Aulas Moviles', rawName);
           } else if (name.includes('access') || name.includes('accesible')) {
-            pushIfMissing('Aulas Accesibles', rawName);
+            pushIfMissing(t.id, 'Aulas Accesibles', rawName);
           }
         });
 
-        // Orden deseado
-        const order: RoomType[] = ['Laboratorio', 'Aulas', 'Aulas Moviles', 'Aulas Accesibles'];
+        // Orden deseado en la UI
+  const order: RoomType[] = ['Aulas', 'Laboratorio', 'Aulas Moviles', 'Aulas Accesibles'];
         this.roomTypeOptions = order
           .map((v) => mapped.find((m) => m.value === v))
-          .filter(Boolean) as Array<{ value: RoomType; label: string }>;
-
-        // Si backend no devolvió nada reconocible, dejar vacío (sin fallback)
+          .filter(Boolean) as Array<{ id: number; value: RoomType; label: string }>;
       },
       error: () => {
         // No fallback: mantener lista vacía
         this.roomTypeOptions = [];
       }
     });
+  }
+
+  /**
+   * Maneja cambios del select de tipo de salón cuando se trabaja con IDs de backend.
+   */
+  onRoomTypeIdChange(i: number, id?: number) {
+    const opt = this.roomTypeOptions.find(o => o.id === id);
+    this.patch(i, { roomTypeId: id, roomType: opt?.value as RoomType });
   }
 
   constructor(private classroomService: ClassroomService) {}

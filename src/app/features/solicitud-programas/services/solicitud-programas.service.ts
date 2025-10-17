@@ -152,13 +152,15 @@ export class SolicitudProgramasService {
     }
 
     return schedules.map((schedule, index) => {
+  // Usar únicamente la convención 'classRoomTypeId' (R mayúscula)
+  const typeId = (schedule as any).classRoomTypeId;
       const mappedSchedule = {
         day: this.mapDayToSpanish(schedule.day),
         startTime: schedule.startTime,
         endTime: schedule.endTime,
         disability: schedule.disability || false,
         modality: this.mapModalityIdToName(schedule.modalityId),
-        roomType: this.mapClassRoomTypeIdToName(schedule.classRoomTypeId)
+        roomType: this.mapClassRoomTypeIdToName(typeId)
       };
 
       console.log(`📅 Horario ${index + 1} mapeado:`, {

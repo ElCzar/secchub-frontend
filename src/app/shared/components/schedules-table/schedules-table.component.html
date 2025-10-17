@@ -66,12 +66,12 @@
       <!-- Tipo de salón -->
       <div>
         <select 
-          class="input" 
-          [ngModel]="r.roomType" 
-          (ngModelChange)="patch(i,{roomType:$event})"
+          class="input"
+          [ngModel]="r.roomTypeId"
+          (ngModelChange)="onRoomTypeIdChange(i, $event)"
           [disabled]="isReadOnly">
-          <option value="" disabled>Seleccione…</option>
-          <option *ngFor="let rt of roomTypeOptions" [value]="rt.value">{{ rt.label }}</option>
+          <option [ngValue]="undefined" disabled>Seleccione…</option>
+          <option *ngFor="let rt of roomTypeOptions" [ngValue]="rt.id">{{ rt.label }}</option>
         </select>
       </div>
 

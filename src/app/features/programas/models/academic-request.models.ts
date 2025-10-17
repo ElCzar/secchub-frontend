@@ -23,7 +23,7 @@ export interface RequestScheduleDTO {
   /** Hora de fin en formato "HH:mm:ss". */
   endTime: string;
   /** Identificador del tipo de aula requerida. */
-  classroomTypeId: number;
+  classRoomTypeId: number;
   /** Identificador de la modalidad (presencial, virtual, etc.). */
   modalityId: number;
   /** Indica si se requiere accesibilidad para discapacidad. */

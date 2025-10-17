@@ -39,6 +39,7 @@ export interface ClassScheduleDTO {
   startTime: string;
   endTime: string;
   classroomId?: number;
+  classRoomTypeId?: number;
   classroomName?: string;
   classroomLocation?: string;
   classroomRoom?: string;

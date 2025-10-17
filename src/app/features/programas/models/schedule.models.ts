@@ -7,7 +7,8 @@ export interface ScheduleRow {
   endTime: string;     // formato "HH:mm"
   disability: boolean; // discapacidad (sí/no)
   modality: Modality;  // modalidad
-  roomType: RoomType; // tipo de aula
+  roomType: RoomType; // tipo de aula (valor interno legible)
+  roomTypeId?: number; // id real del tipo de aula (backend)
 }
 
 export function newSchedule(): ScheduleRow {
@@ -17,7 +18,8 @@ export function newSchedule(): ScheduleRow {
     endTime: '',
     disability: false,
     modality: 'PRESENCIAL',
-    roomType: 'Aulas', 
+    roomType: 'Aulas',
+    roomTypeId: undefined,
   };
 }
 
