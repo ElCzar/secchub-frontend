@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
+import * as XLSX from 'xlsx';
 import { environment } from '../../../../environments/environment';
 import { PlanningRow, PlanningStatus } from '../models/planificacion.models';
 import { CourseService } from './course.service';
@@ -1063,6 +1064,108 @@ export class PlanningService {
    */
   getCourseById(courseId: string | number): Observable<any> {
     return this.courseService.getCourseById(courseId);
+  }
+
+  // ==========================================
+  // EXPORTACIÓN A EXCEL
+  // ==========================================
+
+  /**
+   * Exportar planificación a Excel
+   */
+  exportToExcel(rows: PlanningRow[]) {
+    // Definir la interfaz para los datos de Excel
+    interface ExcelRow {
+      'Materia': string;
+      'Sección': string;
+      'ID Clase': string;
+      'Inicio': string;
+      'Fin': string;
+      'Semanas': number;
+      'Cupos': number;
+      'Estado': PlanningStatus;
+      'Día': string;
+      'Hora Inicial': string;
+      'Hora Final': string;
+      'Salón': string;
+      'Observaciones': string;
+    }
+
+    // Formatear los datos para el Excel
+    const excelData = rows.flatMap(row => {
+      // Crear un array para almacenar todas las filas de esta clase
+      const classRows: ExcelRow[] = [];
+
+      // Si no hay horarios, crear una fila con la información básica
+      if (!row.schedules || row.schedules.length === 0) {
+        classRows.push({
+          'Materia': row.courseName,
+          'Sección': row.section,
+          'ID Clase': row.classId,
+          'Inicio': row.startDate,
+          'Fin': row.endDate,
+          'Semanas': row.weeks,
+          'Cupos': row.seats,
+          'Estado': row.status,
+          'Día': '-',
+          'Hora Inicial': '-',
+          'Hora Final': '-',
+          'Salón': '-',
+          'Observaciones': row.notes.join('\n')
+        });
+        return classRows;
+      }
+
+      // Crear una fila por cada horario
+      row.schedules.forEach(schedule => {
+        classRows.push({
+          'Materia': row.courseName,
+          'Sección': row.section,
+          'ID Clase': row.classId,
+          'Inicio': row.startDate,
+          'Fin': row.endDate,
+          'Semanas': row.weeks,
+          'Cupos': row.seats,
+          'Estado': row.status,
+          'Día': schedule.day || '-',
+          'Hora Inicial': schedule.startTime || '-',
+          'Hora Final': schedule.endTime || '-',
+          'Salón': schedule.room || 'Sin salón',
+          'Observaciones': row.notes.join('\n')
+        });
+      });
+
+      return classRows;
+    });
+
+    // Crear el libro de Excel
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    // Ajustar el ancho de las columnas
+    const columnWidths = [
+      { wch: 30 }, // Materia
+      { wch: 15 }, // Sección
+      { wch: 10 }, // ID Clase
+      { wch: 12 }, // Inicio
+      { wch: 12 }, // Fin
+      { wch: 10 }, // Semanas
+      { wch: 10 }, // Cupos
+      { wch: 15 }, // Estado
+      { wch: 10 }, // Día
+      { wch: 10 }, // Hora Inicial
+      { wch: 10 }, // Hora Final
+      { wch: 15 }, // Salón
+      { wch: 40 }  // Observaciones
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Agregar el título
+    const title = `Programación clases ${new Date().getFullYear()}${Math.floor((new Date().getMonth() + 3) / 6)}0`;
+    XLSX.utils.book_append_sheet(workbook, worksheet, title);
+
+    // Descargar el archivo
+    XLSX.writeFile(workbook, `${title}.xlsx`);
   }
 
   // ==========================================

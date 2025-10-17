@@ -1080,6 +1080,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       await this.reloadData();
       
       console.log('Todos los cambios guardados exitosamente');
+
+      // Exportar a Excel después de guardar
+      this.planningService.exportToExcel(this.rows);
     } catch (error) {
       console.error('Error al guardar cambios:', error);
       this.error = 'Error al guardar algunos cambios. Verifique los datos e intente nuevamente.';
