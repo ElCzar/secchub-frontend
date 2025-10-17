@@ -60,6 +60,9 @@ export class SchedulesTableComponent implements OnInit {
     // Cargar opciones dinámicas desde el backend
     this.loadModalitiesFromApi();
     this.loadRoomTypesFromApi();
+
+    // Construir opciones fijas de horas (formato visual 12h, valor HH:mm)
+    this.timeOptions = this.buildTimeOptions();
   }
 
   /**
@@ -86,6 +89,28 @@ export class SchedulesTableComponent implements OnInit {
    * Opciones de tipos de aula obtenidas desde el backend, con ID real del backend.
    */
   roomTypeOptions: Array<{ id: number; value: RoomType; label: string }> = [];
+
+  /**
+   * Opciones fijas para "Hora Inicio" y "Hora Final".
+   * value: formato HH:mm (24h) que consume el backend
+   * label: formato 12h legible en español (ej. 7:00 AM)
+   */
+  timeOptions: Array<{ value: string; label: string }> = [];
+
+  private buildTimeOptions(): Array<{ value: string; label: string }> {
+    // 7:00 AM hasta 10:00 PM, incrementos de 1 hora
+    const hours = [7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+    const toLabel = (h24: number) => {
+      const period = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12; // 0 -> 12 AM/PM
+      return `${h12}:00 ${period}`;
+    };
+    return hours.map(h => ({
+      value: `${h.toString().padStart(2,'0')}:00`,
+      label: toLabel(h)
+    }));
+  }
 
   private loadModalitiesFromApi(): void {
     this.classroomService.getAllModalitiesStrict().subscribe({

@@ -45,22 +45,26 @@
 
       <!-- Hora inicio -->
       <div>
-        <input 
-          type="time" 
+        <select 
           class="input" 
           [ngModel]="r.startTime"
           (ngModelChange)="patch(i,{startTime:$event})"
-          [disabled]="isReadOnly" />
+          [disabled]="isReadOnly">
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let t of timeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
       </div>
 
       <!-- Hora final -->
       <div>
-        <input 
-          type="time" 
+        <select 
           class="input" 
           [ngModel]="r.endTime"
           (ngModelChange)="patch(i,{endTime:$event})"
-          [disabled]="isReadOnly" />
+          [disabled]="isReadOnly">
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let t of timeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
       </div>
 
       <!-- Tipo de salón -->
