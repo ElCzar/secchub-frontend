@@ -123,6 +123,13 @@ export class CourseService {
   }
 
   /**
+   * Obtener sección por ID
+   */
+  getSectionById(sectionId: number): Observable<SectionDTO> {
+    return this.http.get<SectionDTO>(`${this.apiUrl}/sections/${sectionId}`);
+  }
+
+  /**
    * Crear nueva sección para un curso
    */
   createSection(courseId: string, sectionData: Partial<SectionDTO>): Observable<SectionDTO> {

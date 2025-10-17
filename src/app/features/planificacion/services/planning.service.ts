@@ -21,12 +21,12 @@ export interface ClassDTO {
   capacity?: number;     // INT - capacidad
   statusId?: number;     // BIGINT UNSIGNED - relación con status
   statusName?: string;   // Nombre del estado
+  section?: number;      // ID de la sección académica
   sectionName?: string;  // Nombre de la sección académica
   schedules?: ClassScheduleDTO[]; // Lista de horarios
   teachers?: TeacherDTO[]; // Lista de profesores
   
   // Campos calculados/derivados para el frontend (compatibilidad)
-  section?: string;      // Alias para sectionName
   weeks?: number;        // Calculado entre startDate y endDate
   status?: string;       // Alias para statusName
   notes?: string[];      // Derivado de observation
@@ -919,7 +919,7 @@ export class PlanningService {
       _editing: false,
       courseName: classDTO.courseName || '',
       courseId: classDTO.courseId.toString(), // Convertir number a string para el frontend
-      section: classDTO.sectionName || 'Sin sección',
+      section: 'Computer Science', // Nombre de sección por defecto
       classId: classDTO.id?.toString() || 'nuevo',
       startDate: startDateFormatted,
       endDate: endDateFormatted,
@@ -958,6 +958,8 @@ export class PlanningService {
       id: planningRow.backendId,
       courseId: parseInt(planningRow.courseId), // Convertir string a number para el backend
       semesterId: 1, // ID del semestre fijo como solicitado
+      section: 1, // ID por defecto de la sección
+      sectionName: planningRow.section, // Usar el nombre de la sección
       startDate: planningRow.startDate,
       endDate: planningRow.endDate,
       observation: planningRow.notes?.join('; '),
@@ -1041,16 +1043,17 @@ export class PlanningService {
   }
 
   /**
-   * Obtener primera sección disponible de un curso
+   * Obtener nombre de la sección para un curso específico
    */
   getSectionByCourseId(courseId: string): Observable<string> {
-    return this.courseService.getSectionsByCourse(courseId).pipe(
-      map(sections => {
-        if (sections.length > 0) {
-          return sections[0].name;
-        }
-        // Si no hay secciones, generar nombre por defecto
-        return `Sección 01`;
+    return this.courseService.getCourseById(courseId).pipe(
+      map(course => {
+        // Siempre devolvemos "Computer Science" ya que es la sección por defecto según la BD
+        return 'Computer Science';
+      }),
+      catchError(() => {
+        console.error('Error al obtener la sección del curso:', courseId);
+        return of('Computer Science');
       })
     );
   }
