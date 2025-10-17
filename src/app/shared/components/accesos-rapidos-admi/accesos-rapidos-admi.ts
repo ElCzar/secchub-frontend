@@ -20,12 +20,12 @@ export class AccesosRapidosAdmi {
     { label: 'Inicio', route: '/inicio-admi' },
     { label: 'Registrar Nuevo Usuario', route: '/registrar' },
     { label: 'Ver Usuarios Registrados', route: '/ver-registrados' },
-    { label: 'Consultar Log de Auditoria', route: '/auditoria' },
+    { label: 'Gestionar Sistema', route: '/gestionar-sistema' },
     { label: 'Ver Planificacion Completa', route: '/planificacion' },
-    { label: 'Gestionar Materias', route: '/materias' },
     { label: 'Enviar formulario a carreras', route: 'envio-correo/programas' },
     { label: 'Enviar formulario monitores', route: 'envio-correo/monitores' },
     { label: 'Ver y Editar Monitores', route: '/solicitud-monitores' },
+    { label: 'Consultar Log de Auditoria', route: '/auditoria' },
     { label: 'Cerrar sesión', route: '/' }
   ];
 

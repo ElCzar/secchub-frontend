@@ -1,0 +1,211 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+</aside>
+
+<!-- Contenido principal -->
+<main class="main-content">
+  <div class="container">
+    <h1 class="titulo-pagina">Gestionar Sistema</h1>
+    
+    <div class="hr-line"></div>
+    
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar por materia, código o descripción..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
+        <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las secciones</option>
+          @for (seccion of availableSecciones; track seccion) {
+            <option [value]="seccion">{{seccion}}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Información de Planificación -->
+    <div class="planning-info-container">
+      <div class="section-header">
+        <h3 class="section-title">Información de Planificación</h3>
+        @if (!isAddingNewSemester) {
+          <button 
+            class="btn btn--secondary" 
+            type="button" 
+            (click)="startAddingNewSemester()"
+          >
+            + Nuevo Semestre
+          </button>
+        }
+      </div>
+      
+      <div class="planning-form">
+        <!-- New Semester Form (only visible when adding) -->
+        @if (isAddingNewSemester) {
+          <div class="new-semester-form">
+            <h4>Crear Nuevo Semestre</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="new-period">Período:</label>
+                <select 
+                  id="new-period" 
+                  [(ngModel)]="newSemester.period" 
+                  class="form-select"
+                  required
+                >
+                  <option [value]="1">1 - Primer Semestre</option>
+                  <option [value]="2">2 - Segundo Semestre</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-year">Año:</label>
+                <input 
+                  id="new-year"
+                  type="number" 
+                  [(ngModel)]="newSemester.year"
+                  class="form-input"
+                  [min]="2020"
+                  [max]="2030"
+                  required
+                />
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-start-date">Fecha Inicio:</label>
+                <input 
+                  id="new-start-date"
+                  type="date" 
+                  [(ngModel)]="newSemester.startDate"
+                  class="form-input"
+                  required
+                />
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-end-date">Fecha Fin:</label>
+                <input 
+                  id="new-end-date"
+                  type="date" 
+                  [(ngModel)]="newSemester.endDate"
+                  class="form-input"
+                  [min]="newSemester.startDate"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button 
+                class="btn btn--primary" 
+                type="button" 
+                (click)="saveNewSemester()"
+                [disabled]="!validateNewSemester()"
+              >
+                ✅ Guardar Semestre
+              </button>
+              <button 
+                class="btn btn--secondary" 
+                type="button" 
+                (click)="cancelAddingNewSemester()"
+              >
+                ❌ Cancelar
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Existing semester selection (read-only when not adding new) -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="semestre-select">Semestre:</label>
+              <select 
+                id="semestre-select" 
+                [(ngModel)]="selectedSemestre" 
+                (ngModelChange)="onPlanningFormChange()"
+                class="form-select"
+                required
+              >
+                <option value="">Seleccionar semestre</option>
+                @for (semestre of availableSemestres; track semestre.id) {
+                  <option [value]="semestre.id">
+                    {{semestre.year}} - Período {{semestre.period}}
+                  </option>
+                }
+              </select>
+            </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="fecha-inicio">Fecha Inicio Planificación:</label>
+            <input 
+              id="fecha-inicio"
+              type="date" 
+              [(ngModel)]="fechaInicioPlanificacion"
+              (ngModelChange)="onPlanningFormChange()"
+              class="form-input"
+              required
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="fecha-fin">Fecha Fin Planificación:</label>
+            <input 
+              id="fecha-fin"
+              type="date" 
+              [(ngModel)]="fechaFinPlanificacion"
+              (ngModelChange)="onPlanningFormChange()"
+              class="form-input"
+              [min]="fechaInicioPlanificacion"
+              required
+            />
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn--primary" type="button" (click)="addNewCourse()">+ Nueva Materia</button>
+      <button 
+        type="button" 
+        class="btn btn--primary"
+        (click)="savePlanningInfo()"
+        [class.btn--disabled]="!isPlanningFormValid()"
+        [disabled]="!isPlanningFormValid()"
+      >
+        Guardar cambios
+      </button>
+    </div>
+
+    <!-- Componente de tabla de materias -->
+    <app-subjects-table 
+      [courses]="filteredCourses"
+      [sections]="sectionResponseDTO"
+      [statuses]="statusResponseDTO"
+      [loading]="loading"
+      (edit)="editCourse($event)"
+      (delete)="deleteCourse($event)"
+      (save)="saveNewCourse($event)"
+      (refresh)="loadCourses()"
+      #subjectsTable
+    ></app-subjects-table>
+
+    <!-- Paginación (pendiente de implementar) -->
+    <div class="pagination-container" style="display: none;">
+      <p>Paginación pendiente</p>
+    </div>
+  </div>
+</main>
