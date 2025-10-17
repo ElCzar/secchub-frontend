@@ -240,7 +240,7 @@
 .tabla { overflow: visible; }
   li {
     display: grid;
-    grid-template-columns: 100px 1fr;
+    grid-template-columns: 1fr;
     gap: 8px;
     padding: 8px 10px;
     cursor: pointer;
@@ -248,9 +248,13 @@
     &:hover { background: var(--muted); }
 
     .id   { color: var(--text-700); font-weight: 600; }
-    .name { color: var(--text-700); }
+    .name { color: var(--text-700); font-weight: 600; }
   }
 }
+
+/* Variantes específicas por claridad (ambas con 1 columna) */
+.suggest.suggest--name-only li { grid-template-columns: 1fr; }
+.suggest.suggest--id-only   li { grid-template-columns: 1fr; }
 
 /* ==============================
   Fila de sub-horarios (desplegable)

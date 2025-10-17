@@ -45,10 +45,9 @@
               (focus)="onSearch(i, row.courseId)"
               (blur)="closeList(i)"
               placeholder="ID del curso *" />
-            <ul class="suggest" *ngIf="showList[i]">
+            <ul class="suggest suggest--id-only" *ngIf="showList[i]">
               <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keydown.enter)="selectCourse(i, s)">
                 <span class="id">{{ s.id }}</span>
-                <span class="name">{{ s.name }}</span>
               </li>
             </ul>
           </td>
@@ -63,9 +62,8 @@
               (focus)="onSearch(i, row.courseName)"
               (blur)="closeList(i)"
               placeholder="Buscar por nombre *" />
-            <ul class="suggest" *ngIf="showList[i]">
+            <ul class="suggest suggest--name-only" *ngIf="showList[i]">
               <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keydown.enter)="selectCourse(i, s)">
-                <span class="id">{{ s.id }}</span>
                 <span class="name">{{ s.name }}</span>
               </li>
             </ul>
