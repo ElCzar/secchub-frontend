@@ -188,7 +188,6 @@ export class ProgramasPageComponent implements OnInit {
   loadPrevious(): void {
     this.programas.loadPreviousSemesterRequests().subscribe({
       next: (requests: AcademicRequestDTO[]) => {
-        console.log('Requests from previous semester:', requests); // Debug
         // Mapear TODAS las solicitudes del semestre anterior (una fila por cada solicitud)
         // Si había 3 cursos solicitados, se crearán 3 filas prellenadas para autofill
         const mapped: ClaseRow[] = (requests || []).map(req => {
