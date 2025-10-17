@@ -222,6 +222,18 @@ export class ClassesTableComponent {
   }
 
   /**
+   * Método público para recalcular semanas de todas las filas.
+   * Útil cuando se cargan datos externamente (ej: semestre anterior).
+   */
+  recalculateAllWeeks() {
+    this.rows.forEach((row, i) => {
+      if (row.startDate && row.endDate) {
+        this.recalcWeeks(i, row.startDate, row.endDate);
+      }
+    });
+  }
+
+  /**
    * Verifica si una fila tiene horarios válidos
    * @param row La fila a verificar
    * @returns true si tiene al menos un horario válido

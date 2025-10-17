@@ -1,5 +1,5 @@
 export type Modality = 'PRESENCIAL' | 'VIRTUAL' | 'HIBRIDO';
-export type RoomType = 'Laboratorio' | 'Aulas' | 'Aulas Moviles' | 'Aulas Accesibles';
+export type RoomType = 'Laboratorio' | 'Aulas' | 'Aulas Moviles' | 'Aulas Accesibles' | 'Auditorio';
 
 export interface ScheduleRow {
   day: 'LUN' | 'MAR' | 'MIE' | 'JUE' | 'VIE' | 'SAB' | 'DOM' | '';

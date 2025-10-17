@@ -186,22 +186,110 @@ export class ProgramasPageComponent implements OnInit {
   }
 
   loadPrevious(): void {
-    this.programas.getPreviousSemesterClasses().subscribe({
-      next: (list: ProgramaRowDto[]) => {
-        const mapped = list.map(r => ({
-          ...r,
-          _state: 'existing' as RowState,
-          schedules: [],
-          _open: false
-        }));
+    this.programas.loadPreviousSemesterRequests().subscribe({
+      next: (requests: AcademicRequestDTO[]) => {
+        console.log('Requests from previous semester:', requests); // Debug
+        // Mapear TODAS las solicitudes del semestre anterior (una fila por cada solicitud)
+        // Si había 3 cursos solicitados, se crearán 3 filas prellenadas para autofill
+        const mapped: ClaseRow[] = (requests || []).map(req => {
+          const course = this.programas.getCourseById(String(req.courseId));
+          
+          return {
+            courseId: String(req.courseId ?? ''),
+            courseName: course?.name || '',
+            section: course?.sectionId ? String(course.sectionId) : '',
+            roomType: '',
+            seats: req.capacity,
+            startDate: req.startDate,
+            endDate: req.endDate,
+            weeks: req.weeks ?? 0,
+            _state: 'existing' as RowState,
+            schedules: (req.schedules || []).map(s => ({
+              day: this.normalizeDay(s.day),
+              startTime: (s.startTime || '').slice(0,5),
+              endTime: (s.endTime || '').slice(0,5),
+              modality: this.reverseModalityId(s.modalityId) as any,
+              roomType: this.reverseRoomTypeId(s.classRoomTypeId) as any,
+              roomTypeId: s.classRoomTypeId, // Preservar el ID también
+              disability: !!s.disability,
+              room: ''
+            })),
+            _open: false,
+            comments: req.observation || ''
+          };
+        });
+
+        // Reemplazar todas las filas con las del semestre anterior (autofill completo)
         this.rows = mapped.length > 0 ? mapped : [this.emptyRow()];
+        
+        // Recalcular semanas directamente para cada fila cargada
+        this.rows.forEach((row, index) => {
+          if (row.startDate && row.endDate) {
+            row.weeks = this.calculateWeeks(row.startDate, row.endDate);
+          }
+        });
       },
-      error: (e) => {
-        console.error('Error al cargar semestre anterior', e);
-        // Si falla, aseguramos al menos una fila vacía
+      error: () => {
+        // En error, mantener al menos una fila
         this.ensureAtLeastOneRow();
       }
     });
+  }
+
+  private reverseRoomTypeId(id: number): string {
+    const mapIdToName: Record<number, string> = {
+      1: 'Aulas',
+      2: 'Laboratorio',
+      3: 'Auditorio',
+      4: 'Aulas Moviles',
+      5: 'Aulas Accesibles'
+    };
+    return mapIdToName[id] ?? '';
+  }
+
+  private reverseModalityId(id: number): string {
+    const mapIdToName: Record<number, string> = {
+      1: 'PRESENCIAL',
+      2: 'VIRTUAL',
+      3: 'HIBRIDO'
+    };
+    return mapIdToName[id] ?? '';
+  }
+
+  private normalizeDay(day: string): 'LUN'|'MAR'|'MIE'|'JUE'|'VIE'|'SAB'|'DOM'|'' {
+    const map: Record<string, 'LUN'|'MAR'|'MIE'|'JUE'|'VIE'|'SAB'|'DOM'> = {
+      'LUNES': 'LUN', 'LUN': 'LUN',
+      'MARTES': 'MAR', 'MAR': 'MAR',
+      'MIERCOLES': 'MIE', 'MIÉRCOLES': 'MIE', 'MIE': 'MIE',
+      'JUEVES': 'JUE', 'JUE': 'JUE',
+      'VIERNES': 'VIE', 'VIE': 'VIE',
+      'SABADO': 'SAB', 'SÁBADO': 'SAB', 'SAB': 'SAB',
+      'DOMINGO': 'DOM', 'DOM': 'DOM'
+    };
+    const key = (day || '').toUpperCase().trim();
+    return map[key] ?? '';
+  }
+
+  /**
+   * Calcula la cantidad de semanas entre dos fechas.
+   * @param startDate Fecha de inicio en formato YYYY-MM-DD
+   * @param endDate Fecha de fin en formato YYYY-MM-DD
+   * @returns Número de semanas (redondeado hacia arriba)
+   */
+  private calculateWeeks(startDate: string, endDate: string): number {
+    if (!startDate || !endDate) return 0;
+    
+    const d1 = new Date(startDate);
+    const d2 = new Date(endDate);
+    
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || d2 < d1) {
+      return 0;
+    }
+    
+    // Calcula semanas aproximadas: ceil(diferencia en días / 7)
+    const diffMs = d2.getTime() - d1.getTime();
+    const days = diffMs / (1000 * 60 * 60 * 24);
+    return Math.ceil(days / 7);
   }
 
   addRow(): void {

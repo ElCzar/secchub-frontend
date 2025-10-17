@@ -2,9 +2,9 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { ProgramaContextDto } from "../models/context.models";
 import { Observable, BehaviorSubject, of } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, switchMap, catchError } from "rxjs/operators";
 import { environment } from "../../../../environments/environment";
-import { CourseDTO, AcademicRequestBatchDTO } from "../models/academic-request.models";
+import { CourseDTO, AcademicRequestBatchDTO, AcademicRequestDTO } from "../models/academic-request.models";
 
 
 
@@ -25,6 +25,15 @@ export interface CourseOption {
   name: string;
   sectionId?: number; // Include sectionId from the full course data
   credits?: number;   // Include credits for potential future use
+}
+
+export interface SemesterDTO {
+  id: number;
+  period: 1 | 2;
+  year: number;
+  is_current: 0 | 1;
+  start_date: string; // ISO date
+  end_date: string;   // ISO date
 }
 
 
@@ -136,6 +145,40 @@ export class ProgramasService {
   // Enviar solicitudes académicas en lote
   submitAcademicRequests(batch: AcademicRequestBatchDTO): Observable<any> {
     return this.http.post(`${this.baseUrl}/academic-requests`, batch);
+  }
+
+  // ===== Semesters & previous semester orchestration =====
+  getCurrentSemester(): Observable<SemesterDTO> {
+    return this.http.get<SemesterDTO>(`${this.baseUrl}/api/semesters/current`);
+  }
+
+  getSemesterBy(year: number, period: 1 | 2): Observable<SemesterDTO> {
+    return this.http.get<SemesterDTO>(`${this.baseUrl}/api/semesters`, {
+      params: { year: String(year), period: String(period) }
+    });
+  }
+
+  getAcademicRequestsBySemester(semesterId: number): Observable<AcademicRequestDTO[]> {
+    return this.http.get<AcademicRequestDTO[]>(`${this.baseUrl}/api/programas/academic-requests`, {
+      params: { semesterId: String(semesterId) }
+    });
+  }
+
+  /**
+   * Carga solicitudes (con horarios) del semestre anterior al actual.
+   * Regla: si current.period=2 => anterior es (year, period 1);
+   *        si current.period=1 => anterior es (year-1, period 2)
+   */
+  loadPreviousSemesterRequests(): Observable<AcademicRequestDTO[]> {
+    return this.getCurrentSemester().pipe(
+      switchMap((cur) => {
+        const prevPeriod: 1 | 2 = cur.period === 2 ? 1 : 2;
+        const prevYear = cur.period === 2 ? cur.year : (cur.year - 1);
+        return this.getSemesterBy(prevYear, prevPeriod);
+      }),
+      switchMap((prev) => this.getAcademicRequestsBySemester(prev.id)),
+      catchError(() => of([]))
+    );
   }
 }
 
