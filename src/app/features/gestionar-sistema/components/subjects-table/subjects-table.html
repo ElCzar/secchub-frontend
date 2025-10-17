@@ -1,0 +1,218 @@
+<!-- Tabla de materias -->
+<div class="table-container" *ngIf="!loading; else loadingTemplate">
+  <table class="subjects-table">
+    <thead>
+      <tr>
+        <th>Acciones</th>
+        <th>Código</th>
+        <th>Nombre</th>
+        <th>Créditos</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Sección Administrativa </th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Fila para nueva materia -->
+      <tr *ngIf="isAddingNew" class="table-row new-row">
+        <td class="actions-column">
+          <button 
+            type="button"
+            (click)="saveNewCourse()"
+            class="action-btn save-btn"
+            title="Guardar"
+            [disabled]="!validateNewCourse()"
+          >
+            ✅
+          </button>
+          <button 
+            type="button"
+            (click)="cancelAddingNew()"
+            class="action-btn delete-btn"
+            title="Cancelar"
+          >
+            🗑️
+          </button>
+        </td>
+        <td>
+          <input 
+            type="text" 
+            [(ngModel)]="newCourse.code"
+            placeholder="Código"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <input 
+            type="text" 
+            [(ngModel)]="newCourse.name"
+            placeholder="Nombre de la materia"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <div class="credits-input">
+            <button 
+              type="button" 
+              (click)="decrementCredits()"
+              class="credit-btn"
+              [disabled]="newCourse.credits <= 0"
+            >
+              -
+            </button>
+            <input 
+              type="number" 
+              [(ngModel)]="newCourse.credits"
+              min="0"
+              max="10"
+              class="credit-number"
+            />
+            <button 
+              type="button" 
+              (click)="incrementCredits()"
+              class="credit-btn"
+              [disabled]="newCourse.credits >= 10"
+            >
+              +
+            </button>
+          </div>
+        </td>
+        <td>
+          <input 
+            type="text" 
+            [(ngModel)]="newCourse.description"
+            placeholder="Descripción"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <select [(ngModel)]="newCourse.status" class="table-select">
+            <option *ngFor="let option of statusOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </td>
+        <td>
+          <select [(ngModel)]="newCourse.section" class="table-select">
+            <option value="">Seleccionar sección</option>
+            <option *ngFor="let section of sectionOptions" [value]="section">
+              {{ section }}
+            </option>
+          </select>
+        </td>
+      </tr>
+
+      <!-- Filas existentes -->
+      <tr *ngFor="let course of courses" class="table-row" [class.editing-row]="isEditing(course.id)">
+        <td class="actions-column">
+          <button 
+            type="button"
+            (click)="editCourse(course)"
+            class="action-btn"
+            [class.edit-btn]="!isEditing(course.id)"
+            [class.save-btn]="isEditing(course.id)"
+            [title]="isEditing(course.id) ? 'Guardar' : 'Editar'"
+          >
+            {{ isEditing(course.id) ? '✅' : '✏️' }}
+          </button>
+          <button 
+            type="button"
+            (click)="deleteCourse(course)"
+            class="action-btn delete-btn"
+            title="Eliminar"
+          >
+            🗑️
+          </button>
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)">{{ course.id }}</span>
+          <input 
+            *ngIf="isEditing(course.id)"
+            type="text" 
+            [(ngModel)]="course.code"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)">{{ course.name }}</span>
+          <input 
+            *ngIf="isEditing(course.id)"
+            type="text" 
+            [(ngModel)]="course.name"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)">{{ course.credits }}</span>
+          <div *ngIf="isEditing(course.id)" class="credits-input">
+            <button 
+              type="button" 
+              (click)="course.credits = course.credits > 0 ? course.credits - 1 : 0"
+              class="credit-btn"
+              [disabled]="course.credits <= 0"
+            >
+              -
+            </button>
+            <input 
+              type="number" 
+              [(ngModel)]="course.credits"
+              min="0"
+              max="10"
+              class="credit-number"
+            />
+            <button 
+              type="button" 
+              (click)="course.credits = course.credits < 10 ? course.credits + 1 : 10"
+              class="credit-btn"
+              [disabled]="course.credits >= 10"
+            >
+              +
+            </button>
+          </div>
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)">{{ course.description || 'Sin descripción' }}</span>
+          <input 
+            *ngIf="isEditing(course.id)"
+            type="text" 
+            [(ngModel)]="course.description"
+            class="table-input"
+          />
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)" [class]="'status-badge ' + getStatusClass(course)">
+            {{ getStatusLabel(course) }}
+          </span>
+          <select *ngIf="isEditing(course.id)" [(ngModel)]="tempEditData.status" class="table-select">
+            <option value="">Seleccionar estado</option>
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </td>
+        <td>
+          <span *ngIf="!isEditing(course.id)">{{ course.semesterName || course.departmentName || 'Sin sección' }}</span>
+          <select *ngIf="isEditing(course.id)" [(ngModel)]="tempEditData.section" class="table-select">
+            <option value="">Seleccionar sección</option>
+            <option *ngFor="let section of sectionOptions" [value]="section">
+              {{ section }}
+            </option>
+          </select>
+        </td>
+      </tr>
+      
+      <tr *ngIf="courses.length === 0" class="no-data-row">
+        <td colspan="7" class="no-data">
+          No se encontraron materias
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Template de carga -->
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <p>Cargando materias...</p>
+  </div>
+</ng-template>

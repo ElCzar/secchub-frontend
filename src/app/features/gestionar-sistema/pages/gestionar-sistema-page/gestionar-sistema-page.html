@@ -1,0 +1,118 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+</aside>
+
+<!-- Contenido principal -->
+<main class="main-content">
+  <div class="container">
+    <h1 class="titulo-pagina">Gestionar Sistema</h1>
+    
+    <div class="hr-line"></div>
+    
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar por materia, código o descripción..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
+        <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las secciones</option>
+          <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Información de Planificación -->
+    <div class="planning-info-container">
+      <h3 class="section-title">Información de Planificación</h3>
+      
+      <div class="planning-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="semestre-select">Semestre:</label>
+            <select 
+              id="semestre-select" 
+              [(ngModel)]="selectedSemestre" 
+              (ngModelChange)="onPlanningFormChange()"
+              class="form-select"
+              required
+            >
+              <option value="">Seleccionar semestre</option>
+              <option *ngFor="let semestre of availableSemestres" [value]="semestre.id">
+                {{semestre.name}}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="fecha-inicio">Fecha Inicio Planificación:</label>
+            <input 
+              id="fecha-inicio"
+              type="date" 
+              [(ngModel)]="fechaInicioPlanificacion"
+              (ngModelChange)="onPlanningFormChange()"
+              class="form-input"
+              required
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="fecha-fin">Fecha Fin Planificación:</label>
+            <input 
+              id="fecha-fin"
+              type="date" 
+              [(ngModel)]="fechaFinPlanificacion"
+              (ngModelChange)="onPlanningFormChange()"
+              class="form-input"
+              [min]="fechaInicioPlanificacion"
+              required
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn--primary" type="button" (click)="addNewCourse()">+ Nueva Materia</button>
+      <button 
+        type="button" 
+        class="btn btn--primary"
+        (click)="savePlanningInfo()"
+        [class.btn--disabled]="!isPlanningFormValid()"
+        [disabled]="!isPlanningFormValid()"
+      >
+        Guardar cambios
+      </button>
+    </div>
+
+    <!-- Componente de tabla de materias -->
+    <app-subjects-table 
+      [courses]="filteredCourses"
+      [loading]="loading"
+      (edit)="editCourse($event)"
+      (delete)="deleteCourse($event)"
+      (save)="saveNewCourse($event)"
+      (refresh)="loadCourses()"
+      #subjectsTable
+    ></app-subjects-table>
+
+    <!-- Paginación (pendiente de implementar) -->
+    <div class="pagination-container" style="display: none;">
+      <p>Paginación pendiente</p>
+    </div>
+  </div>
+</main>

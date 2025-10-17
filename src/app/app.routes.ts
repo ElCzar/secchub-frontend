@@ -13,8 +13,8 @@ import { SolicitudProgramasPages } from './features/solicitud-programas/pages/so
 import { ENVIO_CORREO_ROUTES } from './features/envio-correo/envio-correo.routes';
 import { VER_REGISTRADOS_ROUTES } from './features/ver-registrados/ver-registrados.routes';
 import { SolicitudMonitoresPage } from './features/solicitud-monitores/pages/solicitud-monitores-page/solicitud-monitores-page';
-
 import { RegistrarPage } from './features/registrar/pages/registrar-page/registrar-page';
+import { GestionarSistemaPage } from './features/gestionar-sistema/pages/gestionar-sistema-page/gestionar-sistema-page';
 
 export const routes: Routes = [
     {path: '',component: LoginPageComponent },
@@ -43,7 +43,9 @@ export const routes: Routes = [
 
     {path: 'registrar', component: RegistrarPage},
 
-    {path: 'ver-registrados', children: VER_REGISTRADOS_ROUTES}
+    {path: 'ver-registrados', children: VER_REGISTRADOS_ROUTES},
+
+    {path: 'gestionar-sistema', component: GestionarSistemaPage},
 ];
 
 
