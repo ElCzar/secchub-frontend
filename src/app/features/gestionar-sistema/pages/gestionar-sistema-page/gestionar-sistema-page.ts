@@ -7,6 +7,13 @@ import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapido
 import { SubjectsTable } from '../../components/subjects-table/subjects-table';
 import { CourseInformationService } from '../../../../shared/services/course-information.service';
 import { CourseResponseDTO } from '../../../../shared/model/dto/admin/CourseResponseDTO.model';
+import { SectionInformationService } from '../../../../shared/services/section-information.service';
+import { SectionResponseDTO } from '../../../registrar/models/section.models';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { ParametricService } from '../../../../shared/services/parametric.service';
+import { StatusDTO } from '../../../../shared/model/dto/parametric';
+import { CourseRequestDTO } from '../../../../shared/model/dto/admin/CourseRequestDTO.model';
 
 @Component({
   selector: 'app-gestionar-sistema-page',
@@ -35,24 +42,26 @@ export class GestionarSistemaPage implements OnInit {
   searchTerm = '';
   seccionFilter = '';
   availableSecciones: string[] = [];
+  sectionResponseDTO: SectionResponseDTO[] = [];
+  statusResponseDTO: StatusDTO[] = [];
 
   // Información de planificación
   selectedSemestre = '';
   fechaInicioPlanificacion = '';
   fechaFinPlanificacion = '';
-  availableSemestres = [
-    { id: '2024-1', name: '2024-1' },
-    { id: '2024-2', name: '2024-2' },
-    { id: '2025-1', name: '2025-1' },
-    { id: '2025-2', name: '2025-2' }
-  ];
+  availableSemestres: SemesterResponseDTO[] = [];
 
   constructor(
-    private readonly courseInformationService: CourseInformationService
+    private readonly courseInformationService: CourseInformationService,
+    private readonly sectionInformationService: SectionInformationService,
+    private readonly semesterInformationService: SemesterInformationService,
+    private readonly parametricService: ParametricService
   ) {}
 
   ngOnInit(): void {
     this.loadCourses();
+    this.loadSemesters();
+    this.loadStatuses();
   }
 
   loadCourses(): void {
@@ -73,12 +82,37 @@ export class GestionarSistemaPage implements OnInit {
   }
 
   private extractAvailableSecciones(): void {
-    const secciones = this.courses
-      .map(course => course.semesterName)
-      .filter(Boolean)
-      .filter((seccion, index, array) => array.indexOf(seccion) === index);
-    
-    this.availableSecciones = secciones as string[];
+    this.sectionInformationService.findAllSections().subscribe({
+      next: (sections) => {
+        this.sectionResponseDTO = sections;
+        this.availableSecciones = sections.map(section => section.name);
+      },
+      error: (error) => {
+        console.error('Error loading sections:', error);
+      }
+    });
+  }
+
+  loadSemesters(): void {
+    this.semesterInformationService.getAllSemesters().subscribe({
+      next: (semesters) => {
+        this.availableSemestres = semesters;
+      },
+      error: (error) => {
+        console.error('Error loading semesters:', error);
+      }
+    });
+  }
+
+  loadStatuses(): void {
+    this.parametricService.getAllStatuses().subscribe({
+      next: (statuses) => {
+        this.statusResponseDTO = statuses;
+      },
+      error: (error) => {
+        console.error('Error loading statuses:', error)
+      }
+    });
   }
 
   applyFilters(): void {
@@ -88,15 +122,15 @@ export class GestionarSistemaPage implements OnInit {
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(course =>
-        course.name.toLowerCase().includes(searchLower) ||
-        course.code.toLowerCase().includes(searchLower) ||
+        course.name?.toLowerCase().includes(searchLower) ||
+        course.id?.toString().toLowerCase().includes(searchLower) ||
         course.description?.toLowerCase().includes(searchLower)
       );
     }
 
     // Filtro por sección
     if (this.seccionFilter) {
-      filtered = filtered.filter(course => course.semesterName === this.seccionFilter);
+      filtered = filtered.filter(course => course.sectionId === this.sectionResponseDTO.find(sec => sec.name === this.seccionFilter)?.id);
     }
 
     this.filteredCourses = filtered;
@@ -126,17 +160,14 @@ export class GestionarSistemaPage implements OnInit {
     // Por ahora solo mostrar en consola
     
     // Simular agregar a la lista local (esto se haría desde el backend)
-    const mockCourse: CourseResponseDTO = {
-      id: Date.now(), // ID temporal
+    const newCourse: CourseResponseDTO = {
       name: newCourseData.name,
-      code: newCourseData.code,
       credits: newCourseData.credits,
       description: newCourseData.description,
-      semesterId: 1, // Temporal
-      semesterName: newCourseData.section
+      sectionId: newCourseData.section
     };
     
-    this.courses.push(mockCourse);
+    this.courses.push(newCourse);
     this.applyFilters();
   }
 

@@ -31,7 +31,9 @@
         <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
         <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
           <option value="">Todas las secciones</option>
-          <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
+          @for (seccion of availableSecciones; track seccion) {
+            <option [value]="seccion">{{seccion}}</option>
+          }
         </select>
       </div>
     </div>
@@ -52,9 +54,11 @@
               required
             >
               <option value="">Seleccionar semestre</option>
-              <option *ngFor="let semestre of availableSemestres" [value]="semestre.id">
-                {{semestre.name}}
-              </option>
+              @for (semestre of availableSemestres; track semestre.id) {
+                <option [value]="semestre.id">
+                  {{semestre.year}}
+                </option>
+              }
             </select>
           </div>
           
@@ -102,6 +106,8 @@
     <!-- Componente de tabla de materias -->
     <app-subjects-table 
       [courses]="filteredCourses"
+      [sections]="sectionResponseDTO"
+      [statuses]="statusResponseDTO"
       [loading]="loading"
       (edit)="editCourse($event)"
       (delete)="deleteCourse($event)"
