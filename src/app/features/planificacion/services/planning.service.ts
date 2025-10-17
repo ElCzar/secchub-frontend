@@ -1077,6 +1077,7 @@ export class PlanningService {
     // Definir la interfaz para los datos de Excel
     interface ExcelRow {
       'Materia': string;
+      'ID Materia': string;
       'Sección': string;
       'ID Clase': string;
       'Inicio': string;
@@ -1091,6 +1092,16 @@ export class PlanningService {
       'Observaciones': string;
     }
 
+    // Definir los colores por estado
+    type RowStatus = 'Subido' | 'Cambiar' | 'Eliminar' | 'Crear';
+    
+    const statusColors: Record<RowStatus, string> = {
+      'Subido': 'C6EFCE',     // Verde claro
+      'Cambiar': 'FFEB9C',    // Amarillo claro
+      'Eliminar': 'FFC7CE',   // Rojo claro
+      'Crear': '9BC2E6'       // Azul claro
+    };
+
     // Formatear los datos para el Excel
     const excelData = rows.flatMap(row => {
       // Crear un array para almacenar todas las filas de esta clase
@@ -1099,6 +1110,7 @@ export class PlanningService {
       // Si no hay horarios, crear una fila con la información básica
       if (!row.schedules || row.schedules.length === 0) {
         classRows.push({
+          'ID Materia': row.courseId,
           'Materia': row.courseName,
           'Sección': row.section,
           'ID Clase': row.classId,
@@ -1120,6 +1132,7 @@ export class PlanningService {
       row.schedules.forEach(schedule => {
         classRows.push({
           'Materia': row.courseName,
+          'ID Materia': row.courseId,
           'Sección': row.section,
           'ID Clase': row.classId,
           'Inicio': row.startDate,
@@ -1145,6 +1158,7 @@ export class PlanningService {
     // Ajustar el ancho de las columnas
     const columnWidths = [
       { wch: 30 }, // Materia
+      { wch: 15 }, // ID Materia
       { wch: 15 }, // Sección
       { wch: 10 }, // ID Clase
       { wch: 12 }, // Inicio
@@ -1158,6 +1172,29 @@ export class PlanningService {
       { wch: 15 }, // Salón
       { wch: 40 }  // Observaciones
     ];
+
+    // Aplicar colores según el estado
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let R = range.s.r + 1; R <= range.e.r; R++) { // +1 para saltar el encabezado
+      // Obtener el estado de la fila actual (columna 9 - Estado)
+      const estadoCell = worksheet[XLSX.utils.encode_cell({r: R, c: 8})];
+      const estado = estadoCell?.v as RowStatus;
+      
+      if (estado && estado in statusColors) {
+        // Aplicar color a toda la fila
+        for (let C = range.s.c; C <= range.e.c; C++) {
+          const cellRef = XLSX.utils.encode_cell({r: R, c: C});
+          if (!worksheet[cellRef]) worksheet[cellRef] = { t: 's', v: '' };
+          
+          worksheet[cellRef].s = {
+            fill: {
+              fgColor: { rgb: statusColors[estado] },
+              patternType: 'solid'
+            }
+          };
+        }
+      }
+    }
     worksheet['!cols'] = columnWidths;
 
     // Agregar el título
