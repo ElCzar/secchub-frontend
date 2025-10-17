@@ -27,7 +27,7 @@ export class SubjectsTable {
 
   // Estado para nueva materia
   isAddingNew = false;
-  editingCourseId: number | null = null;
+  editingCourseId: number | undefined = undefined;
   originalCourse: CourseResponseDTO | null = null; // Para guardar el estado original
   
   // Estado temporal para edición
@@ -87,7 +87,7 @@ export class SubjectsTable {
       this.courseChangeService.updateCourse(course.id, courseRequest).subscribe({
         next: (updatedCourse) => {
           console.log('Course updated successfully:', updatedCourse);
-          this.editingCourseId = null;
+          this.editingCourseId = undefined;
           this.originalCourse = null;
           this.tempEditData = {};
           this.edit.emit(updatedCourse);
@@ -112,7 +112,7 @@ export class SubjectsTable {
       this.courseChangeService.createCourse(courseRequest).subscribe({
         next: (newCourse) => {
           console.log('Course created successfully:', newCourse);
-          this.editingCourseId = null;
+          this.editingCourseId = undefined;
           this.originalCourse = null;
           this.tempEditData = {};
           this.save.emit(newCourse);
@@ -139,7 +139,7 @@ export class SubjectsTable {
         this.courses[courseIndex] = { ...this.originalCourse };
       }
     }
-    this.editingCourseId = null;
+    this.editingCourseId = undefined;
     this.originalCourse = null;
     this.tempEditData = {};
   }

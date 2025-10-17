@@ -248,3 +248,56 @@
     padding: 16px;
   }
 }
+
+/* ==============================
+  New Semester Form Styles
+  ============================== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.new-semester-form {
+  background: #f8f9fa;
+  border: 2px solid var(--primary-600);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  
+  h4 {
+    margin: 0 0 16px 0;
+    color: var(--primary-700);
+    font-size: var(--fs-medium);
+    font-weight: 600;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-start;
+  
+  .btn {
+    min-width: 140px;
+  }
+}
+
+/* Responsive adjustments for new semester form */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    
+    .btn {
+      min-width: auto;
+    }
+  }
+}

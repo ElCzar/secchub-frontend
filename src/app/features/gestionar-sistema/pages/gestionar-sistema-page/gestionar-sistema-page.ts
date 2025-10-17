@@ -14,6 +14,8 @@ import { SemesterInformationService } from '../../../../shared/services/semester
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { StatusDTO } from '../../../../shared/model/dto/parametric';
 import { CourseRequestDTO } from '../../../../shared/model/dto/admin/CourseRequestDTO.model';
+import { SemesterChangeService } from '../../services/semester-change-service.service';
+import { SemesterRequestDTO } from '../../../../shared/model/dto/admin/SemesterRequestDTO.model';
 
 @Component({
   selector: 'app-gestionar-sistema-page',
@@ -51,11 +53,21 @@ export class GestionarSistemaPage implements OnInit {
   fechaFinPlanificacion = '';
   availableSemestres: SemesterResponseDTO[] = [];
 
+  // New Semester functionality
+  isAddingNewSemester = false;
+  newSemester = {
+    period: 1,
+    year: new Date().getFullYear(),
+    startDate: '',
+    endDate: ''
+  };
+
   constructor(
     private readonly courseInformationService: CourseInformationService,
     private readonly sectionInformationService: SectionInformationService,
     private readonly semesterInformationService: SemesterInformationService,
-    private readonly parametricService: ParametricService
+    private readonly parametricService: ParametricService,
+    private readonly semesterChangeService: SemesterChangeService
   ) {}
 
   ngOnInit(): void {
@@ -203,5 +215,54 @@ export class GestionarSistemaPage implements OnInit {
     } else {
       console.warn('Formulario de planificación incompleto o inválido');
     }
+  }
+
+  // New Semester methods
+  startAddingNewSemester(): void {
+    this.isAddingNewSemester = true;
+    this.resetNewSemester();
+  }
+
+  cancelAddingNewSemester(): void {
+    this.isAddingNewSemester = false;
+    this.resetNewSemester();
+  }
+
+  saveNewSemester(): void {
+    if (this.validateNewSemester()) {
+      const semesterRequest: SemesterRequestDTO = this.semesterChangeService.createRequestDTO(this.newSemester);
+      
+      this.semesterChangeService.createSemester(semesterRequest).subscribe({
+        next: (newSemester) => {
+          console.log('Semester created successfully:', newSemester);
+          this.availableSemestres.push(newSemester);
+          this.isAddingNewSemester = false;
+          this.resetNewSemester();
+          alert('Semestre creado exitosamente');
+        },
+        error: (error) => {
+          console.error('Error creating semester:', error);
+          alert('Error al crear el semestre. Por favor, inténtelo de nuevo.');
+        }
+      });
+    }
+  }
+
+  validateNewSemester(): boolean {
+    return this.semesterChangeService.validateSemesterData(this.newSemester);
+  }
+
+  private resetNewSemester(): void {
+    this.newSemester = {
+      period: 1,
+      year: new Date().getFullYear(),
+      startDate: '',
+      endDate: ''
+    };
+  }
+
+  // Computed property to determine if semester form fields should be editable
+  isSemesterFormEditable(): boolean {
+    return this.isAddingNewSemester;
   }
 }

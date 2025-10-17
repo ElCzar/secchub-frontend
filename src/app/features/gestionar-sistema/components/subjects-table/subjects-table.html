@@ -133,16 +133,7 @@
           </button>
         </td>
         <td>
-          @if (!course.id || !isEditing(course.id)) {
-            <span>{{ course.id || 'N/A' }}</span>
-          } @else {
-            <input 
-              type="text" 
-              [(ngModel)]="course.id"
-              class="table-input"
-              readonly
-            />
-          }
+          <span>{{ course.id || 'N/A' }}</span>
         </td>
         <td>
           @if (!course.id || !isEditing(course.id)) {

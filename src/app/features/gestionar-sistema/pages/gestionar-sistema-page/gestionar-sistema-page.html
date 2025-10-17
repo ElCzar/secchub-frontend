@@ -40,27 +40,113 @@
 
     <!-- Información de Planificación -->
     <div class="planning-info-container">
-      <h3 class="section-title">Información de Planificación</h3>
+      <div class="section-header">
+        <h3 class="section-title">Información de Planificación</h3>
+        @if (!isAddingNewSemester) {
+          <button 
+            class="btn btn--secondary" 
+            type="button" 
+            (click)="startAddingNewSemester()"
+          >
+            + Nuevo Semestre
+          </button>
+        }
+      </div>
       
       <div class="planning-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="semestre-select">Semestre:</label>
-            <select 
-              id="semestre-select" 
-              [(ngModel)]="selectedSemestre" 
-              (ngModelChange)="onPlanningFormChange()"
-              class="form-select"
-              required
-            >
-              <option value="">Seleccionar semestre</option>
-              @for (semestre of availableSemestres; track semestre.id) {
-                <option [value]="semestre.id">
-                  {{semestre.year}}
-                </option>
-              }
-            </select>
+        <!-- New Semester Form (only visible when adding) -->
+        @if (isAddingNewSemester) {
+          <div class="new-semester-form">
+            <h4>Crear Nuevo Semestre</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="new-period">Período:</label>
+                <select 
+                  id="new-period" 
+                  [(ngModel)]="newSemester.period" 
+                  class="form-select"
+                  required
+                >
+                  <option [value]="1">1 - Primer Semestre</option>
+                  <option [value]="2">2 - Segundo Semestre</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-year">Año:</label>
+                <input 
+                  id="new-year"
+                  type="number" 
+                  [(ngModel)]="newSemester.year"
+                  class="form-input"
+                  [min]="2020"
+                  [max]="2030"
+                  required
+                />
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-start-date">Fecha Inicio:</label>
+                <input 
+                  id="new-start-date"
+                  type="date" 
+                  [(ngModel)]="newSemester.startDate"
+                  class="form-input"
+                  required
+                />
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-end-date">Fecha Fin:</label>
+                <input 
+                  id="new-end-date"
+                  type="date" 
+                  [(ngModel)]="newSemester.endDate"
+                  class="form-input"
+                  [min]="newSemester.startDate"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button 
+                class="btn btn--primary" 
+                type="button" 
+                (click)="saveNewSemester()"
+                [disabled]="!validateNewSemester()"
+              >
+                ✅ Guardar Semestre
+              </button>
+              <button 
+                class="btn btn--secondary" 
+                type="button" 
+                (click)="cancelAddingNewSemester()"
+              >
+                ❌ Cancelar
+              </button>
+            </div>
           </div>
+        } @else {
+          <!-- Existing semester selection (read-only when not adding new) -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="semestre-select">Semestre:</label>
+              <select 
+                id="semestre-select" 
+                [(ngModel)]="selectedSemestre" 
+                (ngModelChange)="onPlanningFormChange()"
+                class="form-select"
+                required
+              >
+                <option value="">Seleccionar semestre</option>
+                @for (semestre of availableSemestres; track semestre.id) {
+                  <option [value]="semestre.id">
+                    {{semestre.year}} - Período {{semestre.period}}
+                  </option>
+                }
+              </select>
+            </div>
           
           <div class="form-group">
             <label class="form-label" for="fecha-inicio">Fecha Inicio Planificación:</label>
@@ -87,6 +173,7 @@
             />
           </div>
         </div>
+        }
       </div>
     </div>
 
