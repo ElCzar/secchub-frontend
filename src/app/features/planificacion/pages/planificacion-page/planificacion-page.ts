@@ -237,21 +237,20 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
             )
             .subscribe((teachers: any[]) => {
               if (teachers.length > 0) {
-                // Tomar el primer docente asignado (o combinar si hay múltiples)
-                const primaryTeacher = teachers[0];
-                // Preferir campos calculados por backend si existen
-                const assignedHours = (primaryTeacher as any).totalHours ?? primaryTeacher.assignedHours;
-                const availableHours = (primaryTeacher as any).availableHours ?? (primaryTeacher.maxHours - assignedHours);
-                this.originalRows[index].teacher = {
-                  id: primaryTeacher.id,
-                  name: primaryTeacher.name,
-                  lastName: primaryTeacher.lastName,
-                  email: primaryTeacher.email,
-                  maxHours: primaryTeacher.maxHours,
-                  assignedHours: assignedHours,
-                  availableHours: availableHours
-                };
-              }
+                  // Map backend teachers into the new teachers[] array and keep legacy teacher as first
+                  this.originalRows[index].teachers = teachers.map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    lastName: t.lastName,
+                    email: t.email,
+                    maxHours: t.maxHours,
+                    assignedHours: (t as any).totalHours ?? t.assignedHours,
+                    availableHours: (t as any).availableHours ?? (t.maxHours - ((t as any).totalHours ?? t.assignedHours))
+                  }));
+                  // Backwards compatibility: set legacy `teacher` to first
+                  const primary = this.originalRows[index].teachers[0];
+                  this.originalRows[index].teacher = primary ? { ...primary } : undefined;
+                }
             })
         );
       }
@@ -312,14 +311,26 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           try {
             const course = await this.planningService.getCourseById(createdClass.courseId).toPromise();
             if (course) {
-              enrichedClass = {
-                ...createdClass,
-                courseName: course.name || `Curso ${createdClass.courseId}`,
-                sectionName: createdClass.sectionName || 'Sin sección'
-              };
-              console.log('✅ Curso obtenido:', course);
-              console.log('✅ Clase enriquecida:', enrichedClass);
-            }
+                  // Determine the best section name: prefer backend, then try to fetch by courseId, then fall back to the UI-provided section or a default
+                  let resolvedSectionName = createdClass.sectionName;
+                  if (!resolvedSectionName && createdClass.courseId) {
+                    try {
+                      resolvedSectionName = await this.planningService.getSectionByCourseId(String(createdClass.courseId)).toPromise();
+                      console.log(`✅ Sección obtenida por courseId ${createdClass.courseId}:`, resolvedSectionName);
+                    } catch (secErr) {
+                      console.warn('⚠️ No se pudo obtener la sección por courseId, usando fallback:', secErr);
+                      resolvedSectionName = row.section || 'Sin sección';
+                    }
+                  }
+
+                  enrichedClass = {
+                    ...createdClass,
+                    courseName: course.name || `Curso ${createdClass.courseId}`,
+                    sectionName: resolvedSectionName || row.section || 'Sin sección'
+                  };
+                  console.log('✅ Curso obtenido:', course);
+                  console.log('✅ Clase enriquecida:', enrichedClass);
+                }
           } catch (courseError) {
             console.warn('⚠️ Error obteniendo curso:', courseError);
             // Si falla, usar el nombre que teníamos en la interfaz
@@ -331,6 +342,18 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           }
         }
         
+        // Asegurarnos de que enrichedClass tenga sección: si falta, intentar obtenerla por courseId
+        if (!enrichedClass.sectionName && enrichedClass.courseId) {
+          try {
+            const fetchedSection = await this.planningService.getSectionByCourseId(String(enrichedClass.courseId)).toPromise();
+            enrichedClass = { ...enrichedClass, sectionName: fetchedSection || row.section || 'Sin sección' };
+            console.log('🔎 Sección obtenida y aplicada a enrichedClass:', enrichedClass.sectionName);
+          } catch (fetchSecErr) {
+            console.warn('⚠️ No se pudo obtener la sección adicionalmente, usando fallback:', fetchSecErr);
+            enrichedClass = { ...enrichedClass, sectionName: enrichedClass.sectionName || row.section || 'Sin sección' };
+          }
+        }
+
         // Convertir la respuesta enriquecida del backend a PlanningRow para mantener consistencia
         const updatedRow = this.planningService.convertClassDTOToPlanningRow(enrichedClass);
         console.log('Row convertido desde respuesta del backend:', updatedRow);
@@ -359,13 +382,17 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         // También actualizar originalRows para mantener consistencia
         this.originalRows.push(this.rows[index]);
         
-        // Si hay un docente asignado, crear la asignación
-        if (row.teacher?.id) {
+        // If there are teachers assigned locally (multiple), create assignments for each
+        const teachersToAssign = row.teachers && row.teachers.length ? row.teachers : (row.teacher ? [row.teacher] : []);
+        if (teachersToAssign.length > 0) {
           const computedHours = this.computeWorkHoursFromSchedules(this.rows[index]);
-          await this.assignTeacherToClass(enrichedClass.id!, Number(row.teacher.id), computedHours);
-          // Marcar que la asignación se realizó hace poco para evitar re-asignaciones duplicadas
+          for (const t of teachersToAssign) {
+            if (t && t.id) {
+              await this.assignTeacherToClass(enrichedClass.id!, Number(t.id), computedHours);
+            }
+          }
+          // mark assigned time to avoid duplicates
           this.rows[index]._teacherAssignedAt = Date.now();
-          // Intentar limpiar cualquier selección pendiente para esta fila
           try {
             const classKeyFromSnapshot = `${this.rows[index].courseName || 'nueva-clase'}-${this.rows[index].section || 'sin-seccion'}-${index}`;
             this.selectedTeachersService.clearSelectedTeachers(classKeyFromSnapshot);
@@ -537,10 +564,10 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     if (this.searchText.trim()) {
       const searchLower = this.searchText.toLowerCase().trim();
       filtered = filtered.filter(row => 
-        row.courseName?.toLowerCase().includes(searchLower) ||
-        row.courseId?.toLowerCase().includes(searchLower) ||
-        row.teacher?.name?.toLowerCase().includes(searchLower) ||
-        row.section?.toLowerCase().includes(searchLower)
+  row.courseName?.toLowerCase().includes(searchLower) ||
+  row.courseId?.toLowerCase().includes(searchLower) ||
+  ((row.teachers && row.teachers.some(t => (t.name || '').toLowerCase().includes(searchLower))) || row.teacher?.name?.toLowerCase().includes(searchLower)) ||
+  row.section?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -730,7 +757,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
 
         console.log('✅ Clase encontrada para asignación:', classRow);
         // Protección: si ya tiene el mismo docente asignado, saltar para evitar duplicados
-        if (classRow.teacher && classRow.teacher.id === selectedTeacher.id) {
+        const alreadyAssigned = (classRow.teachers && classRow.teachers.some((tt:any) => tt.id === selectedTeacher.id)) || (classRow.teacher && classRow.teacher.id === selectedTeacher.id);
+        if (alreadyAssigned) {
           console.log('ℹ️ Clase ya tiene asignado al mismo docente; omitiendo reasignación para evitar duplicado');
           this.selectedTeachersService.clearSelectedTeachers(classKey);
           return;
@@ -743,19 +771,23 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           return;
         }
         
-        // Actualizar la clase localmente primero
-        classRow.teacher = {
+        // Actualizar la clase localmente primero: append to teachers[] and keep legacy teacher in sync
+        if (!classRow.teachers) classRow.teachers = [];
+        classRow.teachers.push({
           id: selectedTeacher.id,
           name: selectedTeacher.name,
           lastName: selectedTeacher.lastName,
           email: selectedTeacher.email
-        };
+        });
+        // Keep legacy single teacher for backward compatibility
+        classRow.teacher = classRow.teachers[0];
         
         // Actualizar también en las filas filtradas si existen
         if (this.rows) {
           const rowIndex = this.rows.findIndex(row => row.backendId === classRow.backendId);
-          if (rowIndex !== -1) {
-            this.rows[rowIndex].teacher = { ...classRow.teacher };
+            if (rowIndex !== -1) {
+            this.rows[rowIndex].teachers = classRow.teachers ? [...classRow.teachers] : [];
+            this.rows[rowIndex].teacher = this.rows[rowIndex].teachers[0];
             console.log('📊 Fila actualizada en vista:', rowIndex, this.rows[rowIndex]);
           }
         }
@@ -793,6 +825,7 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       startDate: '',
       endDate: '',
       weeks: 0,
+      teachers: [],
       teacher: undefined,
       status: 'PENDIENTE',
       notes: [],
@@ -1047,6 +1080,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       await this.reloadData();
       
       console.log('Todos los cambios guardados exitosamente');
+
+      // Exportar a Excel después de guardar
+      this.planningService.exportToExcel(this.rows);
     } catch (error) {
       console.error('Error al guardar cambios:', error);
       this.error = 'Error al guardar algunos cambios. Verifique los datos e intente nuevamente.';
@@ -1190,26 +1226,24 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           // Encontrar la fila y actualizar con los docentes asignados
           const row = this.originalRows.find(r => r.backendId === classId);
           if (row && teachers.length > 0) {
-            // Usar el primer docente asignado (se puede extender para múltiples docentes)
-            const firstTeacher = teachers[0];
-            console.log('🔁 Actualizando datos de docente en originalRows con:', firstTeacher);
-            const assignedHours = (firstTeacher as any).totalHours ?? firstTeacher.assignedHours;
-            const availableHours = (firstTeacher as any).availableHours ?? (firstTeacher.maxHours - assignedHours);
-            row.teacher = {
-              id: firstTeacher.id,
-              name: firstTeacher.name,
-              lastName: firstTeacher.lastName,
-              email: firstTeacher.email,
-              maxHours: firstTeacher.maxHours,
-              assignedHours: assignedHours,
-              availableHours: availableHours
-            };
+            // Map to teachers[] and keep legacy teacher as first
+            row.teachers = teachers.map((t: any) => ({
+              id: t.id,
+              name: t.name,
+              lastName: t.lastName,
+              email: t.email,
+              maxHours: t.maxHours,
+              assignedHours: (t as any).totalHours ?? t.assignedHours,
+              availableHours: (t as any).availableHours ?? (t.maxHours - ((t as any).totalHours ?? t.assignedHours))
+            }));
+            row.teacher = row.teachers[0];
 
             // Actualizar también this.rows (vista filtrada) si existe la fila
             const viewIndex = this.rows.findIndex(r => r.backendId === classId);
             if (viewIndex !== -1) {
               console.log(`🔁 Actualizando fila en vista en índice ${viewIndex}`);
-              this.rows[viewIndex].teacher = { ...row.teacher };
+              this.rows[viewIndex].teachers = row.teachers ? [...row.teachers] : [];
+              this.rows[viewIndex].teacher = this.rows[viewIndex].teachers[0];
             } else {
               console.log('ℹ️ Fila no encontrada en la vista filtrada, forzando applyFilters()');
               this.applyFilters();

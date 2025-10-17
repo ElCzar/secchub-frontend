@@ -395,3 +395,37 @@
     gap: 8px;
   }
 }
+
+/* Estilos para mensajes de preview */
+.preview-summary {
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin: 12px 0 0 0;
+  
+  &.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  &.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+}
+
+.no-classes {
+  padding: 24px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #dc3545;
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+}

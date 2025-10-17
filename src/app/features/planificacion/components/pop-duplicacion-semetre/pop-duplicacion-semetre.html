@@ -48,8 +48,8 @@
       <div *ngIf="showPreview && previewData" class="semester-preview">
         <div class="preview-header">
           <h3>Semestre {{ selectedSemester }}</h3>
-          <p class="preview-summary">
-            <strong>Total de clases:</strong> {{ previewData.totalClasses }}
+          <p class="preview-summary" [ngClass]="{'success': previewData.classes.length > 0, 'warning': previewData.classes.length === 0}">
+            {{ previewMessage }}
           </p>
         </div>
         
@@ -77,7 +77,7 @@
         </div>
         
         <div *ngIf="previewData.classes.length === 0" class="no-classes">
-          <p>No hay clases programadas en este semestre</p>
+          <p>❌ {{ previewMessage }}</p>
         </div>
       </div>
       
@@ -130,7 +130,7 @@
         <button 
           type="button" 
           class="btn btn--primary" 
-          [disabled]="loading"
+          [disabled]="loading || (previewMessage && previewMessage.includes('No hay'))"
           (click)="onApply()">
           Aplicar Planificación
         </button>

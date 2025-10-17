@@ -17,11 +17,16 @@ export class PopDuplicacionSemetre implements OnInit {
   // Lista de semestres disponibles
   availableSemesters: string[] = [];
   
+  // Mapeo dinámico de ID de semestres (año-período -> ID)
+  private semesterIdMap: {[key: string]: number} = {};
+  
   // Estado de vista previa
   showPreview: boolean = false;
   previewData: {totalClasses: number, semesterId: number, classes: ClassDTO[]} | null = null;
   loading: boolean = false;
   error: string | null = null;
+  previewMessage: string = '';
+  hasClassesInPreview: boolean = false;
   
   // Eventos de salida
   @Output() closeModal = new EventEmitter<void>();
@@ -39,11 +44,17 @@ export class PopDuplicacionSemetre implements OnInit {
   private loadAvailableSemesters(): void {
     this.planningService.getPastSemesters().subscribe({
       next: (semesters) => {
+        console.log('🔍 Semestres pasados del backend:', semesters);
         // Convertir los semestres del backend al formato esperado por el componente
-        this.availableSemesters = semesters.map(semester => 
-          `${semester.year}-${semester.period.toString().padStart(2, '0')}`
-        );
-        console.log('Semestres disponibles cargados:', this.availableSemesters);
+        this.availableSemesters = semesters.map(semester => {
+          const label = `${semester.year}-${semester.period.toString().padStart(2, '0')}`;
+          // Construir el mapa dinámico: label -> ID
+          this.semesterIdMap[label] = semester.id;
+          console.log(`  ✓ ${label} → ID: ${semester.id}`);
+          return label;
+        });
+        console.log('📋 Mapeo de semestres creado:', this.semesterIdMap);
+        console.log('📊 Semestres disponibles cargados:', this.availableSemesters);
       },
       error: (error) => {
         console.error('Error cargando semestres disponibles:', error);
@@ -78,6 +89,7 @@ export class PopDuplicacionSemetre implements OnInit {
     this.showPreview = false;
     this.previewData = null;
     this.error = null;
+    this.hasClassesInPreview = false;
     console.log('Semestre seleccionado:', this.selectedSemester);
   }
   
@@ -92,38 +104,43 @@ export class PopDuplicacionSemetre implements OnInit {
     
     this.loading = true;
     this.error = null;
+    this.previewMessage = '';
+    this.hasClassesInPreview = false;
     
-    // Extraer el ID del semestre del formato "YYYY-0X"
-    const semesterId = this.parseSemesterId(this.selectedSemester);
-    console.log(`Obteniendo vista previa para semestre ID: ${semesterId}`);
+    // Obtener el ID del semestre desde el mapa dinámico
+    const semesterId = this.semesterIdMap[this.selectedSemester];
+    
+    if (!semesterId) {
+      this.error = `No se encontró el ID para el semestre ${this.selectedSemester}`;
+      this.loading = false;
+      return;
+    }
+    
+    console.log(`📥 Obteniendo vista previa para semestre: ${this.selectedSemester} (ID: ${semesterId})`);
     
     this.planningService.getSemesterPlanningPreview(semesterId).subscribe({
       next: (response) => {
-        console.log('Vista previa recibida:', response);
-        this.previewData = response;
+        console.log('✅ Vista previa recibida:', response);
+        
+        if (response.classes && response.classes.length > 0) {
+          this.previewData = response;
+          this.hasClassesInPreview = true;
+          this.previewMessage = `Se encontraron ${response.totalClasses} clase(s) planificada(s) para ${this.selectedSemester}`;
+        } else {
+          this.previewData = response;
+          this.hasClassesInPreview = false;
+          this.previewMessage = `❌ No hay clases planificadas para el semestre ${this.selectedSemester}`;
+        }
+        
         this.showPreview = true;
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error obteniendo vista previa:', error);
-        this.error = 'Error al obtener la vista previa del semestre';
+        console.error('❌ Error obteniendo vista previa:', error);
+        this.error = `Error al obtener la vista previa del semestre ${this.selectedSemester}`;
         this.loading = false;
       }
     });
-  }
-  
-  /**
-   * Convertir formato de semestre a ID
-   */
-  private parseSemesterId(semesterStr: string): number {
-    // Mapear los semestres existentes basado en los datos de prueba
-    const semesterMap: {[key: string]: number} = {
-      '2024-01': 1, // 2024-1
-      '2024-03': 2, // 2024-2  
-      '2025-01': 3  // 2025-1
-    };
-    
-    return semesterMap[semesterStr] || 1; // Default a 1 si no se encuentra
   }
   
   /**
@@ -149,6 +166,7 @@ export class PopDuplicacionSemetre implements OnInit {
     this.showPreview = false;
     this.previewData = null;
     this.error = null;
+    this.hasClassesInPreview = false;
   }
   
   /**
@@ -162,25 +180,44 @@ export class PopDuplicacionSemetre implements OnInit {
    * Aplica la duplicación del semestre seleccionado
    */
   onApply(): void {
-    if (this.selectedSemester) {
-      this.loading = true;
-      this.error = null;
-      
-      const semesterId = this.parseSemesterId(this.selectedSemester);
-      console.log(`Aplicando planificación del semestre ID: ${semesterId}`);
-      
-      this.planningService.applySemesterPlanningToCurrent(semesterId).subscribe({
-        next: (response) => {
-          console.log('Planificación aplicada exitosamente:', response);
-          this.applySemester.emit(this.selectedSemester);
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error aplicando planificación:', error);
-          this.error = 'Error al aplicar la planificación del semestre';
-          this.loading = false;
-        }
-      });
+    if (!this.selectedSemester) {
+      this.error = 'Debe seleccionar un semestre';
+      return;
     }
+    
+    // Si ya vimos preview y no hay clases, no permitir aplicar
+    if (this.showPreview && !this.hasClassesInPreview) {
+      this.error = 'No se puede aplicar un semestre sin clases planificadas';
+      return;
+    }
+    
+    this.loading = true;
+    this.error = null;
+    
+    // Obtener el ID del semestre desde el mapa dinámico
+    const semesterId = this.semesterIdMap[this.selectedSemester];
+    
+    if (!semesterId) {
+      this.error = `No se encontró el ID para el semestre ${this.selectedSemester}`;
+      this.loading = false;
+      return;
+    }
+    
+    console.log(`🔄 Aplicando planificación del semestre: ${this.selectedSemester} (ID: ${semesterId})`);
+    
+    this.planningService.applySemesterPlanningToCurrent(semesterId).subscribe({
+      next: (response) => {
+        console.log('✅ Planificación aplicada exitosamente:', response);
+        alert(`✅ Se aplicaron ${response.classesApplied} clases del semestre ${this.selectedSemester} al semestre actual`);
+        this.applySemester.emit(this.selectedSemester);
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('❌ Error aplicando planificación:', error);
+        this.error = `Error al aplicar la planificación del semestre ${this.selectedSemester}`;
+        this.loading = false;
+      }
+    });
   }
 }
+

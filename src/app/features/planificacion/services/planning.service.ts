@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
+import * as XLSX from 'xlsx';
 import { environment } from '../../../../environments/environment';
 import { PlanningRow, PlanningStatus } from '../models/planificacion.models';
 import { CourseService } from './course.service';
@@ -21,12 +22,12 @@ export interface ClassDTO {
   capacity?: number;     // INT - capacidad
   statusId?: number;     // BIGINT UNSIGNED - relación con status
   statusName?: string;   // Nombre del estado
+  section?: number;      // ID de la sección académica
   sectionName?: string;  // Nombre de la sección académica
   schedules?: ClassScheduleDTO[]; // Lista de horarios
   teachers?: TeacherDTO[]; // Lista de profesores
   
   // Campos calculados/derivados para el frontend (compatibilidad)
-  section?: string;      // Alias para sectionName
   weeks?: number;        // Calculado entre startDate y endDate
   status?: string;       // Alias para statusName
   notes?: string[];      // Derivado de observation
@@ -114,7 +115,8 @@ export class PlanningService {
   }
 
   /**
-   * Obtener todas las clases con sus horarios incluidos
+   * Obtener todas las clases CON HORARIOS INCLUIDOS del semestre actual
+   * Nota: Este método automáticamente filtra por semestre actual desde el backend
    */
   getAllClassesWithSchedules(): Observable<ClassDTO[]> {
     return this.getAllClasses().pipe(
@@ -163,13 +165,13 @@ export class PlanningService {
   }
 
   /**
-   * Obtener todas las clases
+   * Obtener todas las clases del semestre actual
    */
   getAllClasses(): Observable<ClassDTO[]> {
-    return this.http.get<ClassDTO[]>(`${this.baseUrl}/classes`).pipe(
+    return this.http.get<ClassDTO[]>(`${this.baseUrl}/classes/current-semester`).pipe(
       tap(classes => {
         console.log('=== RESPUESTA CRUDA DEL BACKEND ===');
-        console.log('Clases recibidas del backend:', classes);
+        console.log('Clases recibidas del semestre ACTUAL:', classes);
         console.log('Número de clases:', classes.length);
         
         console.log('=== ANÁLISIS DETALLADO DE FECHAS ===');
@@ -920,7 +922,7 @@ export class PlanningService {
       _editing: false,
       courseName: classDTO.courseName || '',
       courseId: classDTO.courseId.toString(), // Convertir number a string para el frontend
-      section: classDTO.sectionName || 'Sin sección',
+      section: 'Computer Science', // Nombre de sección por defecto
       classId: classDTO.id?.toString() || 'nuevo',
       startDate: startDateFormatted,
       endDate: endDateFormatted,
@@ -959,6 +961,8 @@ export class PlanningService {
       id: planningRow.backendId,
       courseId: parseInt(planningRow.courseId), // Convertir string a number para el backend
       semesterId: 1, // ID del semestre fijo como solicitado
+      section: 1, // ID por defecto de la sección
+      sectionName: planningRow.section, // Usar el nombre de la sección
       startDate: planningRow.startDate,
       endDate: planningRow.endDate,
       observation: planningRow.notes?.join('; '),
@@ -1042,16 +1046,17 @@ export class PlanningService {
   }
 
   /**
-   * Obtener primera sección disponible de un curso
+   * Obtener nombre de la sección para un curso específico
    */
   getSectionByCourseId(courseId: string): Observable<string> {
-    return this.courseService.getSectionsByCourse(courseId).pipe(
-      map(sections => {
-        if (sections.length > 0) {
-          return sections[0].name;
-        }
-        // Si no hay secciones, generar nombre por defecto
-        return `Sección 01`;
+    return this.courseService.getCourseById(courseId).pipe(
+      map(course => {
+        // Siempre devolvemos "Computer Science" ya que es la sección por defecto según la BD
+        return 'Computer Science';
+      }),
+      catchError(() => {
+        console.error('Error al obtener la sección del curso:', courseId);
+        return of('Computer Science');
       })
     );
   }
@@ -1061,6 +1066,145 @@ export class PlanningService {
    */
   getCourseById(courseId: string | number): Observable<any> {
     return this.courseService.getCourseById(courseId);
+  }
+
+  // ==========================================
+  // EXPORTACIÓN A EXCEL
+  // ==========================================
+
+  /**
+   * Exportar planificación a Excel
+   */
+  exportToExcel(rows: PlanningRow[]) {
+    // Definir la interfaz para los datos de Excel
+    interface ExcelRow {
+      'Materia': string;
+      'ID Materia': string;
+      'Sección': string;
+      'ID Clase': string;
+      'Inicio': string;
+      'Fin': string;
+      'Semanas': number;
+      'Cupos': number;
+      'Estado': PlanningStatus;
+      'Día': string;
+      'Hora Inicial': string;
+      'Hora Final': string;
+      'Salón': string;
+      'Observaciones': string;
+    }
+
+    // Definir los colores por estado
+    type RowStatus = 'Subido' | 'Cambiar' | 'Eliminar' | 'Crear';
+    
+    const statusColors: Record<RowStatus, string> = {
+      'Subido': 'C6EFCE',     // Verde claro
+      'Cambiar': 'FFEB9C',    // Amarillo claro
+      'Eliminar': 'FFC7CE',   // Rojo claro
+      'Crear': '9BC2E6'       // Azul claro
+    };
+
+    // Formatear los datos para el Excel
+    const excelData = rows.flatMap(row => {
+      // Crear un array para almacenar todas las filas de esta clase
+      const classRows: ExcelRow[] = [];
+
+      // Si no hay horarios, crear una fila con la información básica
+      if (!row.schedules || row.schedules.length === 0) {
+        classRows.push({
+          'ID Materia': row.courseId,
+          'Materia': row.courseName,
+          'Sección': row.section,
+          'ID Clase': row.classId,
+          'Inicio': row.startDate,
+          'Fin': row.endDate,
+          'Semanas': row.weeks,
+          'Cupos': row.seats,
+          'Estado': row.status,
+          'Día': '-',
+          'Hora Inicial': '-',
+          'Hora Final': '-',
+          'Salón': '-',
+          'Observaciones': row.notes.join('\n')
+        });
+        return classRows;
+      }
+
+      // Crear una fila por cada horario
+      row.schedules.forEach(schedule => {
+        classRows.push({
+          'Materia': row.courseName,
+          'ID Materia': row.courseId,
+          'Sección': row.section,
+          'ID Clase': row.classId,
+          'Inicio': row.startDate,
+          'Fin': row.endDate,
+          'Semanas': row.weeks,
+          'Cupos': row.seats,
+          'Estado': row.status,
+          'Día': schedule.day || '-',
+          'Hora Inicial': schedule.startTime || '-',
+          'Hora Final': schedule.endTime || '-',
+          'Salón': schedule.room || 'Sin salón',
+          'Observaciones': row.notes.join('\n')
+        });
+      });
+
+      return classRows;
+    });
+
+    // Crear el libro de Excel
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+
+    // Ajustar el ancho de las columnas
+    const columnWidths = [
+      { wch: 30 }, // Materia
+      { wch: 15 }, // ID Materia
+      { wch: 15 }, // Sección
+      { wch: 10 }, // ID Clase
+      { wch: 12 }, // Inicio
+      { wch: 12 }, // Fin
+      { wch: 10 }, // Semanas
+      { wch: 10 }, // Cupos
+      { wch: 15 }, // Estado
+      { wch: 10 }, // Día
+      { wch: 10 }, // Hora Inicial
+      { wch: 10 }, // Hora Final
+      { wch: 15 }, // Salón
+      { wch: 40 }  // Observaciones
+    ];
+
+    // Aplicar colores según el estado
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let R = range.s.r + 1; R <= range.e.r; R++) { // +1 para saltar el encabezado
+      // Obtener el estado de la fila actual (columna 9 - Estado)
+      const estadoCell = worksheet[XLSX.utils.encode_cell({r: R, c: 8})];
+      const estado = estadoCell?.v as RowStatus;
+      
+      if (estado && estado in statusColors) {
+        // Aplicar color a toda la fila
+        for (let C = range.s.c; C <= range.e.c; C++) {
+          const cellRef = XLSX.utils.encode_cell({r: R, c: C});
+          if (!worksheet[cellRef]) worksheet[cellRef] = { t: 's', v: '' };
+          
+          worksheet[cellRef].s = {
+            fill: {
+              fgColor: { rgb: statusColors[estado] },
+              patternType: 'solid'
+            }
+          };
+        }
+      }
+    }
+    worksheet['!cols'] = columnWidths;
+
+    // Agregar el título
+    const title = `Programación clases ${new Date().getFullYear()}${Math.floor((new Date().getMonth() + 3) / 6)}0`;
+    XLSX.utils.book_append_sheet(workbook, worksheet, title);
+
+    // Descargar el archivo
+    XLSX.writeFile(workbook, `${title}.xlsx`);
   }
 
   // ==========================================

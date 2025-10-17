@@ -182,9 +182,14 @@ export class PlanningClassesTable {
     console.log('🖊️ === ACTIVANDO MODO EDICIÓN ===');
     console.log('📍 Índice de fila:', index);
     console.log('📋 Fila antes de editar:', this.rows[index]);
-    
-    if (!this.rows[index].teacher) {
-      this.rows[index].teacher = { id: 0, name: '' };
+    // Ensure teachers array exists and has at least one entry to edit primary teacher name
+    if (!this.rows[index].teachers) {
+      this.rows[index].teachers = [];
+    }
+    if (this.rows[index].teachers.length === 0) {
+      // prefer legacy `teacher` if present
+      const legacy = this.rows[index].teacher;
+      this.rows[index].teachers.push(legacy ? { ...legacy } : { id: 0, name: '' });
     }
     this.rows[index]._editing = true;
     
@@ -268,6 +273,8 @@ export class PlanningClassesTable {
 
   // Funciones para manejar teacher de forma segura
   getTeacherName(row: PlanningRow): string {
+    // Prefer teachers[0] if available for backward compatibility
+    if (row.teachers && row.teachers.length > 0) return row.teachers[0].name || '';
     return row.teacher?.name || '';
   }
 
@@ -275,14 +282,21 @@ export class PlanningClassesTable {
     const trimmedName = name.trim();
     
     if (!trimmedName) {
-      // Si borra completamente el nombre, limpia el teacher
-      row.teacher = undefined;
+      // Si borra completamente el nombre, limpia el primer teacher
+      if (row.teachers && row.teachers.length > 0) {
+        row.teachers[0] = { id: 0, name: '' };
+      } else {
+        row.teacher = undefined;
+      }
     } else {
       // Si hay texto, inicializa teacher si es necesario
-      if (!row.teacher) {
-        row.teacher = { id: 0, name: '' };
+      if (!row.teachers) row.teachers = [];
+      if (row.teachers.length === 0) {
+        // populate from legacy if available
+        if (row.teacher) row.teachers.push({ ...row.teacher });
+        else row.teachers.push({ id: 0, name: '' });
       }
-      row.teacher!.name = trimmedName;
+      row.teachers[0].name = trimmedName;
     }
   }
 
@@ -387,6 +401,10 @@ export class PlanningClassesTable {
 
   // Funciones para manejo de docentes
   hasTeacher(row: PlanningRow): boolean {
+    // Consider teachers[] first (new), then legacy teacher
+    if (row.teachers && row.teachers.length > 0) {
+      return !!(row.teachers[0]?.name?.trim());
+    }
     return !!(row.teacher?.name?.trim());
   }
 
@@ -418,8 +436,24 @@ export class PlanningClassesTable {
 
   selectAdditionalTeacher(index: number) {
     console.log('Seleccionar docente adicional para la fila', index);
-    // TODO: Redirigir a la pantalla de selección de docentes adicionales
-    // Router.navigate(['/seleccionar-docente-adicional', { classId: this.rows[index].classId }]);
+
+    const row = this.rows[index];
+    const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
+    const rowSnapshot = JSON.parse(JSON.stringify(row));
+
+    this.router.navigate(['/seleccionar-docente'], {
+      state: {
+        classKey,
+        addAdditional: true,
+        classInfo: {
+          materia: row.courseName,
+          seccion: row.section,
+          classId: row.classId,
+          rowIndex: index,
+          rowSnapshot
+        }
+      }
+    });
   }
 
   viewTeacherDetails(index: number) {
