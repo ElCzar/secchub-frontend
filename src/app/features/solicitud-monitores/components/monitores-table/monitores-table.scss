@@ -71,15 +71,15 @@
 
 /* Estados de fila: aceptado / rechazado */
 .row-accepted td {
-  background-color: #eaf7ee !important; /* verde muy suave */
-  border-top-color: #b7e0c1;
-  border-bottom-color: #b7e0c1;
+  background-color: #55ff88 !important; /* verde muy suave */
+  border-top-color: #63de82;
+  border-bottom-color: #52da74;
 }
 
 .row-rejected td {
-  background-color: #fdecea !important; /* rojo muy suave */
-  border-top-color: #f2c6c3;
-  border-bottom-color: #f2c6c3;
+  background-color: #fa9f95 !important; /* rojo muy suave */
+  border-top-color: #ef6b62;
+  border-bottom-color: #ec4337;
 }
 
 /* No sobreescribir hover cuando hay estado */

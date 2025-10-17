@@ -13,7 +13,7 @@ import { SolicitudProgramasPages } from './features/solicitud-programas/pages/so
 import { ENVIO_CORREO_ROUTES } from './features/envio-correo/envio-correo.routes';
 import { VER_REGISTRADOS_ROUTES } from './features/ver-registrados/ver-registrados.routes';
 import { SolicitudMonitoresPage } from './features/solicitud-monitores/pages/solicitud-monitores-page/solicitud-monitores-page';
-import { SolicitudMonitoresAdminPage } from './features/solicitud-monitores-admin/pages/solicitud-monitores-admin-page/solicitud-monitores-admin-page';
+import { PerfilPageComponent } from './features/perfil/pages/perfil-page/perfil-page';
 import { RegistrarPage } from './features/registrar/pages/registrar-page/registrar-page';
 
 export const routes: Routes = [
@@ -41,7 +41,7 @@ export const routes: Routes = [
 
     {path: 'solicitud-monitores', component: SolicitudMonitoresPage},
 
-    {path: 'solicitud-monitores-admin', component: SolicitudMonitoresAdminPage},
+    {path: 'perfil', component: PerfilPageComponent},
 
     {path: 'registrar', component: RegistrarPage},
 

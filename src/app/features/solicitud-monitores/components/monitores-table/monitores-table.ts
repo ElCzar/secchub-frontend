@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Monitor } from '../../models/monitor.model';
+import { Monitor } from '../../model/monitor.model';
 import { HorariosMonitores } from '../horarios-monitores/horarios-monitores';
 
 @Component({
@@ -31,7 +31,7 @@ export class MonitoresTable {
   // Acciones de edición/eliminación removidas para esta pantalla
 
   calcularTotal(m: Monitor) {
-    m.totalHoras = m.horasSemanales * m.semanas;
+    m.totalHoras = (m.horasSemanales || 0) * (m.semanas || 0);
   }
 
   // Calcula el colspan correcto del expander/horarios según las columnas visibles

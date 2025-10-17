@@ -9,22 +9,34 @@
         <th>Carrera</th>
         <th>Semestre</th>
         <th>Promedio<br>Acumulado</th>
-        <th *ngIf="!adminMode">Nombre del profesor<br>con quien tomó<br>la asignatura</th>
-        <th *ngIf="!adminMode">No.<br>Clase</th>
-        <th *ngIf="!adminMode">Nombre<br>Asignatura</th>
-        <th *ngIf="!adminMode">Nota<br>Obtenida</th>
-        <th *ngIf="adminMode">Sección<br>Académica</th>
+        @if (!adminMode) {
+          <th>Nombre del profesor<br>con quien tomó<br>la asignatura</th>
+        }
+        @if (!adminMode) {
+          <th>No.<br>Clase</th>
+        }
+        @if (!adminMode) {
+          <th>Nombre<br>Asignatura</th>
+        }
+        @if (!adminMode) {
+          <th>Nota<br>Obtenida</th>
+        }
+        @if (adminMode) {
+          <th>Sección<br>Académica</th>
+        }
         <th>Horas<br>Semanales</th>
         <th>Semanas</th>
         <th>Total<br>Horas</th>
         <th>Correo<br>Institucional</th>
         <th>ANTIGUO</th>
-        <th *ngIf="showMonitorAdministrativo">Monitor<br>Administrativo</th>
+        @if (showMonitorAdministrativo) {
+          <th>Monitor<br>Administrativo</th>
+        }
       </tr>
     </thead>
     <tbody>
-      <ng-container *ngFor="let m of monitores; let i = index">
-  <tr class="monitor-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+      @for (m of monitores; track m.id; let i = $index) {
+        <tr class="monitor-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
           <td class="approval-column">
             <div class="row-approval">
               <button type="button" class="btn-approve" (click)="aceptarMonitor(m)" title="Aceptar">✓</button>
@@ -37,18 +49,28 @@
           <td>{{ m.carrera }}</td>
           <td>{{ m.semestre }}</td>
           <td>{{ m.promedio }}</td>
-          <td *ngIf="!adminMode">{{ m.profesor }}</td>
-          <td class="editable-cell" *ngIf="!adminMode">
-            <input 
-              type="number" 
-              class="table-input" 
-              [(ngModel)]="m.noClase" 
-              placeholder=""
-            />
-          </td>
-          <td *ngIf="!adminMode">{{ m.asignatura }}</td>
-          <td *ngIf="!adminMode">{{ m.nota }}</td>
-          <td *ngIf="adminMode">{{ m.seccionAcademica || '-' }}</td>
+          @if (!adminMode) {
+            <td>{{ m.profesor }}</td>
+          }
+          @if (!adminMode) {
+            <td class="editable-cell">
+              <input 
+                type="number" 
+                class="table-input" 
+                [(ngModel)]="m.noClase" 
+                placeholder=""
+              />
+            </td>
+          }
+          @if (!adminMode) {
+            <td>{{ m.asignatura }}</td>
+          }
+          @if (!adminMode) {
+            <td>{{ m.nota }}</td>
+          }
+          @if (adminMode) {
+            <td>{{ m.seccionAcademica || '-' }}</td>
+          }
           <td class="editable-cell">
             <input 
               type="number" 
@@ -70,7 +92,9 @@
           <td class="total-horas">{{ m.totalHoras }}</td>
           <td>{{ m.correo }}</td>
           <td>{{ m.antiguo ? 'Sí' : 'No' }}</td>
-          <td *ngIf="showMonitorAdministrativo">{{ m.administrativo ? 'Sí' : 'No' }}</td>
+          @if (showMonitorAdministrativo) {
+            <td>{{ m.administrativo ? 'Sí' : 'No' }}</td>
+          }
           
         </tr>
 
@@ -86,12 +110,14 @@
         </tr>
 
         <!-- Bloque de horarios (solo si showHorarios) -->
-        <tr *ngIf="m.showHorarios" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
-          <td [attr.colspan]="getColspan()">
-            <app-horarios-monitores [horarios]="m.horarios"></app-horarios-monitores>
-          </td>
-        </tr>
-      </ng-container>
+        @if (m.showHorarios) {
+          <tr [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+            <td [attr.colspan]="getColspan()">
+              <app-horarios-monitores [horarios]="m.horarios || []"></app-horarios-monitores>
+            </td>
+          </tr>
+        }
+      }
     </tbody>
   </table>
 </div>

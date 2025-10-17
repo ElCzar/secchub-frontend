@@ -1,100 +1,69 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { Monitor } from '../models/monitor.model';
+import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SolicitudMonitoresService {
-  private readonly baseUrl = 'http://localhost:8080/admin-resources/monitores';
+  private readonly baseUrl = environment.apiUrl;
+  private readonly studentApplicationsEndpoint = '/student-applications';
+  private readonly teachingAssistantsEndpoint = '/teaching-assistants';
 
   constructor(private readonly http: HttpClient) {}
 
-  getMonitores(): Observable<Monitor[]> {
-    // Datos de prueba temporales - reemplazar con llamada HTTP real
-    const mockData: Monitor[] = [
-      {
-        id: '121432101025',
-        nombre: 'Juan',
-        apellido: 'Paez',
-        carrera: 'Ing. Sistema',
-        semestre: 5,
-        promedio: 4.0,
-        profesor: 'Edgar Enrique Ruiz',
-        noClase: 0,
-        asignatura: 'Redes',
-        nota: 4.7,
-        horasSemanales: 3,
-        semanas: 16,
-        totalHoras: 48,
-        correo: 'juan@javeriana.edu.co',
-        antiguo: true,
-        administrativo: true,
-        seleccionado: false,
-        showHorarios: false,
-        editing: false,
-        estado: 'pendiente',
-        horarios: [
-          {
-            dia: 'Martes',
-            horaInicio: '08:00',
-            horaFinal: '13:00',
-            totalHoras: 5
-          }
-        ]
-      },
-      {
-        id: '121432101026',
-        nombre: 'María',
-        apellido: 'González',
-        carrera: 'Ing. Industrial',
-        semestre: 7,
-        promedio: 4.3,
-        profesor: 'Ana María Castro',
-        noClase: 1,
-        asignatura: 'Estadística',
-        nota: 4.2,
-        horasSemanales: 4,
-        semanas: 16,
-        totalHoras: 64,
-        correo: 'maria.gonzalez@javeriana.edu.co',
-        antiguo: false,
-        administrativo: false,
-        seleccionado: false,
-        showHorarios: false,
-        editing: false,
-  estado: 'pendiente',
-        horarios: [
-          {
-            dia: 'Lunes',
-            horaInicio: '10:00',
-            horaFinal: '12:00',
-            totalHoras: 2
-          },
-          {
-            dia: 'Miércoles',
-            horaInicio: '14:00',
-            horaFinal: '16:00',
-            totalHoras: 2
-          }
-        ]
-      }
-    ];
-
-    return of(mockData);
-    
-    // Descomenta para usar la llamada HTTP real:
-    // return this.http.get<Monitor[]>(`${this.baseUrl}/listar`);
+  getStudentApplications(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/current-semester`,{
+      observe: 'response'
+    });
   }
 
-  updateMonitores(monitores: Monitor[]): Observable<void> {
-    console.log('Guardando monitores:', monitores);
-    
-    // Simular guardado exitoso - reemplazar con llamada HTTP real
-    return of(void 0);
-    
-    // Descomenta para usar la llamada HTTP real:
-    // return this.http.put<void>(`${this.baseUrl}/actualizar`, monitores);
+  approveStudentApplication(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/${id}/approve`, null,{
+      observe: 'response'
+    });
+  }
+
+  rejectStudentApplication(id: number): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.studentApplicationsEndpoint}/${id}/reject`, null,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistantByStudentApplicationId(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/student-application/${id}`,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistantById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`,{
+      observe: 'response'
+    });
+  }
+
+  getTeachingAssistants(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/current-semester`,{
+      observe: 'response'
+    });
+  }
+
+  createTeachingAssistant(teachingAssistantRequestDTO: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}`, teachingAssistantRequestDTO,{
+      observe: 'response'
+    });
+  }
+
+  updateTeachingAssistant(id: number, teachingAssistantRequestDTO: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`, teachingAssistantRequestDTO,{
+      observe: 'response'
+    });
+  }
+
+  deleteTeachingAssistant(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`,{
+      observe: 'response'
+    });
   }
 }

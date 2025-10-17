@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { EmailSendRequestDTO } from '../../../model/dto/notification/EmailSendRequestDTO.model';
-import { EmailTemplateRequestDTO } from '../../../model/dto/notification/EmailTemplateRequestDTO.model';
+import { EmailSendRequestDTO } from '../../../shared/model/dto/notification/EmailSendRequestDTO.model';
+import { EmailTemplateRequestDTO } from '../../../shared/model/dto/notification/EmailTemplateRequestDTO.model';
 
 @Injectable({
   providedIn: 'root'
