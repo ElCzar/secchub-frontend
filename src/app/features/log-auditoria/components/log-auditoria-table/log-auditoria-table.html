@@ -1,0 +1,42 @@
+<!-- Tabla de Log de Auditoría -->
+<div class="table-container">
+  <!-- Mensaje de carga -->
+  <div *ngIf="loading" class="loading-message">
+    <p>Cargando entradas del log...</p>
+  </div>
+
+  <!-- Tabla principal -->
+  <table *ngIf="!loading" class="log-table">
+    <thead>
+      <tr class="table-header">
+        <th>Usuario</th>
+        <th>Acción</th>
+        <th>Descripción</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filas del log -->
+      <tr *ngFor="let entry of logEntries" class="table-row">
+        <td class="user-column">{{ entry.usuario }}</td>
+        <td class="action-column">{{ entry.accion }}</td>
+        <td class="description-column">{{ entry.descripcion }}</td>
+        <td class="date-column">{{ entry.fecha }}</td>
+        <td class="time-column">{{ entry.hora }}</td>
+      </tr>
+      
+      <!-- Mensaje cuando no hay datos -->
+      <tr *ngIf="logEntries.length === 0" class="no-data-row">
+        <td colspan="5" class="no-data-message">
+          No se encontraron entradas en el log de auditoría
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- Información adicional -->
+  <div *ngIf="!loading && logEntries.length > 0" class="table-info">
+    <p class="entries-count">Mostrando {{ logEntries.length }} entradas</p>
+  </div>
+</div>

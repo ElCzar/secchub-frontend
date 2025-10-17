@@ -1,0 +1,69 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+</aside>
+
+<!-- Contenido principal -->
+<main class="main-content">
+  <div class="container">
+    <h1 class="titulo-pagina">Consultar Log de Auditoría</h1>
+    
+    <div class="hr-line"></div>
+    
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar usuario, acción o descripción..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="usuario-filter">Filtrar por usuario:</label>
+        <select id="usuario-filter" [(ngModel)]="usuarioFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todos los usuarios</option>
+          <option *ngFor="let usuario of availableUsuarios" [value]="usuario">{{usuario}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="fecha-filter">Filtrar por fecha:</label>
+        <input 
+          id="fecha-filter"
+          type="date" 
+          [(ngModel)]="fechaFilter" 
+          (ngModelChange)="applyFilters()" 
+          class="filter-select">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="hora-filter">Filtrar por hora:</label>
+        <select id="hora-filter" [(ngModel)]="horaFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las horas</option>
+          <option *ngFor="let hora of availableHoras" [value]="hora">{{hora}}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Componente de tabla de log de auditoría -->
+    <app-log-auditoria-table 
+      [logEntries]="filteredLogEntries"
+      [loading]="loading"
+      (refresh)="loadLogEntries()"
+    ></app-log-auditoria-table>
+
+    <!-- Paginación (pendiente de implementar) -->
+    <div class="pagination-container" style="display: none;">
+      <p>Paginación pendiente</p>
+    </div>
+  </div>
+</main>
