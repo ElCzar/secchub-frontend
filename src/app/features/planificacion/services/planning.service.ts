@@ -114,7 +114,8 @@ export class PlanningService {
   }
 
   /**
-   * Obtener todas las clases con sus horarios incluidos
+   * Obtener todas las clases CON HORARIOS INCLUIDOS del semestre actual
+   * Nota: Este método automáticamente filtra por semestre actual desde el backend
    */
   getAllClassesWithSchedules(): Observable<ClassDTO[]> {
     return this.getAllClasses().pipe(
@@ -163,13 +164,13 @@ export class PlanningService {
   }
 
   /**
-   * Obtener todas las clases
+   * Obtener todas las clases del semestre actual
    */
   getAllClasses(): Observable<ClassDTO[]> {
-    return this.http.get<ClassDTO[]>(`${this.baseUrl}/classes`).pipe(
+    return this.http.get<ClassDTO[]>(`${this.baseUrl}/classes/current-semester`).pipe(
       tap(classes => {
         console.log('=== RESPUESTA CRUDA DEL BACKEND ===');
-        console.log('Clases recibidas del backend:', classes);
+        console.log('Clases recibidas del semestre ACTUAL:', classes);
         console.log('Número de clases:', classes.length);
         
         console.log('=== ANÁLISIS DETALLADO DE FECHAS ===');
