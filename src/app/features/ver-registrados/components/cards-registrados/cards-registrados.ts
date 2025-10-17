@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RegisteredUser, UserRole, UserRoleLabels } from '../../models/user-registered.model';
+import { RegisteredUser, UserRole, UserRoleLabels, Teacher, SectionHead } from '../../models/user-registered.model';
 
 @Component({
   selector: 'app-cards-registrados',
@@ -59,5 +59,14 @@ export class CardsRegistrados {
 
   getStatusClass(status: string): string {
     return status.toLowerCase() === 'activo' ? 'status-active' : 'status-inactive';
+  }
+
+  // Helper methods para acceder a información específica
+  asTeacher(user: RegisteredUser): Teacher | null {
+    return user.role === UserRole.TEACHER ? user as Teacher : null;
+  }
+
+  asSectionHead(user: RegisteredUser): SectionHead | null {
+    return user.role === UserRole.SECTION_HEAD ? user as SectionHead : null;
   }
 }

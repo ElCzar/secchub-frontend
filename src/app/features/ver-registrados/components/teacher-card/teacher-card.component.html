@@ -1,9 +1,8 @@
 <!-- Card específica para Docentes -->
-<button class="user-card teacher-card" 
-        [class.loading]="loading"
-        [class.inactive]="!isActive()"
-        (click)="onCardClick()"
-        [attr.aria-label]="'Información del docente ' + getFullName()">
+<div class="user-card teacher-card" 
+     [class.loading]="loading"
+     [class.inactive]="!isActive()"
+     [attr.aria-label]="'Información del docente ' + getFullName()">
   
   <!-- Header del docente -->
   <div class="card-header">
@@ -31,8 +30,8 @@
         <span class="info-value">{{ user.userInfo.faculty }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label">Tipo de Empleo:</span>
-        <span class="info-value">{{ teacherUser.teacherInfo.employmentTypeName || 'No especificado' }}</span>
+        <span class="info-label">Tipo de Empleo ID:</span>
+        <span class="info-value">{{ teacherUser.teacherInfo.employmentTypeId }}</span>
       </div>
       <div class="info-item">
         <span class="info-label">Horas Máximas:</span>
@@ -42,32 +41,23 @@
         <span class="info-label">Documento:</span>
         <span class="info-value">{{ user.userInfo.documentNumber }}</span>
       </div>
-      <div class="info-item">
-        <span class="info-label">Fecha Registro:</span>
-        <span class="info-value">{{ formatDate(user.createdDate) }}</span>
-      </div>
+     
     </div>
   </div>
 
   <!-- Acciones disponibles -->
   <div class="card-actions" *ngIf="showActions">
-    <button class="btn btn-view" 
-            (click)="onCardClick()"
-            title="Ver detalles del docente"
-            [attr.aria-label]="'Ver detalles de ' + getFullName()">
-      👁️
-    </button>
     <button class="btn btn-edit" 
             (click)="onEditClick($event)"
             title="Editar información del docente"
             [attr.aria-label]="'Editar ' + getFullName()">
-      ✏️
+      ✏️ Editar
     </button>
     <button class="btn btn-delete" 
             (click)="onDeleteClick($event)"
             title="Eliminar docente del sistema"
             [attr.aria-label]="'Eliminar ' + getFullName()">
-      🗑️
+      🗑️ Eliminar
     </button>
   </div>
 
@@ -76,4 +66,4 @@
     <div class="spinner"></div>
     <span class="sr-only">Cargando información del docente...</span>
   </div>
-</button>
+</div>

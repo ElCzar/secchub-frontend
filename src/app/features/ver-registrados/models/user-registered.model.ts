@@ -38,8 +38,7 @@ export interface RegisteredUser {
   role: UserRole;
   teacherInfo?: TeacherInfo;
   sectionInfo?: SectionInfo;
-  createdDate: string;
-  status: string;
+  status: UserStatus;
 }
 
 // Tipos de roles de usuario
@@ -49,6 +48,14 @@ export enum UserRole {
   SECTION_HEAD = 'section_head',
   STUDENT = 'student',
   PROGRAM = 'program'
+}
+
+// Estados de usuario
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  SUSPENDED = 'suspended'
 }
 
 // Para el mapeo de nombres de roles
@@ -73,4 +80,28 @@ export interface FilterOption {
   id: string;
   name: string;
   count?: number;
+}
+
+// Tipos específicos de usuarios
+export interface Teacher extends RegisteredUser {
+  role: UserRole.TEACHER;
+  teacherInfo: TeacherInfo;
+}
+
+export interface SectionHead extends RegisteredUser {
+  role: UserRole.SECTION_HEAD;
+  sectionInfo: SectionInfo;
+}
+
+export interface Admin extends RegisteredUser {
+  role: UserRole.ADMIN;
+}
+
+// Resultado de búsqueda de usuarios
+export interface UserSearchResult {
+  users: RegisteredUser[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
 }

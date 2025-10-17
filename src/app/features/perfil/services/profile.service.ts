@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { UserProfile, EditUserProfileRequest } from '../models/user-profile.models';
-import { UserProfileResponseDTO, UserProfileUpdateRequestDTO } from '../../../model';
+import { UserInformationResponseDTO } from '../../../shared/model/dto/user/UserInformationResponseDTO.model';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class ProfileService {
 
   // Obtener el perfil del usuario actual
   getCurrentUserProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfileResponseDTO>(`${this.baseUrl}/profile/me`)
+    return this.http.get<UserInformationResponseDTO>(`${this.baseUrl}/user/me`)
       .pipe(
         map(dto => this.mapDTOToUserProfile(dto))
       );
@@ -23,7 +23,7 @@ export class ProfileService {
 
   // Obtener perfil por ID
   getUserProfile(userId: number): Observable<UserProfile> {
-    return this.http.get<UserProfileResponseDTO>(`${this.baseUrl}/profile/${userId}`)
+    return this.http.get<UserInformationResponseDTO>(`${this.baseUrl}/user/${userId}`)
       .pipe(
         map(dto => this.mapDTOToUserProfile(dto))
       );
@@ -31,15 +31,15 @@ export class ProfileService {
 
   // Actualizar perfil del usuario actual
   updateUserProfile(profileData: EditUserProfileRequest): Observable<UserProfile> {
-    const updateDTO: UserProfileUpdateRequestDTO = {
+    const updateDTO = {
       name: profileData.name,
       lastName: profileData.lastName,
       email: profileData.correo,
-      documentTypeId: profileData.documentType,
+      documentType: Number.parseInt(profileData.documentType, 10),
       documentNumber: profileData.documentNumber
     };
 
-    return this.http.put<UserProfileResponseDTO>(`${this.baseUrl}/profile/me`, updateDTO)
+    return this.http.put<UserInformationResponseDTO>(`${this.baseUrl}/user/me`, updateDTO)
       .pipe(
         map(dto => this.mapDTOToUserProfile(dto))
       );
@@ -51,24 +51,17 @@ export class ProfileService {
   }
 
   // Mapear DTO a modelo local
-  private mapDTOToUserProfile(dto: UserProfileResponseDTO): UserProfile {
+  private mapDTOToUserProfile(dto: UserInformationResponseDTO): UserProfile {
     return {
       id: dto.id,
       username: dto.username,
       faculty: dto.faculty,
       nombreCompleto: `${dto.name} ${dto.lastName}`,
       correo: dto.email,
-      documentType: dto.documentTypeId,
+      documentType: dto.documentType.toString(),
       documentNumber: dto.documentNumber,
-      isActive: dto.isActive,
-      createdDate: dto.createdDate,
-      updatedDate: dto.updatedDate,
-      rol: dto.role === 'ADMIN' ? 'administrador' : 'jefe_seccion',
-      seccion: dto.sectionInfo ? {
-        id: dto.sectionInfo.id,
-        name: dto.sectionInfo.name,
-        description: dto.sectionInfo.description
-      } : undefined
+      isActive: dto.statusId === 1,
+      rol: dto.roleId === 1 ? 'administrador' : 'jefe_seccion'
     };
   }
 }

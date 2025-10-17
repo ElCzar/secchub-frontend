@@ -19,21 +19,21 @@ import { FormsModule } from '@angular/forms';
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 
 // Feature Components - New structure
+// Components
 import { UserCardContainerComponent } from '../../components/user-card-container/user-card-container.component';
 import { UserCardActions } from '../../components/base/base-user-card.component';
 
-// Models and Services - Updated imports
+// Models
 import { 
   RegisteredUser, 
   UserFilter, 
   UserRole,
   FilterOption,
   UserRoleLabels 
-} from '../../models';
+} from '../../models/user-registered.model';
 import { RegisteredUsersService } from '../../services/registered-users.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
 import { SidebarToggleButtonComponent } from "../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button";
-import { UserInformationResponseDTO } from '../../models/UserInformationResponseDTO.model';
 
 @Component({
   selector: 'app-ver-registrados-pages',
@@ -56,12 +56,12 @@ export class VerRegistradosPages implements OnInit {
   /**
    * Lista completa de usuarios registrados obtenida del backend
    */
-  allUsers: UserInformationResponseDTO[] = [];
+  allUsers: RegisteredUser[] = [];
   
   /**
    * Lista filtrada de usuarios que se muestra en la interfaz
    */
-  filteredUsers: UserInformationResponseDTO[] = [];
+  filteredUsers: RegisteredUser[] = [];
   
   /**
    * Indica si está cargando datos del servidor
@@ -215,8 +215,20 @@ export class VerRegistradosPages implements OnInit {
    */
   onEditUser(user: RegisteredUser): void {
     console.log('Editar usuario:', user);
-    // Navigate to edit user form or open modal
-    // Example: this.router.navigate(['/ver-registrados/editar', user.id]);
+    
+    // Por ahora mostramos la información del usuario
+    const userInfo = `
+Editar Usuario:
+- Nombre: ${user.userInfo.name} ${user.userInfo.lastName}
+- Email: ${user.userInfo.email}
+- Rol: ${UserRoleLabels[user.role]}
+- ID: ${user.id}
+    `;
+    
+    alert(userInfo + '\n\nFuncionalidad de edición próximamente disponible.');
+    
+    // Futuro: Implementar navegación a formulario de edición
+    // this.router.navigate(['/ver-registrados/editar', user.id]);
   }
 
   /**

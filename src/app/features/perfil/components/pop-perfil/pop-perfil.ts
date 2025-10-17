@@ -133,10 +133,8 @@ export class PopPerfilComponent implements OnInit, OnChanges {
     switch (this.userProfile.rol) {
       case 'administrador':
         return 'Administrador';
-      case 'jefe_seccion': {
-        const sectionName = this.userProfile.seccion?.name || '';
-        return sectionName ? `Jefe de Sección - ${sectionName}` : 'Jefe de Sección';
-      }
+      case 'jefe_seccion':
+        return 'Jefe de Sección';
       default:
         return this.userProfile.rol;
     }

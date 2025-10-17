@@ -7,14 +7,7 @@ export interface UserProfile {
   documentType: string;
   documentNumber: string;
   isActive: boolean;
-  createdDate: string;
-  updatedDate?: string;
   rol: 'administrador' | 'jefe_seccion';
-  seccion?: {
-    id: number;
-    name: string;
-    description?: string;
-  };
 }
 
 export interface EditUserProfileRequest {

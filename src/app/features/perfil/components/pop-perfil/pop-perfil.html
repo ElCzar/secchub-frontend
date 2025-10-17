@@ -88,16 +88,6 @@
               </span>
             </p>
           </div>
-
-          <div class="info-field">
-            <span class="field-label">Fecha de Registro:</span>
-            <p class="field-value">{{ userProfile.createdDate | date:'medium' }}</p>
-          </div>
-
-          <div *ngIf="userProfile.updatedDate" class="info-field">
-            <span class="field-label">Última Actualización:</span>
-            <p class="field-value">{{ userProfile.updatedDate | date:'medium' }}</p>
-          </div>
         </div>
 
         <!-- Actions -->

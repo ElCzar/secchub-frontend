@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RegisteredUser, UserRole, UserStatus } from '../../models';
+import { RegisteredUser, UserRole, UserStatus } from '../../models/user-registered.model';
 
 /**
  * Interfaz para las acciones que puede realizar una card

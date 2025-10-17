@@ -34,40 +34,28 @@
         <span class="info-label">Sección:</span>
         <span class="info-value">{{ sectionHeadUser.sectionInfo.name }}</span>
       </div>
-      <div class="info-item" *ngIf="sectionHeadUser.sectionInfo.description">
-        <span class="info-label">Descripción:</span>
-        <span class="info-value">{{ sectionHeadUser.sectionInfo.description }}</span>
-      </div>
+    
       <div class="info-item">
         <span class="info-label">Documento:</span>
         <span class="info-value">{{ user.userInfo.documentNumber }}</span>
       </div>
-      <div class="info-item">
-        <span class="info-label">Fecha Registro:</span>
-        <span class="info-value">{{ formatDate(user.createdDate) }}</span>
-      </div>
+      
     </div>
   </div>
 
   <!-- Acciones disponibles -->
   <div class="card-actions" *ngIf="showActions">
-    <button class="btn btn-view" 
-            (click)="onCardClick()"
-            title="Ver detalles del jefe de sección"
-            [attr.aria-label]="'Ver detalles de ' + getFullName()">
-      👁️
-    </button>
     <button class="btn btn-edit" 
             (click)="onEditClick($event)"
             title="Editar información del jefe de sección"
             [attr.aria-label]="'Editar ' + getFullName()">
-      ✏️
+      ✏️ Editar
     </button>
     <button class="btn btn-delete" 
             (click)="onDeleteClick($event)"
             title="Eliminar jefe de sección del sistema"
             [attr.aria-label]="'Eliminar ' + getFullName()">
-      🗑️
+      🗑️ Eliminar
     </button>
   </div>
 

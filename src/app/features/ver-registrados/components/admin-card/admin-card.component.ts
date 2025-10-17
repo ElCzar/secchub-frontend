@@ -7,7 +7,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseUserCardComponent } from '../base/base-user-card.component';
-import { Admin, UserRole } from '../../models';
+import { Admin, UserRole } from '../../models/user-registered.model';
 
 @Component({
   selector: 'app-admin-card',

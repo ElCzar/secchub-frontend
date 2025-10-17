@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RegisteredUser, UserRole, Teacher, SectionHead, Admin } from '../../models';
+import { RegisteredUser, UserRole, Teacher, SectionHead, Admin } from '../../models/user-registered.model';
 import { UserCardActions } from '../base/base-user-card.component';
 
 // Import all card components

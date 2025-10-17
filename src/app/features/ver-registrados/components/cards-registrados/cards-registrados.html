@@ -52,21 +52,18 @@
       </div>
 
       <!-- Teacher specific info -->
-      <div *ngIf="user.role === UserRole.TEACHER && user.teacherInfo" class="detail-item">
+      <div *ngIf="asTeacher(user) as teacher" class="detail-item">
         <span class="detail-label">Horas máx:</span>
-        <span class="detail-value">{{ user.teacherInfo.maxHours }}h</span>
+        <span class="detail-value">{{ teacher.teacherInfo.maxHours }}h</span>
       </div>
 
       <!-- Section Head specific info -->
-      <div *ngIf="user.role === UserRole.SECTION_HEAD && user.sectionInfo" class="detail-item">
+      <div *ngIf="asSectionHead(user) as sectionHead" class="detail-item">
         <span class="detail-label">Sección:</span>
-        <span class="detail-value">{{ user.sectionInfo.name }}</span>
+        <span class="detail-value">{{ sectionHead.sectionInfo.name }}</span>
       </div>
 
-      <div class="detail-item">
-        <span class="detail-label">Registrado:</span>
-        <span class="detail-value">{{ formatDate(user.createdDate) }}</span>
-      </div>
+      
     </div>
 
     <!-- Status Badge -->
