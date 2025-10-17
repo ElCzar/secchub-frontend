@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RegisteredUser, UserRole, Teacher, SectionHead, Admin } from '../../models/user-registered.model';
 import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
 
 // Enhanced User interface for display

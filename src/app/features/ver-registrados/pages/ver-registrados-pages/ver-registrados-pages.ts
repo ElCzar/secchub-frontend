@@ -43,8 +43,8 @@ interface EnhancedUser extends UserInformationResponseDTO {
 
 // Filter interfaces
 interface UserFilter {
-  roleId?: number;
-  statusId?: number;
+  roleName?: string;
+  statusName?: string;
   searchTerm?: string;
   sectionId?: number;
 }
@@ -196,6 +196,11 @@ export class VerRegistradosPages implements OnInit {
       this.documentTypes = documentTypes || [];
       this.sections = sections || [];
       console.log('Parametric data loaded:', { roles: this.roles, statuses: this.statuses, sections: this.sections });
+      console.log('Role mappings:', {
+        admin: this.getAdminRoleName(),
+        teacher: this.getTeacherRoleName(),
+        sectionHead: this.getSectionHeadRoleName()
+      });
     }).catch(error => {
       console.error('Error loading parametric data:', error);
     });
@@ -246,18 +251,18 @@ export class VerRegistradosPages implements OnInit {
    * Generate filter options from current users
    */
   generateFilterOptions(): void {
-    // Generate role options from parametric data
+    // Generate role options from parametric data - count by role name
     this.roleOptions = this.roles.map(role => ({
       id: role.id,
       name: role.name,
-      count: this.allUsers.filter(user => user.roleId === role.id).length
+      count: this.allUsers.filter(user => user.roleName === role.name).length
     }));
 
-    // Generate status options from parametric data
+    // Generate status options from parametric data - count by status name
     this.statusOptions = this.statuses.map(status => ({
       id: status.id,
       name: status.name,
-      count: this.allUsers.filter(user => user.statusId === status.id).length
+      count: this.allUsers.filter(user => user.statusName === status.name).length
     }));
 
     // Generate section options from parametric data
@@ -272,10 +277,14 @@ export class VerRegistradosPages implements OnInit {
    * Apply all filters
    */
   applyFilters(): void {
+    // Get role and status names from selected filter values
+    const selectedRole = this.roleFilter ? this.roles.find(r => r.id === Number(this.roleFilter)) : undefined;
+    const selectedStatus = this.statusFilter ? this.statuses.find(s => s.id === Number(this.statusFilter)) : undefined;
+    
     this.currentFilter = {
       searchTerm: this.searchText.trim() || undefined,
-      roleId: Number(this.roleFilter) || undefined,
-      statusId: Number(this.statusFilter) || undefined,
+      roleName: selectedRole?.name || undefined,
+      statusName: selectedStatus?.name || undefined,
       sectionId: Number(this.sectionFilter) || undefined
     };
 
@@ -287,13 +296,13 @@ export class VerRegistradosPages implements OnInit {
    */
   private filterUsers(users: EnhancedUser[], filter: UserFilter): EnhancedUser[] {
     return users.filter(user => {
-      // Filter by role
-      if (filter.roleId && user.roleId !== filter.roleId) {
+      // Filter by role name
+      if (filter.roleName && user.roleName !== filter.roleName) {
         return false;
       }
 
-      // Filter by status
-      if (filter.statusId && user.statusId !== filter.statusId) {
+      // Filter by status name
+      if (filter.statusName && user.statusName !== filter.statusName) {
         return false;
       }
 
@@ -351,12 +360,12 @@ export class VerRegistradosPages implements OnInit {
     
     // Por ahora mostramos la información del usuario
     const userInfo = `
-Editar Usuario:
-- Nombre: ${user.userInfo.name} ${user.userInfo.lastName}
-- Email: ${user.userInfo.email}
-- Rol: ${UserRoleLabels[user.role]}
-- ID: ${user.id}
-    `;
+    Editar Usuario:
+    - Nombre: ${user.name} ${user.lastName}
+    - Email: ${user.email}
+    - Rol: ${user.roleName}
+    - ID: ${user.id}
+        `;
     
     alert(userInfo + '\n\nFuncionalidad de edición próximamente disponible.');
     
@@ -392,10 +401,49 @@ Editar Usuario:
   }
 
   /**
-   * Get count by role for statistics
+   * Get count by role name for statistics
    */
-  getUserCountByRole(roleId: number): number {
-    return this.allUsers.filter(user => user.roleId === roleId).length;
+  getUserCountByRole(roleName: string): number {
+    return this.allUsers.filter(user => user.roleName === roleName).length;
+  }
+
+  /**
+   * Get role name that corresponds to administrators
+   */
+  getAdminRoleName(): string {
+    // Look for common admin role patterns
+    const adminRole = this.roles.find(role => 
+      role.name?.toLowerCase().includes('admin') || 
+      role.name?.toLowerCase().includes('administrador')
+    );
+    return adminRole?.name || 'ROLE_ADMIN';
+  }
+
+  /**
+   * Get role name that corresponds to teachers
+   */
+  getTeacherRoleName(): string {
+    // Look for common teacher role patterns
+    const teacherRole = this.roles.find(role => 
+      role.name?.toLowerCase().includes('teacher') || 
+      role.name?.toLowerCase().includes('docente') ||
+      role.name?.toLowerCase().includes('profesor')
+    );
+    return teacherRole?.name || 'ROLE_TEACHER';
+  }
+
+  /**
+   * Get role name that corresponds to section heads
+   */
+  getSectionHeadRoleName(): string {
+    // Look for common section head role patterns
+    const sectionHeadRole = this.roles.find(role => 
+      role.name?.toLowerCase().includes('section') || 
+      role.name?.toLowerCase().includes('jefe') ||
+      role.name?.toLowerCase().includes('head') ||
+      role.name?.toLowerCase().includes('coordinador')
+    );
+    return sectionHeadRole?.name || 'ROLE_SECTION_HEAD';
   }
 
   /**
