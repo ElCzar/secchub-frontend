@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import { PopPerfilComponent } from '../../../features/perfil/components/pop-perfil/pop-perfil';
-import { UserProfile } from '../../../features/perfil/models/user-profile.models';
+import { UserInformationResponseDTO } from '../../model/dto/user/UserInformationResponseDTO.model';
 
 @Component({
   selector: 'app-accesos-rapidos-seccion',
@@ -49,7 +49,7 @@ export class AccesosRapidosSeccion {
    
   }
 
-  onProfileUpdated(updatedProfile: UserProfile) {
+  onProfileUpdated(updatedProfile: UserInformationResponseDTO) {
     console.log('Perfil actualizado:', updatedProfile);
     // Para jefe de sección, esto no debería ejecutarse ya que no pueden editar
     // Pero mantenemos el método por consistencia

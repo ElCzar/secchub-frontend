@@ -1,103 +1,97 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RegisteredUser, UserRole, Teacher, SectionHead, Admin } from '../../models/user-registered.model';
-import { UserCardActions } from '../base/base-user-card.component';
+import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
 
-// Import all card components
-import { TeacherCardComponent } from '../teacher-card/teacher-card.component';
-import { SectionHeadCardComponent } from '../section-head-card/section-head-card.component';
-import { AdminCardComponent } from '../admin-card/admin-card.component';
+// Enhanced User interface for display
+interface EnhancedUser extends UserInformationResponseDTO {
+  roleName?: string;
+  statusName?: string;
+  documentTypeName?: string;
+  sectionName?: string;
+}
+
+import { UserCardActions } from '../base/base-user-card.component';
 
 @Component({
   selector: 'app-user-card-container',
   standalone: true,
   imports: [
-    CommonModule,
-    TeacherCardComponent,
-    SectionHeadCardComponent,
-    AdminCardComponent
+    CommonModule
   ],
   templateUrl: './user-card-container.component.html',
   styleUrl: './user-card-container.component.scss'
 })
 export class UserCardContainerComponent {
-  @Input() user!: RegisteredUser;
+  @Input() user!: EnhancedUser;
   @Input() actions: UserCardActions = {};
   @Input() showActions: boolean = true;
   @Input() loading: boolean = false;
   
-  @Output() userSelected = new EventEmitter<RegisteredUser>();
-  @Output() editUser = new EventEmitter<RegisteredUser>();
-  @Output() deleteUser = new EventEmitter<RegisteredUser>();
-  @Output() cardClick = new EventEmitter<RegisteredUser>();
-  @Output() editClick = new EventEmitter<RegisteredUser>();
-  @Output() deleteClick = new EventEmitter<RegisteredUser>();
-
-  UserRole = UserRole;
+  @Output() userSelected = new EventEmitter<EnhancedUser>();
+  @Output() editUser = new EventEmitter<EnhancedUser>();
+  @Output() deleteUser = new EventEmitter<EnhancedUser>();
+  @Output() cardClick = new EventEmitter<EnhancedUser>();
+  @Output() editClick = new EventEmitter<EnhancedUser>();
+  @Output() deleteClick = new EventEmitter<EnhancedUser>();
 
   /**
-   * Type guards para verificar el tipo de usuario
+   * Type guards para verificar el tipo de usuario basado en roleId
    */
-  isTeacher(user: RegisteredUser): user is Teacher {
-    return user.role === UserRole.TEACHER && 'teacherInfo' in user;
+  isTeacher(user: EnhancedUser): boolean {
+    return user.roleId === 2; // Teacher role ID
   }
 
-  isSectionHead(user: RegisteredUser): user is SectionHead {
-    return user.role === UserRole.SECTION_HEAD && 'sectionInfo' in user;
+  isSectionHead(user: EnhancedUser): boolean {
+    return user.roleId === 3; // Section Head role ID
   }
 
-  isAdmin(user: RegisteredUser): user is Admin {
-    return user.role === UserRole.ADMIN;
+  isAdmin(user: EnhancedUser): boolean {
+    return user.roleId === 1; // Admin role ID
   }
 
   /**
-   * Métodos de casting seguro
+   * Métodos de casting seguro (adaptados para EnhancedUser)
    */
-  asTeacher(user: RegisteredUser): Teacher {
-    return user as Teacher;
+  asTeacher(user: EnhancedUser): EnhancedUser {
+    return user;
   }
 
-  asSectionHead(user: RegisteredUser): SectionHead {
-    return user as SectionHead;
+  asSectionHead(user: EnhancedUser): EnhancedUser {
+    return user;
   }
 
-  asAdmin(user: RegisteredUser): Admin {
-    return user as Admin;
+  asAdmin(user: EnhancedUser): EnhancedUser {
+    return user;
   }
 
   /**
    * Verifica si el tipo de usuario es conocido
    */
-  isKnownUserType(user?: RegisteredUser): boolean {
+  isKnownUserType(user?: EnhancedUser): boolean {
     const userToCheck = user || this.user;
-    return [
-      UserRole.TEACHER,
-      UserRole.SECTION_HEAD,
-      UserRole.ADMIN,
-      UserRole.STUDENT,
-      UserRole.PROGRAM
-    ].includes(userToCheck.role);
+    return [1, 2, 3].includes(userToCheck.roleId); // Admin, Teacher, Section Head
   }
 
   /**
    * Obtiene el nombre completo del usuario para mostrar
    */
   getDisplayName(): string {
-    if (!this.user?.userInfo) return 'Usuario desconocido';
-    return `${this.user.userInfo.name} ${this.user.userInfo.lastName}`;
+    if (!this.user) return 'Usuario desconocido';
+    return `${this.user.name} ${this.user.lastName}`;
   }
 
   /**
    * Obtiene el rol del usuario como string
    */
   getUserRole(): string {
-    return this.user?.role || 'UNKNOWN';
+    return this.user?.roleName || 'UNKNOWN';
   }
 
   /**
    * Maneja el evento de clic en la tarjeta
    */
-  onCardClick(user: RegisteredUser): void {
+  onCardClick(user: EnhancedUser): void {
     this.cardClick.emit(user);
     this.userSelected.emit(user);
   }
@@ -105,7 +99,7 @@ export class UserCardContainerComponent {
   /**
    * Maneja el evento de clic en editar
    */
-  onEditClick(user: RegisteredUser): void {
+  onEditClick(user: EnhancedUser): void {
     this.editClick.emit(user);
     this.editUser.emit(user);
   }
@@ -113,7 +107,7 @@ export class UserCardContainerComponent {
   /**
    * Maneja el evento de clic en eliminar
    */
-  onDeleteClick(user: RegisteredUser): void {
+  onDeleteClick(user: EnhancedUser): void {
     this.deleteClick.emit(user);
     this.deleteUser.emit(user);
   }
@@ -121,21 +115,21 @@ export class UserCardContainerComponent {
   /**
    * Maneja la selección de usuario (método legacy)
    */
-  onUserSelected(user: RegisteredUser): void {
+  onUserSelected(user: EnhancedUser): void {
     this.userSelected.emit(user);
   }
 
   /**
    * Maneja la edición de usuario (método legacy)
    */
-  onEditUser(user: RegisteredUser): void {
+  onEditUser(user: EnhancedUser): void {
     this.editUser.emit(user);
   }
 
   /**
    * Maneja la eliminación de usuario (método legacy)
    */
-  onDeleteUser(user: RegisteredUser): void {
+  onDeleteUser(user: EnhancedUser): void {
     this.deleteUser.emit(user);
   }
 }

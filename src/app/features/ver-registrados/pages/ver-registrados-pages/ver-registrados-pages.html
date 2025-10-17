@@ -32,7 +32,7 @@
       <div class="stat-card">
         <div class="stat-icon">👩‍🏫</div>
         <div class="stat-info">
-          <span class="stat-number">{{ getUserCountByRole(UserRole.TEACHER) }}</span>
+          <span class="stat-number">{{ getUserCountByRole(2) }}</span>
           <span class="stat-label">Docentes</span>
         </div>
       </div>
@@ -40,7 +40,7 @@
       <div class="stat-card">
         <div class="stat-icon">👔</div>
         <div class="stat-info">
-          <span class="stat-number">{{ getUserCountByRole(UserRole.SECTION_HEAD) }}</span>
+          <span class="stat-number">{{ getUserCountByRole(3) }}</span>
           <span class="stat-label">Jefes de Sección</span>
         </div>
       </div>
@@ -48,7 +48,7 @@
       <div class="stat-card">
         <div class="stat-icon">⚙️</div>
         <div class="stat-info">
-          <span class="stat-number">{{ getUserCountByRole(UserRole.ADMIN) }}</span>
+          <span class="stat-number">{{ getUserCountByRole(1) }}</span>
           <span class="stat-label">Administradores</span>
         </div>
       </div>
@@ -85,15 +85,17 @@
       <!-- Faculty Filter -->
       <div class="filter-group">
         <label class="filter-label" for="faculty-select">Filtrar por Facultad:</label>
-        <select 
-          id="faculty-select" 
-          [(ngModel)]="facultyFilter" 
-          (ngModelChange)="applyFilters()" 
-          class="filter-select">
-          <option value="">Todas las facultades</option>
-          <option *ngFor="let option of facultyOptions" [value]="option.id">
-            {{ option.name }} ({{ option.count }})
-          </option>
+                <select 
+          class="form-select"
+          name="section" 
+          [(ngModel)]="sectionFilter" 
+          [disabled]="!sectionOptions.length">
+          <option value="">Todas las secciones</option>
+          @for (option of sectionOptions; track option.id) {
+            <option [value]="option.id">
+              {{ option.name }} ({{ option.count }})
+            </option>
+          }
         </select>
       </div>
 
@@ -117,7 +119,7 @@
         <button 
           class="btn btn-clear" 
           (click)="clearFilters()"
-          [disabled]="!searchText && !roleFilter && !facultyFilter && !statusFilter">
+          [disabled]="!searchText && !roleFilter && !sectionFilter && !statusFilter">
           🗑️ Limpiar Filtros
         </button>
       </div>

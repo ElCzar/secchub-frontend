@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UserProfile, EditUserProfileRequest } from '../../models/user-profile.models';
-import { ProfileService } from '../../services/profile.service';
+import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 
 @Component({
@@ -16,14 +16,20 @@ export class PopPerfilComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
   @Input() userId?: number; // Si se proporciona, muestra el perfil de ese usuario
   @Output() closeModal = new EventEmitter<void>();
-  @Output() profileUpdated = new EventEmitter<UserProfile>();
+  @Output() profileUpdated = new EventEmitter<UserInformationResponseDTO>();
 
-  userProfile: UserProfile | null = null;
+  userProfile: UserInformationResponseDTO | null = null;
   isEditing = false;
-  editForm: EditUserProfileRequest = {
+  editForm: {
+    name: string;
+    lastName: string;
+    email: string;
+    documentType: string;
+    documentNumber: string;
+  } = {
     name: '',
     lastName: '',
-    correo: '',
+    email: '',
     documentType: '',
     documentNumber: ''
   };
@@ -31,7 +37,7 @@ export class PopPerfilComponent implements OnInit, OnChanges {
   canEdit = false;
 
   constructor(
-    private readonly profileService: ProfileService,
+    private readonly userInformationService: UserInformationService,
     private readonly authService: AuthStateService
   ) {}
 
@@ -51,18 +57,18 @@ export class PopPerfilComponent implements OnInit, OnChanges {
     this.isLoading = true;
     
     const profileObservable = this.userId 
-      ? this.profileService.getUserProfile(this.userId)
-      : this.profileService.getCurrentUserProfile();
+      ? this.userInformationService.getUserInformationById(this.userId)
+      : this.userInformationService.getUserInformation();
 
     profileObservable.subscribe({
-      next: (profile) => {
+      next: (profile: UserInformationResponseDTO | null) => {
         this.userProfile = profile;
-        // Solo los administradores pueden editar su perfil
-        this.canEdit = profile.rol === 'administrador' && this.isCurrentUserProfile();
+        // Solo los administradores pueden editar su perfil (roleId 1 = admin)
+        this.canEdit = profile?.roleId === 1 && this.isCurrentUserProfile();
         this.resetEditForm();
         this.isLoading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading profile:', error);
         this.isLoading = false;
       }
@@ -71,15 +77,11 @@ export class PopPerfilComponent implements OnInit, OnChanges {
 
   private resetEditForm() {
     if (this.userProfile) {
-      const nameParts = this.userProfile.nombreCompleto.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
       this.editForm = {
-        name: firstName,
-        lastName: lastName,
-        correo: this.userProfile.correo,
-        documentType: this.userProfile.documentType,
+        name: this.userProfile.name,
+        lastName: this.userProfile.lastName,
+        email: this.userProfile.email,
+        documentType: this.userProfile.documentType.toString(),
         documentNumber: this.userProfile.documentNumber
       };
     }
@@ -101,24 +103,30 @@ export class PopPerfilComponent implements OnInit, OnChanges {
   }
 
   onSaveProfile() {
-    if (!this.editForm.name.trim() || !this.editForm.lastName.trim() || !this.editForm.correo.trim()) {
+    if (!this.editForm.name.trim() || !this.editForm.lastName.trim() || !this.editForm.email.trim()) {
       return;
     }
 
     this.isLoading = true;
     
-    this.profileService.updateUserProfile(this.editForm).subscribe({
-      next: (updatedProfile) => {
-        this.userProfile = updatedProfile;
-        this.isEditing = false;
-        this.isLoading = false;
-        this.profileUpdated.emit(updatedProfile);
-      },
-      error: (error) => {
-        console.error('Error updating profile:', error);
-        this.isLoading = false;
-      }
-    });
+    // For now, just update the local profile since we don't have an update service
+    // In a real implementation, you'd call a service to update the profile
+    console.log('Profile update not implemented yet:', this.editForm);
+    
+    // Simulate update
+    if (this.userProfile) {
+      this.userProfile = {
+        ...this.userProfile,
+        name: this.editForm.name,
+        lastName: this.editForm.lastName,
+        email: this.editForm.email,
+        documentType: Number.parseInt(this.editForm.documentType),
+        documentNumber: this.editForm.documentNumber
+      };
+      this.isEditing = false;
+      this.isLoading = false;
+      this.profileUpdated.emit(this.userProfile);
+    }
   }
 
   onBackdropClick(event: Event) {
@@ -130,13 +138,13 @@ export class PopPerfilComponent implements OnInit, OnChanges {
   getRolText(): string {
     if (!this.userProfile) return '';
     
-    switch (this.userProfile.rol) {
-      case 'administrador':
+    switch (this.userProfile.roleId) {
+      case 1:
         return 'Administrador';
-      case 'jefe_seccion':
+      case 2:
         return 'Jefe de Sección';
       default:
-        return this.userProfile.rol;
+        return `Rol ID: ${this.userProfile.roleId}`;
     }
   }
 

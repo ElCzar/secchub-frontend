@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { SidebarToggleService } from '../../services/sidebar-toggle.service';
 import { PopPerfilComponent } from '../../../features/perfil/components/pop-perfil/pop-perfil';
-import { UserProfile } from '../../../features/perfil/models/user-profile.models';
+import { UserInformationResponseDTO } from '../../model/dto/user/UserInformationResponseDTO.model';
 
 @Component({
   selector: 'app-accesos-rapidos-admi',
@@ -54,7 +54,7 @@ export class AccesosRapidosAdmi {
    
   }
 
-  onProfileUpdated(updatedProfile: UserProfile) {
+  onProfileUpdated(updatedProfile: UserInformationResponseDTO) {
     console.log('Perfil actualizado:', updatedProfile);
     // Aquí puedes actualizar la información del usuario en tu aplicación
     // Por ejemplo, actualizar el estado global del usuario

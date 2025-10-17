@@ -47,7 +47,7 @@
         <div class="profile-info">
           <div class="info-field">
             <span class="field-label">Nombre Completo:</span>
-            <p class="field-value">{{ userProfile.nombreCompleto }}</p>
+            <p class="field-value">{{ userProfile.name }} {{ userProfile.lastName }}</p>
           </div>
 
           <div class="info-field">
@@ -57,7 +57,7 @@
 
           <div class="info-field">
             <span class="field-label">Correo Electrónico:</span>
-            <p class="field-value">{{ userProfile.correo }}</p>
+            <p class="field-value">{{ userProfile.email }}</p>
           </div>
 
           <div class="info-field">
@@ -83,8 +83,8 @@
           <div class="info-field">
             <span class="field-label">Estado:</span>
             <p class="field-value">
-              <span [class]="userProfile.isActive ? 'status-active' : 'status-inactive'">
-                {{ userProfile.isActive ? 'Activo' : 'Inactivo' }}
+              <span [class]="userProfile.statusId === 1 ? 'status-active' : 'status-inactive'">
+                {{ userProfile.statusId === 1 ? 'Activo' : 'Inactivo' }}
               </span>
             </p>
           </div>
@@ -156,7 +156,7 @@
               id="correo"
               type="email" 
               class="form-input" 
-              [(ngModel)]="editForm.correo"
+              [(ngModel)]="editForm.email"
               name="correo"
               placeholder="Ingrese el correo electrónico"
               required
@@ -197,7 +197,7 @@
 
           <div class="form-field">
             <span class="field-label">Facultad:</span>
-            <p class="field-value readonly">{{ userProfile.faculty }}</p>
+            <p class="field-value readonly">{{ userProfile.faculty}}</p>
             <small class="field-note">La facultad no puede ser modificada</small>
           </div>
 
@@ -212,7 +212,7 @@
             <button 
               type="submit" 
               class="btn btn-primary"
-              [disabled]="!editForm.name.trim() || !editForm.lastName.trim() || !editForm.correo.trim() || !editForm.documentType.trim() || !editForm.documentNumber.trim() || isLoading">
+              [disabled]="!editForm.name.trim() || !editForm.lastName.trim() || !editForm.email.trim() || !editForm.documentType.trim() || !editForm.documentNumber.trim() || isLoading">
               <i class="icon-save" aria-hidden="true"></i>
               {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
