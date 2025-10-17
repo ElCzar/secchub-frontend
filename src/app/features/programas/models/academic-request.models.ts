@@ -49,11 +49,8 @@ export interface AcademicRequestBatchDTO {
    */
   userId: number;
   /**
-   * Identificador del semestre al que pertenecen las solicitudes.
-   */
-  semesterId: number;
-  /**
    * Lista de solicitudes académicas individuales.
+   * El semestre se obtiene automáticamente del backend (is_current = 1).
    */
   requests: AcademicRequestDTO[];
 }

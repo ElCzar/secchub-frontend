@@ -127,7 +127,6 @@ export class ProgramasPageComponent implements OnInit {
 
     return {
       userId: 1, // This should be obtained from authentication context
-      semesterId: 1, // This should be obtained from current context
       requests
     };
   }
