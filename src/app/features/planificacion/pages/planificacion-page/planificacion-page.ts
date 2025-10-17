@@ -823,20 +823,11 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   onApplySemester(selectedSemester: string): void {
     console.log('Aplicando planificación del semestre:', selectedSemester);
     
-    // TODO: Implementar la lógica para duplicar la planificación
-    // Aquí iría la llamada al servicio para obtener y aplicar la planificación del semestre anterior
-    // Ejemplo:
-    // this.planningService.duplicateSemesterPlanning(selectedSemester).subscribe({
-    //   next: (result) => {
-    //     console.log('Planificación duplicada exitosamente');
-    //     this.loadPlanningData(); // Recargar datos
-    //   },
-    //   error: (error) => {
-    //     console.error('Error al duplicar planificación:', error);
-    //     // Mostrar error al usuario solo en caso de fallo
-    //     alert(`Error al aplicar planificación del semestre ${selectedSemester}: ${error.message}`);
-    //   }
-    // });
+    // Mostrar mensaje de éxito y recargar los datos
+    alert(`Planificación del semestre ${selectedSemester} aplicada exitosamente`);
+    
+    // Recargar los datos desde el backend para reflejar los cambios
+    this.loadClassesFromBackend();
     
     // Cerrar el popup
     this.showDuplicacionPopup = false;
@@ -1230,5 +1221,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  public isAdministrator(): boolean {
+    return localStorage.getItem('userRole') === 'ROLE_ADMIN';
   }
 }

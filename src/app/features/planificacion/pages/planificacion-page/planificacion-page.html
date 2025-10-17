@@ -6,8 +6,11 @@
 
   <aside class="sidebar">
     <!-- Mostramos el acceso rápido según rol -->
-    <app-accesos-rapidos-admi *ngIf="role==='admin'"></app-accesos-rapidos-admi>
-    <app-accesos-rapidos-seccion *ngIf="role==='seccion'"></app-accesos-rapidos-seccion>
+    @if (isAdministrator()) {
+      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+    } @else {
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    }
   </aside>
 
   <main class="content">

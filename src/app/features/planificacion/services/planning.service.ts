@@ -376,9 +376,28 @@ export class PlanningService {
     console.log('Datos preparados para backend:', preparedData);
     
     return this.http.post<ClassScheduleDTO>(`${this.baseUrl}/classes/${classId}/schedules`, preparedData).pipe(
+      switchMap(response => {
+        // Si el backend ya devolvió el nombre del aula, devolver tal cual
+        if (response.classroomRoom) {
+          return of(response);
+        }
+
+        // Si solo devolvió classroomId, intentar enriquecer con el nombre
+        if (response.classroomId) {
+          return this.classroomService.getClassroomById(Number(response.classroomId)).pipe(
+            map(classroom => ({ ...response, classroomRoom: classroom.name, classroomName: classroom.name } as ClassScheduleDTO)),
+            catchError(err => {
+              console.warn('No se pudo obtener aula para enriquecer respuesta de creación:', err);
+              return of(response);
+            })
+          );
+        }
+
+        return of(response);
+      }),
       tap(response => {
         console.log('=== HORARIO ASIGNADO EXITOSAMENTE ===');
-        console.log('Respuesta:', response);
+        console.log('Respuesta enriquecida:', response);
       }),
       catchError(error => {
         console.error('=== ERROR AL ASIGNAR HORARIO ===');
@@ -399,21 +418,46 @@ export class PlanningService {
     console.log(`=== OBTENIENDO HORARIOS DE CLASE ${classId} ===`);
     
     return this.http.get<ClassScheduleDTO[]>(`${this.baseUrl}/classes/${classId}/schedules`).pipe(
-      map(schedules => {
+      // Enriquecer cada schedule con el nombre del aula si el backend solo devuelve classroomId
+      switchMap(schedules => {
         console.log(`Horarios obtenidos para clase ${classId}:`, schedules);
-        
-        // Normalizar los datos para compatibilidad con el frontend
-        return schedules.map(schedule => ({
-          ...schedule,
-          // Convertir día del formato backend (Monday) a frontend (LUN)
-          day: this.classroomService.mapDayToFrontendFormat(schedule.day),
-          // Mapear modalidad para el frontend
-          modality: schedule.modalityName,
-          // Mapear información del aula para el frontend
-          room: schedule.classroomRoom,
-          // Mapear tipo de aula para el frontend
-          roomType: schedule.classroomTypeName
-        }));
+
+        if (!schedules || schedules.length === 0) {
+          return of([] as ClassScheduleDTO[]);
+        }
+
+        // Mejor: obtener todas las aulas una sola vez y mapear localmente por ID
+        return this.classroomService.getAllClassrooms().pipe(
+          map(classrooms => {
+            const classroomMap = new Map<number, string>();
+            classrooms.forEach(c => classroomMap.set(c.id, c.name));
+
+            // Normalizar los datos para compatibilidad con el frontend
+            return schedules.map(schedule => ({
+              ...schedule,
+              // Convertir día del formato backend (Monday) a frontend (LUN)
+              day: this.classroomService.mapDayToFrontendFormat(schedule.day),
+              // Mapear modalidad para el frontend (usar modalityName o mapear modalityId)
+              modality: schedule.modalityName || this.classroomService.mapModalityIdToFrontendName(schedule.modalityId || 1),
+              // Mapear información del aula para el frontend usando el mapa local
+              room: schedule.classroomRoom || (schedule.classroomId ? (classroomMap.get(Number(schedule.classroomId)) || '') : ''),
+              classroomRoom: schedule.classroomRoom || (schedule.classroomId ? (classroomMap.get(Number(schedule.classroomId)) || '') : ''),
+              // Mapear tipo de aula para el frontend
+              roomType: schedule.classroomTypeName
+            } as ClassScheduleDTO));
+          }),
+          catchError(err => {
+            console.warn('Error cargando aulas para enriquecimiento:', err);
+            // Fallback: mapear sin enriquecimiento
+            return of(schedules.map(schedule => ({
+              ...schedule,
+              day: this.classroomService.mapDayToFrontendFormat(schedule.day),
+              modality: schedule.modalityName || this.classroomService.mapModalityIdToFrontendName(schedule.modalityId || 1),
+              room: schedule.classroomRoom || '',
+              roomType: schedule.classroomTypeName
+            } as ClassScheduleDTO)));
+          })
+        );
       }),
       tap(schedules => {
         console.log(`Horarios normalizados para clase ${classId}:`, schedules);
@@ -423,7 +467,7 @@ export class PlanningService {
         console.error('Error:', error);
         console.error('Status:', error.status);
         console.error('Mensaje:', error.message);
-        return [];
+        return of([] as ClassScheduleDTO[]);
       })
     );
   }
@@ -458,8 +502,25 @@ export class PlanningService {
     console.log('Datos para actualizar:', scheduleData);
     
     return this.http.put<ClassScheduleDTO>(`${this.baseUrl}/schedules/${scheduleId}`, scheduleData).pipe(
+      switchMap(response => {
+        if (response.classroomRoom) {
+          return of(response);
+        }
+
+        if (response.classroomId) {
+          return this.classroomService.getClassroomById(Number(response.classroomId)).pipe(
+            map(classroom => ({ ...response, classroomRoom: classroom.name, classroomName: classroom.name } as ClassScheduleDTO)),
+            catchError(err => {
+              console.warn('No se pudo obtener aula para enriquecer respuesta de actualización:', err);
+              return of(response);
+            })
+          );
+        }
+
+        return of(response);
+      }),
       tap(response => {
-        console.log(`Horario ${scheduleId} actualizado exitosamente:`, response);
+        console.log(`Horario ${scheduleId} actualizado exitosamente (enriquecido):`, response);
       }),
       catchError(error => {
         console.error(`=== ERROR AL ACTUALIZAR HORARIO ${scheduleId} ===`);
@@ -498,6 +559,59 @@ export class PlanningService {
   // ==========================================
   // DUPLICACIÓN DE PLANIFICACIÓN
   // ==========================================
+
+  /**
+   * Obtener vista previa de la planificación de un semestre específico
+   */
+  getSemesterPlanningPreview(semesterId: number): Observable<{totalClasses: number, semesterId: number, classes: ClassDTO[]}> {
+    console.log(`=== OBTENIENDO VISTA PREVIA DEL SEMESTRE ${semesterId} ===`);
+    
+    return this.http.get<{totalClasses: number, semesterId: number, classes: ClassDTO[]}>(`${this.baseUrl}/semesters/${semesterId}/preview`).pipe(
+      tap(response => {
+        console.log('Vista previa obtenida:', response);
+        console.log(`Total de clases: ${response.totalClasses}`);
+      }),
+      catchError(error => {
+        console.error(`Error obteniendo vista previa del semestre ${semesterId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Aplicar planificación de un semestre anterior al semestre actual
+   */
+  applySemesterPlanningToCurrent(sourceSemesterId: number): Observable<{message: string, classesApplied: number}> {
+    console.log(`=== APLICANDO PLANIFICACIÓN DEL SEMESTRE ${sourceSemesterId} AL ACTUAL ===`);
+    
+    return this.http.post<{message: string, classesApplied: number}>(`${this.baseUrl}/semesters/${sourceSemesterId}/apply-to-current`, {}).pipe(
+      tap(response => {
+        console.log('Planificación aplicada exitosamente:', response);
+        console.log(`Clases aplicadas: ${response.classesApplied}`);
+      }),
+      catchError(error => {
+        console.error(`Error aplicando planificación del semestre ${sourceSemesterId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Obtener semestres pasados disponibles para duplicación
+   */
+  getPastSemesters(): Observable<{id: number, name: string, year: number, period: number}[]> {
+    console.log('=== OBTENIENDO SEMESTRES PASADOS ===');
+    
+    return this.http.get<{id: number, name: string, year: number, period: number}[]>(`${this.baseUrl}/semesters/past`).pipe(
+      tap(response => {
+        console.log('Semestres pasados obtenidos:', response);
+      }),
+      catchError(error => {
+        console.error('Error obteniendo semestres pasados:', error);
+        throw error;
+      })
+    );
+  }
 
   /**
    * Duplicar planificación completa de un semestre a otro
@@ -650,14 +764,25 @@ export class PlanningService {
    */
   private mapDayFromBackend(day: string): string {
     const dayMap: { [key: string]: string } = {
+      // Formato Title Case (Monday, Tuesday, etc.)
       'Monday': 'LUN',
       'Tuesday': 'MAR', 
       'Wednesday': 'MIE',
       'Thursday': 'JUE',
       'Friday': 'VIE',
       'Saturday': 'SAB',
-      'Sunday': 'DOM'
+      'Sunday': 'DOM',
+      // Formato UPPER CASE (MONDAY, TUESDAY, etc.)
+      'MONDAY': 'LUN',
+      'TUESDAY': 'MAR',
+      'WEDNESDAY': 'MIE',
+      'THURSDAY': 'JUE',
+      'FRIDAY': 'VIE',
+      'SATURDAY': 'SAB',
+      'SUNDAY': 'DOM'
     };
+    
+    console.log(`🔄 Mapeando día del backend a frontend: "${day}" → "${dayMap[day] || day}"`);
     return dayMap[day] || day;
   }
 
@@ -945,8 +1070,23 @@ export class PlanningService {
    * Obtener docentes asignados a una clase
    */
   getAssignedTeachers(classId: number): Observable<TeacherDTO[]> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
-    return this.http.get<TeacherDTO[]>(`${assignmentUrl}/class/${classId}/teachers`).pipe(
+    // Usar el endpoint real del módulo de integración
+    const assignmentUrl = `${environment.apiUrl}/teachers/classes/class/${classId}`;
+    return this.http.get<any[]>(assignmentUrl).pipe(
+      map(teacherClassList => {
+        // Convertir TeacherClassResponseDTO a TeacherDTO
+        return teacherClassList.map(tc => ({
+          id: tc.teacherId,
+          name: tc.teacherName || 'Docente',
+          lastName: tc.teacherLastName || '',
+          email: tc.teacherEmail || '',
+          maxHours: tc.teacherMaxHours || 40,
+          assignedHours: tc.workHours || 0,
+          availableHours: (tc.teacherMaxHours || 40) - (tc.workHours || 0),
+          extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+          contractType: tc.teacherContractType || 'N/A'
+        }));
+      }),
       tap(teachers => console.log(`👨‍🏫 Docentes asignados a clase ${classId}:`, teachers)),
       catchError(error => {
         console.error(`❌ Error obteniendo docentes de clase ${classId}:`, error);
@@ -959,19 +1099,48 @@ export class PlanningService {
    * Asignar un docente a una clase
    */
   assignTeacherToClass(classId: number, teacherId: number, workHours: number, observation?: string): Observable<TeacherDTO> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
-    let params = new HttpParams()
-      .set('teacherId', teacherId.toString())
-      .set('classId', classId.toString())
-      .set('workHours', workHours.toString());
+    // Usar el endpoint real del módulo de integración en lugar del mock
+    const assignmentUrl = `${environment.apiUrl}/teachers/classes`;
     
-    if (observation) {
-      params = params.set('observation', observation);
-    }
+    const requestBody = {
+      teacherId: teacherId,
+      classId: classId,
+      workHours: workHours,
+      observation: observation || `Asignado desde planificación - ${new Date().toLocaleString()}`
+    };
 
-    console.log(`🎯 Asignando docente ${teacherId} a clase ${classId} con ${workHours} horas`);
+    console.log(`🎯 Asignando docente ${teacherId} a clase ${classId} con ${workHours} horas usando endpoint real`);
+    console.log('Request body:', requestBody);
     
-    return this.http.post<TeacherDTO>(`${assignmentUrl}/assign`, null, { params }).pipe(
+    return this.http.post<any>(`${assignmentUrl}`, requestBody).pipe(
+      switchMap(() => {
+        // Después de crear la asignación, obtener información del docente desde el servicio de administración
+        const teacherUrl = `${environment.apiUrl}/api/admin/teachers/${teacherId}`;
+        return this.http.get<any>(teacherUrl).pipe(
+          map(teacherInfo => ({
+            id: teacherId,
+            name: teacherInfo.name || 'Docente',
+            lastName: teacherInfo.lastName || '',
+            email: teacherInfo.email || '',
+            maxHours: teacherInfo.maxHours || 40,
+            assignedHours: workHours,
+            availableHours: (teacherInfo.maxHours || 40) - workHours,
+            extraHours: 0,
+            contractType: teacherInfo.contractType || 'N/A'
+          })),
+          catchError(() => of({
+            id: teacherId,
+            name: 'Docente',
+            lastName: 'Asignado',
+            email: '',
+            maxHours: 40,
+            assignedHours: workHours,
+            availableHours: 40 - workHours,
+            extraHours: 0,
+            contractType: 'N/A'
+          }))
+        );
+      }),
       tap(response => console.log('✅ Docente asignado exitosamente:', response)),
       catchError(error => {
         console.error('❌ Error asignando docente:', error);

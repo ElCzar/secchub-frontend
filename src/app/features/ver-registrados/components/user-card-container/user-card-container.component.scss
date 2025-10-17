@@ -1,0 +1,119 @@
+/* 
+  Estilos para el componente UserCardContainerComponent
+  Contenedor responsivo para las tarjetas de usuario
+*/
+
+.user-card-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  &.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+}
+
+/* Estilos para usuario de tipo desconocido */
+.unknown-user-type {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #6c757d;
+  margin: 1rem 0;
+
+  .error-message {
+    p {
+      margin: 0 0 0.5rem 0;
+      
+      &:first-child {
+        color: #dc3545;
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+    }
+
+    .user-info {
+      background: white;
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      border-left: 4px solid #ffc107;
+    }
+  }
+}
+
+/* Indicador de carga del contenedor */
+.container-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e9ecef;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Clase para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .user-card-container {
+    padding: 0 0.5rem;
+  }
+
+  .unknown-user-type {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .container-loading {
+    padding: 1.5rem;
+    
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border-width: 3px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .unknown-user-type {
+    .error-message {
+      .user-info {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+      }
+    }
+  }
+}

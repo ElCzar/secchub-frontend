@@ -1,0 +1,105 @@
+<div class="form-section">
+  <h2 class="section-title">Datos Personales</h2>
+  
+  <div class="form-row">
+    <div class="form-field">
+      <label for="name" class="field-label">Nombre *</label>
+      <input 
+        id="name"
+        type="text" 
+        class="form-input"
+        [(ngModel)]="data.name"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Ingrese el nombre"
+        autocomplete="given-name">
+    </div>
+
+    <div class="form-field">
+      <label for="lastName" class="field-label">Apellido *</label>
+      <input 
+        id="lastName"
+        type="text" 
+        class="form-input"
+        [(ngModel)]="data.lastName"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Ingrese el apellido"
+        autocomplete="family-name">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <label for="username" class="field-label">Nombre de Usuario *</label>
+      <input 
+        id="username"
+        type="text" 
+        class="form-input"
+        [(ngModel)]="data.username"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Ej: jperez2024"
+        autocomplete="username">
+      <small class="field-note">
+        Identificador único para el login
+      </small>
+    </div>
+
+    <div class="form-field">
+      <label for="email" class="field-label">Correo Electrónico *</label>
+      <input 
+        id="email"
+        type="email" 
+        class="form-input"
+        [(ngModel)]="data.email"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="correo@universidad.edu.co"
+        autocomplete="email">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <label for="documentTypeId" class="field-label">Tipo de Documento *</label>
+      <select 
+        id="documentTypeId"
+        class="form-select"
+        [(ngModel)]="data.documentTypeId"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()">
+        <option value="" disabled>Seleccione el tipo de documento</option>
+        <option *ngFor="let docType of documentTypes" [value]="docType.id">
+          {{ docType.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label for="documentNumber" class="field-label">Número de Documento *</label>
+      <input 
+        id="documentNumber"
+        type="text" 
+        class="form-input"
+        [(ngModel)]="data.documentNumber"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Ej: 12345678"
+        autocomplete="off">
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label for="faculty" class="field-label">Facultad *</label>
+    <input 
+      id="faculty"
+      type="text" 
+      class="form-input"
+      [(ngModel)]="data.faculty"
+      [ngModelOptions]="{standalone: true}"
+      (ngModelChange)="onFieldChange()"
+      placeholder="Ej: Facultad de Ingeniería"
+      autocomplete="off">
+  </div>
+</div>

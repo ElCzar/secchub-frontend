@@ -986,14 +986,33 @@ export class PlanningClassesTable {
           }
           
           // Buscar el horario correspondiente en el array local por múltiples criterios
-          const scheduleIndex = allSchedules.findIndex(s => 
-            !s.id && // Debe ser un horario nuevo (sin ID previo)
-            s.day === schedule.day && 
-            s.startTime === schedule.startTime && 
-            s.endTime === schedule.endTime &&
-            s.modality === schedule.modality
-          );
-          
+          // Normalizar y comparar de forma tolerante para evitar falsos negativos
+          const scheduleIndex = allSchedules.findIndex(s => {
+            if (s.id) return false; // solo horarios nuevos
+
+            // Normalizar día a formato backend (mapDayToBackend acepta código frontend o nombre backend)
+            const localDay = this.mapDayToBackend((schedule.day || '').toString());
+            const candidateDay = this.mapDayToBackend((s.day || '').toString());
+
+            // Normalizar horas a HH:MM para comparar tanto "08:00" como "08:00:00"
+            const normalizeTime = (t: any) => (t ? t.toString().trim().substring(0,5) : '');
+            const localStart = normalizeTime(schedule.startTime);
+            const candidateStart = normalizeTime(s.startTime);
+            const localEnd = normalizeTime(schedule.endTime);
+            const candidateEnd = normalizeTime(s.endTime);
+
+            // Comparar modalidad por ID cuando el backend devuelve modalityId
+            const localModalityId = this.getModalityId(schedule.modality || schedule.modalityName || '');
+            const candidateModalityId = (s.modalityId || this.getModalityId(s.modality || s.modalityName || ''));
+
+            const dayMatches = localDay === candidateDay;
+            const startMatches = localStart === candidateStart;
+            const endMatches = localEnd === candidateEnd;
+            const modalityMatches = (candidateModalityId && localModalityId) ? (Number(candidateModalityId) === Number(localModalityId)) : ((schedule.modality || '').toString().toLowerCase() === (s.modality || '').toString().toLowerCase());
+
+            return dayMatches && startMatches && endMatches && modalityMatches;
+          });
+
           console.log(`🔍 Buscando horario local para asignar ID ${savedSchedule.id}:`, {
             found: scheduleIndex !== -1,
             scheduleIndex,
@@ -1001,10 +1020,11 @@ export class PlanningClassesTable {
               day: schedule.day,
               startTime: schedule.startTime,
               endTime: schedule.endTime,
-              modality: schedule.modality
+              modality: schedule.modality,
+              normalizedDay: this.mapDayToBackend((schedule.day||'').toString())
             }
           });
-          
+
           if (scheduleIndex !== -1) {
             console.log(`✅ Asignando ID ${savedSchedule.id} al horario en posición ${scheduleIndex}`);
             allSchedules[scheduleIndex].id = savedSchedule.id;
@@ -1037,9 +1057,37 @@ export class PlanningClassesTable {
             
             console.log('📋 Horario completamente actualizado:', allSchedules[scheduleIndex]);
           } else {
-            console.warn('⚠️ No se pudo encontrar el horario correspondiente en el array local para asignar el ID');
+            console.warn('⚠️ No se pudo encontrar el horario correspondiente en el array local para asignar el ID. Se agregará la respuesta del backend al array local para evitar pérdida visual.');
             console.log('Horario buscado:', schedule);
-            console.log('Array actual:', allSchedules);
+            console.log('Array actual (parcial):', allSchedules.slice(0,10));
+
+            // Insertar la respuesta del backend en el array local para que el UI muestre el horario guardado
+            try {
+              const mapped: any = {
+                id: savedSchedule.id,
+                classId: savedSchedule.classId || classId,
+                classroomId: savedSchedule.classroomId || savedSchedule.classroomId || null,
+                day: savedSchedule.day || schedule.day || '',
+                startTime: (savedSchedule.startTime || schedule.startTime || '').toString().substring(0,8),
+                endTime: (savedSchedule.endTime || schedule.endTime || '').toString().substring(0,8),
+                modality: savedSchedule.modalityName || ((): string => {
+                  const id = savedSchedule.modalityId || schedule.modalityId || this.getModalityId(schedule.modality || '');
+                  const map: { [k: number]: string } = { 1: 'In-Person', 2: 'Online', 3: 'Hybrid' };
+                  return map[Number(id)] || (savedSchedule.modalityName || schedule.modality || 'In-Person');
+                })(),
+                modalityId: savedSchedule.modalityId || schedule.modalityId || this.getModalityId(schedule.modality || ''),
+                disability: savedSchedule.disability ?? schedule.disability ?? false,
+                room: savedSchedule.classroomRoom || schedule.room || '',
+                classroomRoom: savedSchedule.classroomRoom || schedule.room || '',
+                classroomTypeName: savedSchedule.classroomTypeName || undefined,
+                classroomLocation: savedSchedule.classroomLocation || undefined
+              };
+
+              allSchedules.push(mapped);
+              console.log('✅ Respuesta del backend añadida al array local:', mapped);
+            } catch (err) {
+              console.error('❌ Error mapeando/añadiendo la respuesta del backend al array local:', err, savedSchedule);
+            }
           }
         },
         error: (error: any) => {
@@ -1193,8 +1241,33 @@ export class PlanningClassesTable {
         
       } catch (error) {
         console.error(`❌ Error preparando datos para actualizar horario ${index + 1}:`, error);
-        alert(`Error crítico: No se pueden preparar los datos para actualización. 
-               Error: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        const message = error instanceof Error ? error.message : String(error);
+
+        // Si el error es por falta de aula en modalidad presencial, mostrar advertencia y continuar
+        if (message.toLowerCase().includes('requiere un aula') || message.toLowerCase().includes('requiere un aula asignada')) {
+          // No mostrar alert intrusivo. Marcar el horario localmente para que la UI
+          // pueda indicar visualmente que falta un aula si se desea.
+          console.warn('⚠️ Falta aula para modalidad presencial, se omite actualización de este horario:', message);
+          try {
+            // Marcar objeto schedule actual
+            (schedule as any)._needsClassroom = true;
+
+            // Si existe en el array local allSchedules, marcar también ahí
+            const localIndex = allSchedules.findIndex((s: any) => s.id === schedule.id);
+            if (localIndex !== -1) {
+              allSchedules[localIndex]._needsClassroom = true;
+              console.log(`🔖 Marcado _needsClassroom en allSchedules[${localIndex}]`);
+            }
+          } catch (e) {
+            console.warn('No se pudo marcar localmente el horario con _needsClassroom:', e);
+          }
+
+          // continuar con el siguiente elemento del forEach sin mostrar alerta
+          return;
+        }
+
+        // Para otros errores, mantener comportamiento crítico
+        alert(`Error crítico: No se pueden preparar los datos para actualización.\nError: ${message}`);
       }
     });
   }

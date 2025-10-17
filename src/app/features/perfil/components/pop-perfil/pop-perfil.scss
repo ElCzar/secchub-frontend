@@ -482,3 +482,37 @@
   content: "❌";
   font-family: "Segoe UI Emoji", sans-serif;
 }
+
+// =================================
+// Status Indicators
+// =================================
+
+.status-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #22c55e;
+  font-weight: 500;
+
+  &::before {
+    content: "●";
+    color: #22c55e;
+    font-size: 0.8rem;
+  }
+}
+
+.status-inactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ef4444;
+  font-weight: 500;
+
+  &::before {
+    content: "●";
+    color: #ef4444;
+    font-size: 0.8rem;
+  }
+}
+
+

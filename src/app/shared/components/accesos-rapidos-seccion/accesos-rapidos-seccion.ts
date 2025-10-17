@@ -17,6 +17,7 @@ export class AccesosRapidosSeccion {
 
   items = [
     { label: 'Perfil', action: 'profile' },
+    { label: 'Inicio', route: '/inicio-seccion' },
     { label: 'Planificar Clases', route: '/planificacion' },
     { label: 'Confirmar Disponibilidad Docente', route: '/confirmar-disponibilidad' },
     { label: 'Monitores', route: '/solicitud-monitores' },

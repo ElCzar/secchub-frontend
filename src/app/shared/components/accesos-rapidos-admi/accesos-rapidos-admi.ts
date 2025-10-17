@@ -17,8 +17,9 @@ export class AccesosRapidosAdmi {
 
   items = [
     { label: 'Perfil', action: 'profile' },
+    { label: 'Inicio', route: '/inicio-admi' },
     { label: 'Registrar Nuevo Usuario', route: '/registrar' },
-    { label: 'Ver Usuario Registrados', route: '/usuarios' },
+    { label: 'Ver Usuarios Registrados', route: '/ver-registrados' },
     { label: 'Consultar Log de Auditoria', route: '/auditoria' },
     { label: 'Ver Planificacion Completa', route: '/planificacion' },
     { label: 'Gestionar Materias', route: '/materias' },

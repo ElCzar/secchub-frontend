@@ -1,65 +1,42 @@
 <div class="register-form-container">
 
-  <!-- Formulario Simplificado -->
+  <!-- Formulario Dinámico -->
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form" novalidate>
     
-    <!-- Datos Personales Section -->
+    <!-- Selector de Rol - Siempre visible -->
     <div class="form-section">
-      <h2 class="section-title">Datos Personales</h2>
+      <h2 class="section-title">Selección de Rol</h2>
       
-      <div class="form-row">
-        <div class="form-field">
-          <label for="name" class="field-label">Nombre *</label>
-          <input 
-            id="name"
-            type="text" 
-            class="form-input"
-            [class.error]="isFieldInvalid('name')"
-            formControlName="name"
-            placeholder="Ingrese el nombre"
-            autocomplete="given-name">
-          <div *ngIf="isFieldInvalid('name')" class="field-error">
-            {{ getFieldErrorMessage('name') }}
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="lastName" class="field-label">Apellido *</label>
-          <input 
-            id="lastName"
-            type="text" 
-            class="form-input"
-            [class.error]="isFieldInvalid('lastName')"
-            formControlName="lastName"
-            placeholder="Ingrese el apellido"
-            autocomplete="family-name">
-          <div *ngIf="isFieldInvalid('lastName')" class="field-error">
-            {{ getFieldErrorMessage('lastName') }}
-          </div>
-        </div>
-      </div>
-
       <div class="form-field">
-        <label for="email" class="field-label">Correo Electrónico *</label>
-        <input 
-          id="email"
-          type="email" 
-          class="form-input"
-          [class.error]="isFieldInvalid('email')"
-          formControlName="email"
-          placeholder="correo@universidad.edu.co"
-          autocomplete="email">
-        <div *ngIf="isFieldInvalid('email')" class="field-error">
-          {{ getFieldErrorMessage('email') }}
+        <label for="role" class="field-label">Tipo de Usuario *</label>
+        <select 
+          id="role"
+          class="form-select"
+          [class.error]="isFieldInvalid('role')"
+          formControlName="role">
+          <option value="" disabled>Seleccione el tipo de usuario</option>
+          <option *ngFor="let role of userRoles" [value]="role.id">
+            {{ role.name }}
+          </option>
+        </select>
+        <div *ngIf="isFieldInvalid('role')" class="field-error">
+          {{ getFieldErrorMessage('role') }}
         </div>
         <small class="field-note">
-          El correo electrónico será usado como nombre de usuario para el login
+          Los campos a completar dependerán del tipo de usuario seleccionado
         </small>
       </div>
     </div>
 
-    <!-- Datos de Cuenta Section -->
-    <div class="form-section">
+    <!-- Datos Personales Section - Componente reutilizable -->
+    <app-personal-data-form 
+      *ngIf="currentRole && isFormReady"
+      [documentTypes]="documentTypes"
+      (dataChange)="onPersonalDataChange($event)">
+    </app-personal-data-form>
+
+    <!-- Datos de Cuenta Section - Inline -->
+    <div class="form-section" *ngIf="currentRole && isFormReady">
       <h2 class="section-title">Contraseña</h2>
       
       <div class="form-row">
@@ -69,13 +46,11 @@
             id="password"
             type="password" 
             class="form-input"
-            [class.error]="isFieldInvalid('password')"
-            formControlName="password"
+            [(ngModel)]="passwordData.password"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onPasswordChange()"
             placeholder="Mínimo 8 caracteres"
             autocomplete="new-password">
-          <div *ngIf="isFieldInvalid('password')" class="field-error">
-            {{ getFieldErrorMessage('password') }}
-          </div>
         </div>
 
         <div class="form-field">
@@ -84,60 +59,45 @@
             id="confirmPassword"
             type="password" 
             class="form-input"
-            [class.error]="isFieldInvalid('confirmPassword') || hasPasswordMismatch"
-            formControlName="confirmPassword"
+            [(ngModel)]="passwordData.confirmPassword"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="onPasswordChange()"
             placeholder="Repita la contraseña"
             autocomplete="new-password">
-          <div *ngIf="isFieldInvalid('confirmPassword')" class="field-error">
-            {{ getFieldErrorMessage('confirmPassword') }}
-          </div>
-          <div *ngIf="hasPasswordMismatch" class="field-error">
-            Las contraseñas no coinciden
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Rol y Sección Section -->
-    <div class="form-section">
-      <h2 class="section-title">Rol y Asignación</h2>
-      
-      <div class="form-field">
-        <label for="role" class="field-label">Rol *</label>
-        <select 
-          id="role"
-          class="form-select"
-          [class.error]="isFieldInvalid('role')"
-          formControlName="role">
-          <option value="" disabled>Seleccione el rol del usuario</option>
-          <option *ngFor="let role of userRoles" [value]="role.id">
-            {{ role.name }}
-          </option>
-        </select>
-        <div *ngIf="isFieldInvalid('role')" class="field-error">
-          {{ getFieldErrorMessage('role') }}
-        </div>
-      </div>
+    <!-- Información Específica de Administrador -->
+    <app-admin-registrar 
+      *ngIf="currentRole === 'admin' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
+    </app-admin-registrar>
 
-      <!-- Section Name - Solo visible si es Jefe de Sección -->
-      <div *ngIf="role?.value === 'section_head'" class="form-field">
-        <label for="sectionName" class="field-label">Nombre de la Sección *</label>
-        <input 
-          id="sectionName"
-          type="text" 
-          class="form-input"
-          [class.error]="isFieldInvalid('sectionName')"
-          formControlName="sectionName"
-          placeholder="Ej: Ingeniería de Sistemas"
-          autocomplete="off">
-        <div *ngIf="isFieldInvalid('sectionName')" class="field-error">
-          {{ getFieldErrorMessage('sectionName') }}
-        </div>
-        <small class="field-note">
-          Se creará una nueva sección con este nombre y se asignará al usuario como jefe.
-        </small>
-      </div>
-    </div>
+    <!-- Información Específica de Jefe de Sección -->
+    <app-seccion-registrar 
+      *ngIf="currentRole === 'section_head' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
+    </app-seccion-registrar>
+
+    <!-- Información Específica de Docente -->
+    <app-profesor-registrar 
+      *ngIf="currentRole === 'teacher' && isFormReady" 
+      [employmentTypes]="employmentTypes"
+      (dataChange)="onRoleSpecificDataChange($event)">
+    </app-profesor-registrar>
+
+    <!-- Información Específica de Estudiante -->
+    <app-estudiante-registrar 
+      *ngIf="currentRole === 'student' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
+    </app-estudiante-registrar>
+
+    <!-- Información Específica de Programa -->
+    <app-programa-registrar 
+      *ngIf="currentRole === 'program' && isFormReady" 
+      (dataChange)="onRoleSpecificDataChange($event)">
+    </app-programa-registrar>
 
     <!-- Submit Button -->
     <div class="form-actions">

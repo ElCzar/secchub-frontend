@@ -2,47 +2,74 @@
   <div class="combine-dialog">
     <h3>Combinar solicitudes</h3>
 
-    <div class="preview">
-      <div class="tabla-wrap">
-        <table class="tabla">
-          <thead>
-            <tr>
-              <th>Programa</th>
-              <th>Materia</th>
-              <th>Cupos</th>
-              <th>Fecha Inicio</th>
-              <th>Fecha Final</th>
-              <th>Comentarios</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let it of items">
-              <td>{{ it.program }}</td>
-              <td>{{ it.materia }}</td>
-              <td>{{ it.cupos }}</td>
-              <td>{{ it.startDate }}</td>
-              <td>{{ it.endDate }}</td>
-              <td>{{ it.comments || it.comentarios || '' }}</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- 🔧 CONTENEDOR SCROLLABLE -->
+    <div class="combine-content">
+      <div class="preview">
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Programa</th>
+                <th>Materia</th>
+                <th>Cupos</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Final</th>
+                <th>Comentarios</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of items">
+                <td>{{ it.program }}</td>
+                <td>{{ it.materia }}</td>
+                <td>{{ it.cupos }}</td>
+                <td>{{ it.startDate }}</td>
+                <td>{{ it.endDate }}</td>
+                <td>{{ it.comments || it.comentarios || '' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="combined-edit">
+        <label for="combinedCupos">Cupos combinados</label>
+        <div class="input-cupos">
+          <input id="combinedCupos" type="number" [(ngModel)]="combinedCupos" min="0" />
+        </div>
+      </div>
+
+      <!-- Schedule selection section -->
+      <div class="schedule-selection-section" *ngIf="availableSchedules.length > 0">
+        <h4>Seleccionar horarios para la materia combinada:</h4>
+        <div class="available-schedules">
+          <div class="schedule-option" *ngFor="let schedule of availableSchedules; let i = index" 
+               [class.selected]="schedule.selected">
+            <label class="schedule-checkbox">
+              <input type="checkbox" 
+                     [checked]="schedule.selected" 
+                     (change)="toggleScheduleSelection(i)">
+              <span class="schedule-info">
+                <strong>{{ schedule.sourceProgram }}</strong> - 
+                {{ schedule.day }} {{ schedule.startTime }} - {{ schedule.endTime }}
+                <small class="schedule-details">
+                  ({{ schedule.modality }}, {{ schedule.roomType }}{{ schedule.disability ? ', Accesible' : '' }})
+                </small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editable schedules table for selected schedules -->
+      <div class="schedules-section">
+        <h4>Horarios seleccionados:</h4>
+        <app-schedules-table [rows]="selectedSchedules" (rowsChange)="onSchedulesChange($event)"></app-schedules-table>
       </div>
     </div>
-
-    <div class="combined-edit">
-      <label for="combinedCupos">Cupos combinados</label>
-      <div class="input-cupos">
-        <input id="combinedCupos" type="number" [(ngModel)]="combinedCupos" min="0" />
-      </div>
-    </div>
-
-    <!-- Editable schedules table reused from shared component -->
-    <div class="schedules-section" style="margin-top:12px;">
-      <app-schedules-table [rows]="schedules" (rowsChange)="onSchedulesChange($event)"></app-schedules-table>
-    </div>
+    <!-- FIN CONTENEDOR SCROLLABLE -->
 
     <div class="actions">
-  <button class="btn btn--danger btn--large" type="button" (click)="close()">Cancelar</button>
+      <button class="btn btn--danger btn--large" type="button" (click)="close()">Cancelar</button>
       <button class="btn btn--primary btn--large" type="button" (click)="confirm()">Combinar</button>
     </div>
   </div>

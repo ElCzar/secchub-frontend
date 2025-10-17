@@ -1,0 +1,66 @@
+<!-- 
+  Template para el componente UserCardContainerComponent
+  Contenedor que muestra la tarjeta apropiada según el tipo de usuario
+  Utiliza type guards para renderizar el componente correcto
+-->
+
+<div class="user-card-container" 
+     [class.loading]="loading"
+     [attr.aria-label]="'Tarjeta para usuario ' + getDisplayName()">
+
+  <!-- Tarjeta para usuarios tipo Docente -->
+  <app-teacher-card 
+    *ngIf="isTeacher(user)"
+    [user]="asTeacher(user)"
+    [showActions]="showActions"
+    [loading]="loading"
+    (userSelected)="onUserSelected($event)"
+    (editUser)="onEditUser($event)"
+    (deleteUser)="onDeleteUser($event)"
+    aria-label="Tarjeta de docente">
+  </app-teacher-card>
+
+  <!-- Tarjeta para usuarios tipo Jefe de Sección -->
+  <app-section-head-card 
+    *ngIf="isSectionHead(user)"
+    [user]="asSectionHead(user)"
+    [showActions]="showActions"
+    [loading]="loading"
+    (userSelected)="onUserSelected($event)"
+    (editUser)="onEditUser($event)"
+    (deleteUser)="onDeleteUser($event)"
+    aria-label="Tarjeta de jefe de sección">
+  </app-section-head-card>
+
+  <!-- Tarjeta para usuarios tipo Administrador -->
+  <app-admin-card 
+    *ngIf="isAdmin(user)"
+    [user]="asAdmin(user)"
+    [showActions]="showActions"
+    [loading]="loading"
+    (userSelected)="onUserSelected($event)"
+    (editUser)="onEditUser($event)"
+    (deleteUser)="onDeleteUser($event)"
+    aria-label="Tarjeta de administrador">
+  </app-admin-card>
+
+  <!-- Fallback para tipos no reconocidos -->
+  <div class="unknown-user-type" 
+       *ngIf="!isKnownUserType(user)"
+       [attr.aria-label]="'Usuario de tipo desconocido: ' + getDisplayName()">
+    <div class="error-message">
+      <p>Tipo de usuario no reconocido</p>
+      <p class="user-info">{{ getDisplayName() }} - {{ getUserRole() }}</p>
+    </div>
+  </div>
+
+  <!-- Indicador de carga general -->
+  <output class="container-loading" 
+          *ngIf="loading && !user"
+          aria-live="polite"
+          aria-label="Cargando información del usuario">
+    <div class="spinner" aria-hidden="true"></div>
+    <span class="sr-only">Cargando usuario...</span>
+  </output>
+
+</div>

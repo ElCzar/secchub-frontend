@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserProfile, EditUserProfileRequest } from '../../models/user-profile.models';
 import { ProfileService } from '../../services/profile.service';
+import { AuthStateService } from '../../../../core/services/auth-state.service';
 
 @Component({
   selector: 'app-pop-perfil',
@@ -13,21 +14,26 @@ import { ProfileService } from '../../services/profile.service';
 })
 export class PopPerfilComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
-  @Input() userId?: string; // Si se proporciona, muestra el perfil de ese usuario
+  @Input() userId?: number; // Si se proporciona, muestra el perfil de ese usuario
   @Output() closeModal = new EventEmitter<void>();
   @Output() profileUpdated = new EventEmitter<UserProfile>();
 
   userProfile: UserProfile | null = null;
   isEditing = false;
   editForm: EditUserProfileRequest = {
-    id: '',
-    nombreCompleto: '',
-    correo: ''
+    name: '',
+    lastName: '',
+    correo: '',
+    documentType: '',
+    documentNumber: ''
   };
   isLoading = false;
   canEdit = false;
 
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly authService: AuthStateService
+  ) {}
 
   ngOnInit() {
     if (this.isVisible) {
@@ -51,7 +57,8 @@ export class PopPerfilComponent implements OnInit, OnChanges {
     profileObservable.subscribe({
       next: (profile) => {
         this.userProfile = profile;
-        this.canEdit = this.profileService.canEditProfile(profile.rol);
+        // Solo los administradores pueden editar su perfil
+        this.canEdit = profile.rol === 'administrador' && this.isCurrentUserProfile();
         this.resetEditForm();
         this.isLoading = false;
       },
@@ -64,10 +71,16 @@ export class PopPerfilComponent implements OnInit, OnChanges {
 
   private resetEditForm() {
     if (this.userProfile) {
+      const nameParts = this.userProfile.nombreCompleto.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       this.editForm = {
-        id: this.userProfile.id,
-        nombreCompleto: this.userProfile.nombreCompleto,
-        correo: this.userProfile.correo
+        name: firstName,
+        lastName: lastName,
+        correo: this.userProfile.correo,
+        documentType: this.userProfile.documentType,
+        documentNumber: this.userProfile.documentNumber
       };
     }
   }
@@ -88,7 +101,7 @@ export class PopPerfilComponent implements OnInit, OnChanges {
   }
 
   onSaveProfile() {
-    if (!this.editForm.nombreCompleto.trim() || !this.editForm.correo.trim()) {
+    if (!this.editForm.name.trim() || !this.editForm.lastName.trim() || !this.editForm.correo.trim()) {
       return;
     }
 
@@ -120,10 +133,18 @@ export class PopPerfilComponent implements OnInit, OnChanges {
     switch (this.userProfile.rol) {
       case 'administrador':
         return 'Administrador';
-      case 'jefe_seccion':
-        return `Jefe de Sección - ${this.userProfile.seccion}`;
+      case 'jefe_seccion': {
+        const sectionName = this.userProfile.seccion?.name || '';
+        return sectionName ? `Jefe de Sección - ${sectionName}` : 'Jefe de Sección';
+      }
       default:
         return this.userProfile.rol;
     }
+  }
+
+  private isCurrentUserProfile(): boolean {
+    // Si no se especifica userId, significa que está viendo su propio perfil
+    // Los jefes de sección solo pueden ver su perfil, no editarlo
+    return !this.userId;
   }
 }
