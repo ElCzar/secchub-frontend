@@ -37,11 +37,9 @@ export interface ClassroomTypeDTO {
   providedIn: 'root'
 })
 export class ClassroomService {
-  private apiUrl = `${environment.apiUrl}/api`;
+  private apiUrl = `${environment.apiUrl}`;
   // Prefijo real para endpoints paramétricos (modalities, classroom-types)
-  private parametricUrl = (environment as any).parametricBaseUrl && (environment as any).parametricBaseUrl.trim().length > 0
-    ? (environment as any).parametricBaseUrl.replace(/\/$/, '')
-    : `${environment.apiUrl}${(environment as any).parametricPath || ''}`.replace(/\/$/, '');
+  private parametricUrl = `${environment.apiUrl}/parametric`;
   
   // Valores por defecto para cuando la API falla
   private defaultModalities: ModalityDTO[] = [

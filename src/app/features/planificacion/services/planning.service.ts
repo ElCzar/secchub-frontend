@@ -74,7 +74,7 @@ export interface CourseOption {
   providedIn: 'root'
 })
 export class PlanningService {
-  private readonly baseUrl = `${environment.apiUrl}/api/planning`;
+  private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(
     private readonly http: HttpClient,
@@ -1260,7 +1260,7 @@ export class PlanningService {
     return this.http.post<any>(`${assignmentUrl}`, requestBody).pipe(
       switchMap(() => {
         // Después de crear la asignación, obtener información del docente desde el servicio de administración
-        const teacherUrl = `${environment.apiUrl}/api/admin/teachers/${teacherId}`;
+        const teacherUrl = `${environment.apiUrl}/v1/teachers/${teacherId}`;
         return this.http.get<any>(teacherUrl).pipe(
           map(teacherInfo => ({
             id: teacherId,
@@ -1298,7 +1298,7 @@ export class PlanningService {
    * Cambiar el docente asignado a una clase
    */
   changeTeacherForClass(classId: number, newTeacherId: number, workHours: number, observation?: string): Observable<TeacherDTO> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
+    const assignmentUrl = `${environment.apiUrl}/v1/teacher-assignments`;
     let params = new HttpParams()
       .set('newTeacherId', newTeacherId.toString())
       .set('workHours', workHours.toString());
@@ -1322,7 +1322,7 @@ export class PlanningService {
    * Obtener docentes disponibles para una clase
    */
   getAvailableTeachersForClass(classId: number, requiredHours: number): Observable<TeacherDTO[]> {
-    const assignmentUrl = `${environment.apiUrl}/api/teacher-assignments`;
+    const assignmentUrl = `${environment.apiUrl}/v1/teacher-assignments`;
     const params = new HttpParams().set('requiredHours', requiredHours.toString());
     
     return this.http.get<TeacherDTO[]>(`${assignmentUrl}/class/${classId}/available-teachers`, { params }).pipe(

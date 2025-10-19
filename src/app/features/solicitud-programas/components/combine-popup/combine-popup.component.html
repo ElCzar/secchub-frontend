@@ -62,8 +62,21 @@
 
       <!-- Editable schedules table for selected schedules -->
       <div class="schedules-section">
-        <h4>Horarios seleccionados:</h4>
-        <app-schedules-table [rows]="selectedSchedules" (rowsChange)="onSchedulesChange($event)"></app-schedules-table>
+        <div class="schedules-header">
+          <h4>Horarios seleccionados:</h4>
+          <button type="button" 
+                  class="btn btn--secondary btn--small" 
+                  (click)="resetToSelectedSchedules()"
+                  *ngIf="availableSchedules.length > 0"
+                  title="Resetear a horarios seleccionados arriba">
+            Resetear
+          </button>
+        </div>
+        <app-schedules-table 
+          *ngIf="showTable"
+          [rows]="selectedSchedules" 
+          (rowsChange)="onSchedulesChange($event)">
+        </app-schedules-table>
       </div>
     </div>
     <!-- FIN CONTENEDOR SCROLLABLE -->
