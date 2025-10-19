@@ -44,7 +44,7 @@ export interface TeacherClass {
   providedIn: 'root'
 })
 export class TeacherService {
-  private baseUrl = `${environment.apiUrl}/api/teacher-assignments`;
+  private baseUrl = `${environment.apiUrl}/teacher-assignments`;
 
   constructor(private http: HttpClient) {}
 
@@ -55,8 +55,8 @@ export class TeacherService {
     // Primero intentar el nuevo endpoint con información completa
     return this.http.get<TeacherDTO[]>(`${this.baseUrl}/teachers`).pipe(
       catchError(() => {
-        console.warn('🔄 /teachers no disponible, usando /api/planning/teachers/available como fallback');
-  return this.http.get<any[]>(`${environment.apiUrl}/api/planning/teachers/available?requiredHours=0`).pipe(
+        console.warn('🔄 /teachers no disponible, usando /planning/teachers/available como fallback');
+  return this.http.get<any[]>(`${environment.apiUrl}/planning/teachers/available?requiredHours=0`).pipe(
           map(list => (list || []).map(item => ({
             id: Number(item.id),
             name: item.name || item.firstName || '',
