@@ -5,6 +5,7 @@ import { Observable, BehaviorSubject, of } from "rxjs";
 import { map, switchMap, catchError } from "rxjs/operators";
 import { environment } from "../../../../environments/environment";
 import { CourseDTO, AcademicRequestBatchDTO, AcademicRequestResponseDTO, RequestScheduleResponseDTO } from "../models/academic-request.models";
+import { SemesterResponseDTO } from "../../../shared/model/dto/admin/SemesterResponseDTO.model";
 
 
 
@@ -27,14 +28,7 @@ export interface CourseOption {
   credits?: number;   // Include credits for potential future use
 }
 
-export interface SemesterDTO {
-  id: number;
-  period: 1 | 2;
-  year: number;
-  is_current: 0 | 1;
-  start_date: string; // ISO date
-  end_date: string;   // ISO date
-}
+// Removemos esta interfaz porque ya tenemos SemesterResponseDTO
 
 
 @Injectable({ providedIn: 'root' })
@@ -198,12 +192,12 @@ export class ProgramasService {
   }
 
   // ===== Semesters & previous semester orchestration =====
-  getCurrentSemester(): Observable<SemesterDTO> {
-    return this.http.get<SemesterDTO>(`${this.baseUrl}/semesters/current`);
+  getCurrentSemester(): Observable<SemesterResponseDTO> {
+    return this.http.get<SemesterResponseDTO>(`${this.baseUrl}/semesters/current`);
   }
 
-  getSemesterBy(year: number, period: 1 | 2): Observable<SemesterDTO> {
-    return this.http.get<SemesterDTO>(`${this.baseUrl}/semesters`, {
+  getSemesterBy(year: number, period: 1 | 2): Observable<SemesterResponseDTO> {
+    return this.http.get<SemesterResponseDTO>(`${this.baseUrl}/semesters`, {
       params: { year: String(year), period: String(period) }
     });
   }
@@ -212,6 +206,22 @@ export class ProgramasService {
     return this.http.get<AcademicRequestResponseDTO[]>(`${this.baseUrl}/academic-requests/by-semester`, {
       params: { semesterId: String(semesterId) }
     });
+  }
+
+  /**
+   * Obtiene todos los semestres disponibles
+   */
+  getAllSemesters(): Observable<SemesterResponseDTO[]> {
+    return this.http.get<SemesterResponseDTO[]>(`${this.baseUrl}/semesters/all`);
+  }
+
+  /**
+   * Obtiene todos los semestres disponibles excluyendo el actual (filtrado en frontend)
+   */
+  getAllSemestersExceptCurrent(): Observable<SemesterResponseDTO[]> {
+    return this.getAllSemesters().pipe(
+      map(semesters => semesters.filter(semester => !semester.isCurrent))
+    );
   }
 
   /**
@@ -224,11 +234,19 @@ export class ProgramasService {
       switchMap((cur) => {
         const prevPeriod: 1 | 2 = cur.period === 2 ? 1 : 2;
         const prevYear = cur.period === 2 ? cur.year : (cur.year - 1);
+        console.log(`🔍 Buscando semestre anterior: ${prevYear}-${prevPeriod}`);
         return this.getSemesterBy(prevYear, prevPeriod);
       }),
-      switchMap((prev) => this.getAcademicRequestsBySemester(prev.id)),
+      switchMap((prev) => {
+        if (!prev || !prev.id) {
+          console.warn('⚠️ No se encontró el semestre anterior');
+          return of([]);
+        }
+        console.log(`✅ Semestre anterior encontrado: ${prev.year}-${prev.period} (ID: ${prev.id})`);
+        return this.getAcademicRequestsBySemester(prev.id);
+      }),
       catchError((error) => {
-        console.warn('No se encontraron solicitudes del semestre anterior:', error);
+        console.warn('❌ Error al buscar solicitudes del semestre anterior:', error);
         return of([]);
       })
     );

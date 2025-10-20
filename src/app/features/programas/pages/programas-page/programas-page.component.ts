@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { ClassesTableComponent } from '../../components/classes-table/classes-table.component';
+import { PopDuplicacionSolicitudComponent } from '../../components/pop-duplicacion-solicitud/pop-duplicacion-solicitud.component';
 import { ProgramaRowDto, ProgramasService } from '../../services/programas.service';
 import { ScheduleRow } from '../../models/schedule.models';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ProgramaContextDto } from '../../models/context.models';
 import { Observable } from 'rxjs';
 import { AcademicRequestBatchDTO, AcademicRequestRequestDTO, RequestScheduleRequestDTO, AcademicRequestResponseDTO } from '../../models/academic-request.models';
@@ -23,15 +24,19 @@ interface ClaseRow extends ProgramaRowDto {
 @Component({
   selector: 'app-programas-page',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, ClassesTableComponent, ConfirmSendPopupComponent],
+  imports: [CommonModule, HeaderComponent, ClassesTableComponent, ConfirmSendPopupComponent, PopDuplicacionSolicitudComponent],
   templateUrl: './programas-page.component.html',
   styleUrls: ['./programas-page.component.scss'],
 })
 export class ProgramasPageComponent implements OnInit {
+  @ViewChild(ClassesTableComponent) classesTable?: ClassesTableComponent;
+  
   context$!: Observable<ProgramaContextDto>;
   rows: ClaseRow[] = [];
 
   showConfirm = false;
+  loadingPrevious = false;
+  showDuplicateModal = false;
 
   constructor(private readonly programas: ProgramasService) {}
 
@@ -88,6 +93,11 @@ export class ProgramasPageComponent implements OnInit {
     const validRows = this.rows.filter(r => r._state !== 'deleted');
 
     if (validRows.length === 0) {
+      return false;
+    }
+
+    // Verificar si hay errores de validación de fechas en el componente de tabla
+    if (this.classesTable?.hasAnyDateErrors()) {
       return false;
     }
 
@@ -195,49 +205,88 @@ export class ProgramasPageComponent implements OnInit {
     return this.validateAllFields();
   }
 
+  /**
+   * Abre el modal para duplicar solicitudes del semestre anterior
+   */
   loadPrevious(): void {
-    this.programas.loadPreviousSemesterRequests().subscribe({
-      next: (requests: AcademicRequestResponseDTO[]) => {
-        // Mapear TODAS las solicitudes del semestre anterior (una fila por cada solicitud)
-        // Si había 3 cursos solicitados, se crearán 3 filas prellenadas para autofill
-        const mapped: ClaseRow[] = (requests || []).map(req => {
-          const course = this.programas.getCourseById(String(req.courseId));
-          
-          return {
-            courseId: String(req.courseId ?? ''),
-            courseName: req.courseName || course?.name || '',
-            section: course?.sectionId ? String(course.sectionId) : '',
-            roomType: '',
-            seats: req.capacity,
-            startDate: req.startDate,
-            endDate: req.endDate,
-            weeks: this.calculateWeeks(req.startDate, req.endDate),
-            _state: 'existing' as RowState,
-            schedules: (req.schedules || []).map(s => ({
-              day: this.normalizeDay(s.day),
-              startTime: (s.startTime || '').slice(0,5),
-              endTime: (s.endTime || '').slice(0,5),
-              modality: this.reverseModalityId(s.modalityId) as any,
-              roomType: this.reverseRoomTypeId(s.classRoomTypeId) as any,
-              roomTypeId: s.classRoomTypeId, // Preservar el ID también
-              disability: !!s.disability,
-              room: ''
-            })),
-            _open: false,
-            comments: req.observation || ''
-          };
-        });
+    this.showDuplicateModal = true;
+  }
 
-        // Reemplazar todas las filas con las del semestre anterior (autofill completo)
-        this.rows = mapped.length > 0 ? mapped : [this.emptyRow()];
-        
-        // Las semanas ya se calculan en el mapeo anterior
-      },
-      error: () => {
-        // En error, mantener al menos una fila
-        this.ensureAtLeastOneRow();
+  /**
+   * Cierra el modal de duplicación
+   */
+  closeDuplicateModal(): void {
+    this.showDuplicateModal = false;
+  }
+
+  /**
+   * Maneja la aplicación de solicitudes duplicadas desde el modal
+   */
+  onApplyDuplicatedRequests(requests: AcademicRequestResponseDTO[]): void {
+    console.log('� Aplicando solicitudes duplicadas...', requests);
+    
+    if (!requests || requests.length === 0) {
+      console.log('⚠️ No se recibieron solicitudes para duplicar');
+      alert('No hay solicitudes para duplicar.');
+      this.closeDuplicateModal();
+      return;
+    }
+
+    // Confirmar antes de reemplazar las filas actuales
+    const hasData = this.rows.some(row => 
+      row.courseId?.trim() || 
+      row.courseName?.trim() || 
+      row.startDate || 
+      row.endDate ||
+      (row.schedules && row.schedules.length > 0)
+    );
+
+    if (hasData) {
+      const confirmed = confirm(
+        'Esta acción reemplazará todas las solicitudes actuales con las del semestre seleccionado. ' +
+        '¿Está seguro de que desea continuar?'
+      );
+      if (!confirmed) {
+        return;
       }
+    }
+
+    // Mapear las solicitudes del semestre seleccionado
+    const mapped: ClaseRow[] = requests.map(req => {
+      const course = this.programas.getCourseById(String(req.courseId));
+      
+      return {
+        courseId: String(req.courseId ?? ''),
+        courseName: req.courseName || course?.name || '',
+        section: course?.sectionId ? String(course.sectionId) : '',
+        roomType: '',
+        seats: req.capacity,
+        startDate: '', // Limpiar fechas para que el usuario las ingrese para el semestre actual
+        endDate: '',   // Limpiar fechas para que el usuario las ingrese para el semestre actual
+        weeks: 0,      // Se recalculará cuando se ingresen las nuevas fechas
+        _state: 'new' as RowState, // Marcar como 'new' ya que son solicitudes duplicadas
+        schedules: (req.schedules || []).map(s => ({
+          day: this.normalizeDay(s.day),
+          startTime: (s.startTime || '').slice(0,5),
+          endTime: (s.endTime || '').slice(0,5),
+          modality: this.reverseModalityId(s.modalityId) as any,
+          roomType: this.reverseRoomTypeId(s.classRoomTypeId) as any,
+          roomTypeId: s.classRoomTypeId, // Preservar el ID también
+          disability: !!s.disability,
+          room: ''
+        })),
+        _open: false,
+        comments: req.observation || ''
+      };
     });
+
+    // Reemplazar todas las filas con las del semestre seleccionado
+    this.rows = mapped;
+    
+    console.log(`✅ Se duplicaron ${mapped.length} solicitudes del semestre seleccionado`);
+    alert(`Se duplicaron exitosamente ${mapped.length} solicitudes del semestre seleccionado.\n\n⚠️ IMPORTANTE: Las fechas han sido limpiadas. Por favor, ingrese las fechas correspondientes al semestre actual.`);
+    
+    this.closeDuplicateModal();
   }
 
   private reverseRoomTypeId(id: number): string {
@@ -262,13 +311,22 @@ export class ProgramasPageComponent implements OnInit {
 
   private normalizeDay(day: string): 'LUN'|'MAR'|'MIE'|'JUE'|'VIE'|'SAB'|'DOM'|'' {
     const map: Record<string, 'LUN'|'MAR'|'MIE'|'JUE'|'VIE'|'SAB'|'DOM'> = {
+      // Días en español
       'LUNES': 'LUN', 'LUN': 'LUN',
       'MARTES': 'MAR', 'MAR': 'MAR',
       'MIERCOLES': 'MIE', 'MIÉRCOLES': 'MIE', 'MIE': 'MIE',
       'JUEVES': 'JUE', 'JUE': 'JUE',
       'VIERNES': 'VIE', 'VIE': 'VIE',
       'SABADO': 'SAB', 'SÁBADO': 'SAB', 'SAB': 'SAB',
-      'DOMINGO': 'DOM', 'DOM': 'DOM'
+      'DOMINGO': 'DOM', 'DOM': 'DOM',
+      // Días en inglés (desde el backend)
+      'MONDAY': 'LUN',
+      'TUESDAY': 'MAR', 
+      'WEDNESDAY': 'MIE',
+      'THURSDAY': 'JUE',
+      'FRIDAY': 'VIE',
+      'SATURDAY': 'SAB',
+      'SUNDAY': 'DOM'
     };
     const key = (day || '').toUpperCase().trim();
     return map[key] ?? '';

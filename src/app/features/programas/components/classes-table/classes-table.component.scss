@@ -35,6 +35,11 @@
   will-change: transform;
 }
 
+/* Asegurar que las celdas con errores tengan mayor z-index */
+.tabla tbody tr:has(.error-message) {
+  z-index: 100;
+}
+
 /* Cuando hay sugerencias abiertas dentro, permitir que se desborde por encima del bloque */
 .tabla-wrap:has(.suggest) {
   overflow: visible;
@@ -57,6 +62,103 @@
   color: #dc3545;
   font-weight: bold;
   margin-left: 4px;
+}
+
+/* ==============================
+  Contenedor y mensajes de error para campos de fecha
+  ============================== */
+.date-field-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible; /* Permitir que los tooltips se desborden */
+  
+  /* Ajustar padding del input cuando hay ícono de error */
+  &:has(.error-icon) input {
+    padding-right: 32px; /* Espacio para el ícono */
+  }
+  
+  /* Fallback para navegadores que no soporten :has() */
+  input.input--invalid {
+    padding-right: 32px;
+  }
+}
+
+.error-icon {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  cursor: help;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Animación sutil para llamar la atención */
+  animation: pulse-warning 2s infinite;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+@keyframes pulse-warning {
+  0% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* Mejorar el tooltip nativo del navegador */
+.error-icon[title] {
+  position: relative;
+}
+
+/* Para navegadores que soportan tooltips personalizados */
+.error-icon:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 5px;
+}
+
+.error-icon:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  border: 4px solid transparent;
+  border-top-color: #333;
+  z-index: 9999;
+}
+
+/* En pantallas pequeñas, permitir que el mensaje se envuelva */
+@media (max-width: 768px) {
+  .error-message {
+    white-space: normal;
+    max-width: 200px;
+  }
 }
 
 /* ==============================
@@ -96,6 +198,8 @@
     padding: 8px 12px;
     vertical-align: middle;
     border-bottom: 1px solid var(--border);
+    overflow: visible; /* Permitir overflow para mensajes de error */
+    position: relative; /* Para permitir posicionamiento absoluto de hijos */
   }
 
   /* Fila marcada como eliminada se muestra atenuada */

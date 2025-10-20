@@ -1,9 +1,10 @@
 
 // Importaciones necesarias para el funcionamiento del componente y sus dependencias
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CourseOption, ProgramasService } from '../../services/programas.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 import { ScheduleRow } from '../../models/schedule.models';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
 
@@ -43,7 +44,7 @@ export interface ClaseRowView {
   styleUrls: ['./classes-table.component.scss'],
 })
 
-export class ClassesTableComponent {
+export class ClassesTableComponent implements OnInit {
 
   /**
    * Lista de filas que representan las clases a mostrar en la tabla.
@@ -74,12 +75,74 @@ export class ClassesTableComponent {
   coursesLoading = true;
 
   /**
+   * Información del semestre actual para validación de fechas
+   */
+  currentSemester: SemesterResponseDTO | null = null;
+
+  /**
+   * Mapas para rastrear errores de validación de fechas por fila
+   */
+  startDateErrors: Map<number, string> = new Map();
+  endDateErrors: Map<number, string> = new Map();
+
+  /**
    * Inyección del servicio ProgramasService para acceder a la API de cursos y secciones.
    */
   constructor(private readonly api: ProgramasService) {
     // Subscribe to courses loading status
     this.api.areCoursesLoaded().subscribe(loaded => {
       this.coursesLoading = !loaded;
+    });
+  }
+
+  ngOnInit(): void {
+    // Cargar información del semestre actual al inicializar el componente
+    this.loadCurrentSemester();
+  }
+
+  /**
+   * Carga la información del semestre actual para validaciones de fechas
+   */
+  private loadCurrentSemester(): void {
+    console.log('🔄 Iniciando carga del semestre actual...');
+    this.api.getCurrentSemester().subscribe({
+      next: (semester) => {
+        this.currentSemester = semester;
+        console.log('📚 Semestre actual cargado:', semester);
+        console.log(`📅 Periodo: ${semester.year}-${semester.period}`);
+        console.log(`📅 Fechas: ${semester.startDate} a ${semester.endDate}`);
+        console.log(`📅 Es actual: ${semester.isCurrent}`);
+        // Revalidar todas las fechas existentes cuando se carga el semestre
+        this.revalidateAllDates();
+      },
+      error: (error) => {
+        console.error('❌ Error cargando semestre actual:', error);
+      }
+    });
+  }
+
+  /**
+   * Revalida todas las fechas existentes en las filas después de cargar el semestre actual
+   */
+  private revalidateAllDates(): void {
+    this.rows.forEach((row, index) => {
+      if (row.startDate) {
+        const startError = this.validateDateInSemesterRange(row.startDate);
+        if (startError) {
+          this.startDateErrors.set(index, startError);
+        } else {
+          this.startDateErrors.delete(index);
+        }
+      }
+
+      if (row.endDate) {
+        const endError = this.validateDateInSemesterRange(row.endDate);
+        if (endError) {
+          this.endDateErrors.set(index, endError);
+        } else {
+          this.endDateErrors.delete(index);
+        }
+      }
     });
   }
 
@@ -182,6 +245,19 @@ export class ClassesTableComponent {
    * @param value Nueva fecha de inicio
    */
   onStartChange(i: number, value: string) {
+    console.log(`🔍 onStartChange - Fila ${i}, Fecha: ${value}`);
+    
+    // Validar que la fecha esté dentro del rango del semestre actual
+    const validationError = this.validateDateInSemesterRange(value);
+    
+    if (validationError) {
+      this.startDateErrors.set(i, validationError);
+      console.log(`🚨 Error validación fecha inicio fila ${i}:`, validationError);
+    } else {
+      this.startDateErrors.delete(i);
+      console.log(`✅ Fecha inicio válida fila ${i}`);
+    }
+
     this.patch.emit({ index: i, data: { startDate: value } });
     this.recalcWeeks(i, value, this.rows[i].endDate);
   }
@@ -192,8 +268,107 @@ export class ClassesTableComponent {
    * @param value Nueva fecha de finalización
    */
   onEndChange(i: number, value: string) {
+    console.log(`🔍 onEndChange - Fila ${i}, Fecha: ${value}`);
+    
+    // Validar que la fecha esté dentro del rango del semestre actual
+    const validationError = this.validateDateInSemesterRange(value);
+    
+    if (validationError) {
+      this.endDateErrors.set(i, validationError);
+      console.log(`🚨 Error validación fecha fin fila ${i}:`, validationError);
+    } else {
+      this.endDateErrors.delete(i);
+      console.log(`✅ Fecha fin válida fila ${i}`);
+    }
+
     this.patch.emit({ index: i, data: { endDate: value } });
     this.recalcWeeks(i, this.rows[i].startDate, value);
+  }
+
+  /**
+   * Valida que una fecha esté dentro del rango del semestre actual
+   * @param dateStr Fecha a validar en formato string
+   * @returns Mensaje de error si la fecha no es válida, null si es válida
+   */
+  private validateDateInSemesterRange(dateStr: string): string | null {
+    if (!dateStr || !this.currentSemester) {
+      return null; // No validar si no hay fecha o no se ha cargado el semestre
+    }
+
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida';
+    }
+
+    const semesterStart = new Date(this.currentSemester.startDate);
+    const semesterEnd = new Date(this.currentSemester.endDate);
+    
+    console.log(`📅 Validando ${dateStr} contra semestre ${this.currentSemester.year}-${this.currentSemester.period} (${this.currentSemester.startDate} a ${this.currentSemester.endDate})`);
+
+    if (date < semesterStart) {
+      const errorMsg = `Debe ser posterior al ${semesterStart.toLocaleDateString('es-ES')} (inicio semestre)`;
+      return errorMsg;
+    }
+
+    if (date > semesterEnd) {
+      const errorMsg = `Debe ser anterior al ${semesterEnd.toLocaleDateString('es-ES')} (fin semestre)`;
+      return errorMsg;
+    }
+
+    return null; // Fecha válida
+  }
+
+  /**
+   * Obtiene el mensaje de error de validación para la fecha de inicio de una fila
+   * @param index Índice de la fila
+   * @returns Mensaje de error o null
+   */
+  getStartDateError(index: number): string | null {
+    return this.startDateErrors.get(index) || null;
+  }
+
+  /**
+   * Obtiene el mensaje de error de validación para la fecha de fin de una fila
+   * @param index Índice de la fila
+   * @returns Mensaje de error o null
+   */
+  getEndDateError(index: number): string | null {
+    return this.endDateErrors.get(index) || null;
+  }
+
+  /**
+   * Verifica si una fila tiene errores de validación en las fechas
+   * @param index Índice de la fila
+   * @returns true si hay errores, false si no los hay
+   */
+  hasDateErrors(index: number): boolean {
+    return this.startDateErrors.has(index) || this.endDateErrors.has(index);
+  }
+
+  /**
+   * Verifica si hay algún error de validación en todas las filas
+   * @returns true si hay errores, false si no los hay
+   */
+  hasAnyDateErrors(): boolean {
+    return this.startDateErrors.size > 0 || this.endDateErrors.size > 0;
+  }
+
+  /**
+   * Obtiene todos los errores de validación de fechas
+   * @returns Array con información de todos los errores
+   */
+  getAllDateErrors(): Array<{ rowIndex: number; field: 'start' | 'end'; error: string }> {
+    const errors: Array<{ rowIndex: number; field: 'start' | 'end'; error: string }> = [];
+    
+    this.startDateErrors.forEach((error, index) => {
+      errors.push({ rowIndex: index, field: 'start', error });
+    });
+    
+    this.endDateErrors.forEach((error, index) => {
+      errors.push({ rowIndex: index, field: 'end', error });
+    });
+    
+    return errors;
   }
 
   /**
@@ -204,20 +379,43 @@ export class ClassesTableComponent {
    * @param end Fecha de finalización
    */
   private recalcWeeks(i: number, start?: string, end?: string) {
+    console.log(`📊 recalcWeeks - Fila ${i}, Inicio: "${start}", Fin: "${end}"`);
+    
     if (!start || !end) {
+      console.log(`⚠️ Faltan fechas, asignando 0 semanas`);
       this.patch.emit({ index: i, data: { weeks: 0 } });
       return;
     }
+    
     const d1 = new Date(start);
     const d2 = new Date(end);
-    if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || d2 < d1) {
+    
+    console.log(`📅 Fechas parseadas:`);
+    console.log(`   Inicio: ${d1.toISOString().split('T')[0]} (${d1.getTime()})`);
+    console.log(`   Fin: ${d2.toISOString().split('T')[0]} (${d2.getTime()})`);
+    
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+      console.log(`❌ Fechas inválidas, asignando 0 semanas`);
       this.patch.emit({ index: i, data: { weeks: 0 } });
       return;
     }
-    // Calcula semanas aproximadas: ceil(diferencia en días / 7)
+    
+    if (d2 < d1) {
+      console.log(`❌ Fecha fin anterior a fecha inicio, asignando 0 semanas`);
+      this.patch.emit({ index: i, data: { weeks: 0 } });
+      return;
+    }
+    
+    // Calcula semanas más precisas: incluye el día final y usa math.ceil para redondear hacia arriba
     const diffMs = d2.getTime() - d1.getTime();
-    const days = diffMs / (1000 * 60 * 60 * 24);
+    const days = diffMs / (1000 * 60 * 60 * 24) + 1; // +1 para incluir el día final
     const weeks = Math.ceil(days / 7);
+    
+    console.log(`📊 Cálculo:`);
+    console.log(`   Diferencia en ms: ${diffMs}`);
+    console.log(`   Días (incluyendo día final): ${days}`);
+    console.log(`   Semanas calculadas: ${weeks}`);
+    
     this.patch.emit({ index: i, data: { weeks } });
   }
 

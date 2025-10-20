@@ -30,8 +30,13 @@
 
     <!-- Botones de acciones alineados a la derecha -->
     <div class="actions actions--right">
-      <button type="button" class="btn btn--primary" (click)="loadPrevious()">
-        Solicitud del semestre anterior
+      <button 
+        type="button" 
+        class="btn btn--secondary" 
+        [disabled]="loadingPrevious"
+        (click)="loadPrevious()">
+        <span *ngIf="!loadingPrevious">📋 Duplicar solicitud semestre anterior</span>
+        <span *ngIf="loadingPrevious">🔄 Cargando...</span>
       </button>
     </div>
   </header>
@@ -67,5 +72,11 @@
   (decline)="showConfirm = false">
 </app-confirm-send-popup>
 
+<!-- Modal de duplicación de solicitudes -->
+<app-pop-duplicacion-solicitud
+  *ngIf="showDuplicateModal"
+  (closeModal)="closeDuplicateModal()"
+  (applySemester)="onApplyDuplicatedRequests($event)">
+</app-pop-duplicacion-solicitud>
 
 </div>

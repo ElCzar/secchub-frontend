@@ -85,21 +85,43 @@
           </td>
 
           <td>
-            <input
-              class="input"
-              [class.input--invalid]="!row.startDate"
-              type="date"
-              [ngModel]="row.startDate"
-              (ngModelChange)="onStartChange(i, $event)" />
+            <div class="date-field-wrapper">
+              <input
+                class="input"
+                [class.input--invalid]="!row.startDate || getStartDateError(i)"
+                type="date"
+                [ngModel]="row.startDate"
+                (ngModelChange)="onStartChange(i, $event)" />
+              <div class="error-icon" 
+                   *ngIf="getStartDateError(i)"
+                   [title]="getStartDateError(i)"
+                   [attr.aria-label]="getStartDateError(i)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                        stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
           </td>
 
           <td>
-            <input
-              class="input"
-              [class.input--invalid]="!row.endDate"
-              type="date"
-              [ngModel]="row.endDate"
-              (ngModelChange)="onEndChange(i, $event)" />
+            <div class="date-field-wrapper">
+              <input
+                class="input"
+                [class.input--invalid]="!row.endDate || getEndDateError(i)"
+                type="date"
+                [ngModel]="row.endDate"
+                (ngModelChange)="onEndChange(i, $event)" />
+              <div class="error-icon" 
+                   *ngIf="getEndDateError(i)"
+                   [title]="getEndDateError(i)"
+                   [attr.aria-label]="getEndDateError(i)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                        stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
           </td>
 
           <td>

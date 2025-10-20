@@ -1,0 +1,439 @@
+/* Overlay del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Contenedor del modal */
+.modal-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+  margin: 20px;
+  position: relative;
+}
+
+.modal-container:has(.semester-preview) {
+  max-width: 900px;
+  min-width: 700px;
+}
+
+/* Encabezado del modal */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--brand-azul) 0%, var(--brand-morado) 100%);
+  color: white;
+  border-bottom: none;
+}
+
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Contenido del modal */
+.modal-content {
+  padding: 24px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 160px);
+}
+
+/* Formulario */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-700);
+  font-weight: 500;
+  font-size: var(--fs-sm);
+}
+
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: var(--fs-base);
+  background-color: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--brand-azul);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Sección de preview */
+.semester-preview {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.preview-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-800);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-title::before {
+  content: "👁️";
+  font-size: 18px;
+}
+
+/* Contenedor de clases */
+.preview-classes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Elemento de clase individual */
+.class-item {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.class-item:hover {
+  background: #f1f5f9;
+  border-color: var(--brand-azul);
+}
+
+/* Encabezado de la clase */
+.class-header {
+  margin-bottom: 12px;
+}
+
+.course-name {
+  margin: 0 0 8px 0;
+  color: var(--text-800);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.class-details {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.class-details span {
+  color: var(--text-600);
+  font-size: var(--fs-sm);
+  padding: 4px 8px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.capacity {
+  color: var(--brand-azul);
+  font-weight: 500;
+}
+
+.dates {
+  color: var(--text-700);
+}
+
+/* Horarios de la clase */
+.schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 6px;
+  border-left: 3px solid var(--brand-azul);
+  font-size: var(--fs-sm);
+}
+
+.schedule-item .day {
+  font-weight: 600;
+  color: var(--brand-azul);
+  min-width: 80px;
+}
+
+.schedule-item .time {
+  color: var(--text-700);
+  font-family: 'Courier New', monospace;
+  min-width: 120px;
+}
+
+.schedule-item .modality {
+  color: var(--text-600);
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.schedule-item .room {
+  color: var(--text-600);
+  background: #f0f9ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* Estado sin clases */
+.no-classes {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-500);
+  font-style: italic;
+}
+
+/* Indicador de carga */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--text-600);
+}
+
+/* Mensaje de error */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #dc2626;
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+}
+
+/* Acciones del modal */
+.modal-actions {
+  padding: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: #f9fafb;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Botón primario */
+.btn--primary {
+  background-color: var(--brand-azul);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--brand-azul-dark, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Botón secundario */
+.btn--secondary {
+  background-color: var(--surface-200);
+  color: var(--text-700);
+  border: 1px solid var(--border);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--surface-300);
+}
+
+/* Contenedor de botones de acción */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Botón de contorno */
+.btn--outline {
+  background: transparent;
+  border: 1px solid var(--brand-azul);
+  color: var(--brand-azul);
+}
+
+.btn--outline:hover:not(:disabled) {
+  background: var(--brand-azul);
+  color: white;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+  .modal-container:has(.semester-preview) {
+    min-width: unset;
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .class-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .schedule-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .schedule-item .day,
+  .schedule-item .time {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-container {
+    min-width: unset;
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-actions .btn,
+  .action-buttons {
+    width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Estilos para mensajes de preview */
+.preview-summary {
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin: 12px 0 0 0;
+  
+  &.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  &.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+}
+
+.no-classes {
+  padding: 24px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #dc3545;
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+}

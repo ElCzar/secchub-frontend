@@ -52,6 +52,17 @@
   margin-top: 32px;
 }
 
+/* Estilos para botones con estado de carga */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background-color: inherit;
+  opacity: 0.6;
+}
+
 
 /* Contenedor de placeholder para la tabla de clases */
 .tabla-placeholder {
