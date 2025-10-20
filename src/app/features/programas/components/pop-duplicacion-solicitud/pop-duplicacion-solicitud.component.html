@@ -1,0 +1,146 @@
+<!-- Modal con overlay -->
+<div class="modal-overlay" 
+     (click)="onClose()" 
+     (keydown.escape)="onClose()">
+  <!-- Contenedor del popup -->
+  <div class="modal-container" 
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()"
+       aria-labelledby="modal-title"
+       aria-describedby="modal-content">
+    
+    <!-- Título del popup -->
+    <h2 id="modal-title" class="popup-title">
+      {{ showPreview ? 'Vista Previa del Semestre' : 'Duplicación Solicitudes Semestres Anteriores' }}
+    </h2>
+    
+    <!-- Línea divisoria -->
+    <div class="hr-line"></div>
+    
+    <!-- Contenido del popup -->
+    <div id="modal-content" class="modal-content">
+      
+      <!-- Vista de selección de semestre -->
+      <div *ngIf="!showPreview" class="semester-selection">
+        <!-- Pregunta -->
+        <p class="question-text">¿Cuál semestre desea duplicar?</p>
+        
+        <!-- Desplegable de semestres -->
+        <div class="select-container">
+          <select 
+            class="semester-select" 
+            [(ngModel)]="selectedSemester" 
+            (change)="onSemesterChange()">
+            <option value="" disabled>Seleccione un semestre</option>
+            <option *ngFor="let semester of availableSemesters" [value]="semester">
+              {{ semester }}
+            </option>
+          </select>
+        </div>
+        
+        <!-- Mensaje de error -->
+        <div *ngIf="error" class="error-message">
+          {{ error }}
+        </div>
+      </div>
+      
+      <!-- Vista previa del semestre -->
+      <div *ngIf="showPreview && previewData" class="semester-preview">
+        <div class="preview-header">
+          <h3>Semestre {{ selectedSemester }}</h3>
+          <p class="preview-summary" [ngClass]="{'success': previewData.requests.length > 0, 'warning': previewData.requests.length === 0}">
+            {{ previewMessage }}
+          </p>
+        </div>
+        
+        <div class="preview-requests" *ngIf="previewData.requests.length > 0">
+          <div class="request-item" *ngFor="let request of previewData.requests">
+            <div class="request-header">
+              <h4 class="course-name">{{ request.courseName || 'Curso sin nombre' }}</h4>
+              <div class="request-details">
+                <span class="capacity">Capacidad: {{ request.capacity || 0 }}</span>
+                <span class="dates">
+                  {{ request.startDate | date:'dd/MM/yyyy' }} - {{ request.endDate | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="schedules" *ngIf="request.schedules && request.schedules.length > 0">
+              <div class="schedule-item" *ngFor="let schedule of request.schedules">
+                <span class="day">{{ formatDay(schedule.day) }}</span>
+                <span class="time">{{ schedule.startTime }} - {{ schedule.endTime }}</span>
+                <span class="modality">{{ formatModality(schedule.modalityId) }}</span>
+                <span class="room-type">{{ formatRoomType(schedule.classRoomTypeId) }}</span>
+              </div>
+            </div>
+            
+            <div *ngIf="request.observation" class="observation">
+              <span class="observation-label">Observación:</span>
+              <span class="observation-text">{{ request.observation }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="previewData.requests.length === 0" class="no-requests">
+          <p>❌ {{ previewMessage }}</p>
+        </div>
+      </div>
+      
+      <!-- Indicador de carga -->
+      <div *ngIf="loading" class="loading-indicator">
+        <p>🔄 Cargando...</p>
+      </div>
+      
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="modal-actions">
+      <button 
+        type="button" 
+        class="btn btn--secondary" 
+        (click)="onClose()" 
+        [disabled]="loading">
+        Cancelar
+      </button>
+      
+      <!-- Botones para vista de selección -->
+      <div *ngIf="!showPreview" class="action-buttons">
+        <button 
+          type="button" 
+          class="btn btn--outline" 
+          [disabled]="!selectedSemester || loading"
+          (click)="onShowPreview()">
+          Vista Previa
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn--primary" 
+          [disabled]="!selectedSemester || loading"
+          (click)="onApply()">
+          Aplicar Directamente
+        </button>
+      </div>
+      
+      <!-- Botones para vista previa -->
+      <div *ngIf="showPreview" class="action-buttons">
+        <button 
+          type="button" 
+          class="btn btn--secondary" 
+          (click)="onBackToSelection()" 
+          [disabled]="loading">
+          Volver
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn--primary" 
+          [disabled]="loading || (previewMessage && previewMessage.includes('No hay'))"
+          (click)="onApply()">
+          Aplicar Solicitudes
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>
