@@ -119,7 +119,7 @@ export class ConfirmacionPageComponent implements OnInit {
           return `${s.day}. ${s.startTime}-${s.endTime}`;
         }) || [];
 
-        if (!!teacherClass.decision === false) {
+        if (teacherClass.decision !== undefined && teacherClass.decision === false) {
           resolve(null as any);
           return;
         }
