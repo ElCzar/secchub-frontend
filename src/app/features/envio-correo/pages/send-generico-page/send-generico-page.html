@@ -5,7 +5,11 @@
 
 <!-- Sidebar section -->
 <aside class="sidebar">
-  <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+  @if (isAdmin()) {
+    <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+  } @else {
+    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+  }
 </aside>
 
 <main class="main-content-container">

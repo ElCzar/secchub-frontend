@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EMAIL_TEMPLATES } from '../../../../shared/utils/email-templates';
 import { EmailService } from '../../services/email.service';
@@ -9,15 +9,17 @@ import { HeaderComponent } from "../../../../layouts/header/header.component";
 import { EmailSendRequestDTO } from '../../../../shared/model/dto/notification/EmailSendRequestDTO.model';
 import { EmailTemplateResponseDTO } from '../../../../shared/model/dto/notification/EmailTemplateResponseDTO.model';
 import { AuthStateService, DecodedToken } from '../../../../core/services/auth-state.service';
+import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-send-generico-page',
-  imports: [FormsModule, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent],
+  imports: [FormsModule, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent, AccesosRapidosAdmi],
   templateUrl: './send-generico-page.html',
   styleUrls: ['./send-generico-page.scss']
 })
 
-export class SendGenericoPage implements OnInit {
+export class SendGenericoPage implements OnInit, OnDestroy {
   type!: keyof typeof EMAIL_TEMPLATES;
   emailSendRequest: EmailSendRequestDTO = { to: '', subject: '', body: '' };
   title = '';
@@ -25,6 +27,7 @@ export class SendGenericoPage implements OnInit {
   emailTemplateId = '';
   currentUser: DecodedToken | null = null;
   isSendingEmail = false;
+  private paramSubscription?: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute, 
@@ -34,15 +37,38 @@ export class SendGenericoPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.type = this.route.snapshot.paramMap.get('type') as keyof typeof EMAIL_TEMPLATES;
-    const template = EMAIL_TEMPLATES[this.type];
-    this.title = template.title;
-    this.templateName = template.template;
-
     // Subscribe to user authentication state
     this.authStateService.user$.subscribe(user => {
       this.currentUser = user;
     });
+
+    // Subscribe to route params to detect changes (including page reloads)
+    this.paramSubscription = this.route.paramMap.subscribe(params => {
+      const newType = params.get('type') as keyof typeof EMAIL_TEMPLATES;
+      
+      // Check if type has changed or if it's the initial load
+      if (newType !== this.type || !this.type) {
+        this.type = newType;
+        this.loadTemplate();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    // Clean up subscription
+    if (this.paramSubscription) {
+      this.paramSubscription.unsubscribe();
+    }
+  }
+
+  private loadTemplate() {
+    // Reset form data
+    this.emailSendRequest = { to: '', subject: '', body: '' };
+    this.emailTemplateId = '';
+    
+    const template = EMAIL_TEMPLATES[this.type];
+    this.title = template.title;
+    this.templateName = template.template;
 
     this.emailService.getEmailTemplate(this.templateName).subscribe({
       next: (response) => {
