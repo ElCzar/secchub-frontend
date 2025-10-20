@@ -30,14 +30,14 @@ export class AvailabilityTableComponent {
   @Output() rowsChange = new EventEmitter<AvailabilityRow[]>();
 
   /** Lista de días para el dropdown */
-  readonly days: { v: DayCode; t: string }[] = [
-    { v: 'LUN', t: 'Lunes' },
-    { v: 'MAR', t: 'Martes' },
-    { v: 'MIE', t: 'Miércoles' },
-    { v: 'JUE', t: 'Jueves' },
-    { v: 'VIE', t: 'Viernes' },
-    { v: 'SAB', t: 'Sábado' },
-    { v: 'DOM', t: 'Domingo' },
+  readonly days: { v: string; t: string }[] = [
+    { v: 'Lunes', t: 'Lunes' },
+    { v: 'Martes', t: 'Martes' },
+    { v: 'Miercoles', t: 'Miércoles' },
+    { v: 'Jueves', t: 'Jueves' },
+    { v: 'Viernes', t: 'Viernes' },
+    { v: 'Sabado', t: 'Sábado' },
+    { v: 'Domingo', t: 'Domingo' },
   ];
 
   /** Lista de horas para los dropdowns (solo horas completas) */

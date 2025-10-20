@@ -9,6 +9,7 @@ import { SidebarToggleButtonComponent } from '../../../../shared/components/side
 import { PopGuardarCambios } from '../../../../shared/components/pop-guardar-cambios/pop-guardar-cambios';
 import { PopEnviarCambios } from '../../../../shared/components/pop-enviar-cambios/pop-enviar-cambios';
 import { StudentApplicationResponseDTO } from '../../../../shared/model/dto/integration/StudentApplicationResponseDTO.model';
+import { StudentApplicationScheduleResponseDTO } from '../../../../shared/model/dto/integration/StudentApplicationScheduleResponseDTO.model';
 import { StatusDTO } from '../../../../shared/model/dto/parametric';
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { UserInformationResponseDTO } from '../../../../shared/model/dto/user/UserInformationResponseDTO.model';
@@ -49,6 +50,7 @@ export class SolicitudMonitoresPage implements OnInit {
   courses: CourseResponseDTO[] = [];
   sections: SectionResponseDTO[] = [];
 
+
   // UI Filters
   searchQuery = '';
   selectedMateria = '';
@@ -58,7 +60,7 @@ export class SolicitudMonitoresPage implements OnInit {
 
   // Toggle tables
   showAdminTable = false;
-  showAcademicTable = false;
+  showAcademicTable = true;
 
   // Popup save changes
   showSaveModal = false;
@@ -121,7 +123,9 @@ export class SolicitudMonitoresPage implements OnInit {
       estado: statusName.toLowerCase() as 'pendiente' | 'aceptado' | 'rechazado',
       antiguo: studentApplicationDTO.wasTeachingAssistant,
       // Schedule information
-      horarios: teachingAssistantDTO ? this.convertToHorarioMonitor(teachingAssistantDTO) : [],
+      horarios: teachingAssistantDTO 
+        ? this.convertToHorarioMonitor(teachingAssistantDTO) 
+        : this.convertStudentApplicationSchedulesToHorarioMonitor(studentApplicationDTO.schedules || []),
       showHorarios: false
     };
   }
@@ -132,12 +136,47 @@ export class SolicitudMonitoresPage implements OnInit {
   private convertToHorarioMonitor(teachingAssistantDTO: TeachingAssistantResponseDTO): HorarioMonitor[] {
     const schedule: TeachingAssistantScheduleResponseDTO[] = teachingAssistantDTO.schedules;
     return schedule.map(s => ({
-      id: s.id,
-      dia: s.day,
-      horaInicio: s.startTime,
-      horaFinal: s.endTime,
-      totalHoras: 0
+      id: s.id || 0,
+      dia: s.day || '',
+      horaInicio: s.startTime || '',
+      horaFinal: s.endTime || '',
+      totalHoras: this.calculateTotalHours(s.startTime, s.endTime)
     }));
+  }
+
+  /**
+   * Converts from StudentApplicationScheduleResponseDTO array to HorarioMonitor model
+   */
+  private convertStudentApplicationSchedulesToHorarioMonitor(schedules: StudentApplicationScheduleResponseDTO[]): HorarioMonitor[] {
+    return schedules.map(s => ({
+      id: s.id || 0,
+      dia: s.day || '',
+      horaInicio: s.startTime || '',
+      horaFinal: s.endTime || '',
+      totalHoras: this.calculateTotalHours(s.startTime, s.endTime)
+    }));
+  }
+
+  /**
+   * Calculates total hours between start and end time
+   */
+  private calculateTotalHours(startTime?: string, endTime?: string): number {
+    if (!startTime || !endTime) {
+      return 0;
+    }
+    
+    try {
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+      
+      const startTotalMinutes = startHours * 60 + startMinutes;
+      const endTotalMinutes = endHours * 60 + endMinutes;
+      
+      const totalMinutes = endTotalMinutes - startTotalMinutes;
+      return totalMinutes / 60; // Convert to hours
+    } catch {
+      return 0;
+    }
   }
 
   ngOnInit(): void {

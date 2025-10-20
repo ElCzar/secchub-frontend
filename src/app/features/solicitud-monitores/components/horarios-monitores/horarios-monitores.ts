@@ -21,10 +21,10 @@ export class HorariosMonitores implements OnInit {
   days = [
     { v: 'Lunes', t: 'Lunes' },
     { v: 'Martes', t: 'Martes' },
-    { v: 'Miércoles', t: 'Miércoles' },
+    { v: 'Miercoles', t: 'Miércoles' },
     { v: 'Jueves', t: 'Jueves' },
     { v: 'Viernes', t: 'Viernes' },
-    { v: 'Sábado', t: 'Sábado' }
+    { v: 'Sabado', t: 'Sábado' }
   ];
 
   trackByFn(index: number, item: HorarioMonitor): any {
