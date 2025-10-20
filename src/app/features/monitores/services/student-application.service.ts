@@ -1,39 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface StudentApplicationRequest {
-  // === DATOS PERSONALES ===
-  program: string;
-  semester: number;
-  academicAverage: number;
-  phoneNumber: string;
-  alternatePhoneNumber?: string;
-  address: string;
-  personalEmail: string;
-  wasTeachingAssistant: boolean;
-
-  // === MONITOR ACADÉMICO ===
-  courseId?: number;
-  courseAverage?: number;
-  courseTeacher?: string;
-
-  // === MONITOR ADMINISTRATIVO ===
-  sectionId?: number;
-
-  // === HORARIOS ===
-  schedules?: any[];
-}
+import { environment } from '../../../../environments/environment';
+import { StudentApplicationRequestDTO } from '../../../shared/model/dto/integration';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StudentApplicationService {
-  private baseUrl = 'http://localhost:8080';
+  private readonly baseUrl = environment.apiUrl + '/student-applications';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  submitApplication(application: StudentApplicationRequest): Observable<any> {
-    return this.http.post(`${this.baseUrl}/students-applications`, application);
+  submitApplication(application: StudentApplicationRequestDTO): Observable<any> {
+    console.log("Submitting application:", application);
+    return this.http.post(`${this.baseUrl}`, application);
   }
 }

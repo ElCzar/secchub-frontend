@@ -31,15 +31,13 @@ export class ParametricService {
     }
 
     getStatusById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/statuses/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading status ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Role methods
+        return this.http.get(`${this.baseUrl}/statuses/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading status ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Role methods
     getAllRoles(): Observable<RoleDTO[]> {
     return this.http.get<RoleDTO[]>(`${this.baseUrl}/roles`).pipe(
         catchError((error) => {
@@ -50,15 +48,13 @@ export class ParametricService {
     }
 
     getRoleById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/roles/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading role ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Document Type methods
+        return this.http.get(`${this.baseUrl}/roles/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading role ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Document Type methods
     getAllDocumentTypes(): Observable<DocumentTypeDTO[]> {
     return this.http.get<DocumentTypeDTO[]>(`${this.baseUrl}/document-types`).pipe(
         catchError((error) => {
@@ -69,15 +65,13 @@ export class ParametricService {
     }
 
     getDocumentTypeById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/document-types/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading document type ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Employment Type methods
+        return this.http.get(`${this.baseUrl}/document-types/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading document type ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Employment Type methods
     getAllEmploymentTypes(): Observable<EmploymentTypeDTO[]> {
     return this.http.get<EmploymentTypeDTO[]>(`${this.baseUrl}/employment-types`).pipe(
         catchError((error) => {
@@ -88,15 +82,13 @@ export class ParametricService {
     }
 
     getEmploymentTypeById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/employment-types/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading employment type ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Modality methods
+        return this.http.get(`${this.baseUrl}/employment-types/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading employment type ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Modality methods
     getAllModalities(): Observable<ModalityDTO[]> {
     return this.http.get<ModalityDTO[]>(`${this.baseUrl}/modalities`).pipe(
         catchError((error) => {
@@ -107,15 +99,13 @@ export class ParametricService {
     }
 
     getModalityById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/modalities/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading modality ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Classroom Type methods
+        return this.http.get(`${this.baseUrl}/modalities/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading modality ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Classroom Type methods
     getAllClassroomTypes(): Observable<ClassroomTypeDTO[]> {
     return this.http.get<ClassroomTypeDTO[]>(`${this.baseUrl}/classroom-types`).pipe(
         catchError((error) => {
@@ -126,15 +116,13 @@ export class ParametricService {
     }
 
     getClassroomTypeById(id: number): Observable<string | null> {
-    return this.http.get<string>(`${this.baseUrl}/classroom-types/${id}`).pipe(
-        catchError((error) => {
-        console.error(`Error loading classroom type ${id}:`, error);
-        return of(null);
-        })
-    );
-    }
-
-    // Utility method to get all parametric data at once
+        return this.http.get(`${this.baseUrl}/classroom-types/${id}`, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error(`Error loading classroom type ${id}:`, error);
+                return of(null);
+            })
+        );
+    }    // Utility method to get all parametric data at once
     getAllParametricData(): Observable<{
     statuses: StatusDTO[];
     roles: RoleDTO[];

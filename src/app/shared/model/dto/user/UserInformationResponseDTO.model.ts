@@ -7,6 +7,6 @@ export interface UserInformationResponseDTO {
     email: string;
     statusId: number;
     roleId: number;
-    documentType: number;
+    documentTypeId: number;
     documentNumber: string;
 }

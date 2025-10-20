@@ -81,7 +81,7 @@ export class PopPerfilComponent implements OnInit, OnChanges {
         name: this.userProfile.name,
         lastName: this.userProfile.lastName,
         email: this.userProfile.email,
-        documentType: this.userProfile.documentType.toString(),
+        documentType: this.userProfile.documentTypeId.toString(),
         documentNumber: this.userProfile.documentNumber
       };
     }
@@ -120,12 +120,12 @@ export class PopPerfilComponent implements OnInit, OnChanges {
         name: this.editForm.name,
         lastName: this.editForm.lastName,
         email: this.editForm.email,
-        documentType: Number.parseInt(this.editForm.documentType),
+        documentTypeId: Number.parseInt(this.editForm.documentType),
         documentNumber: this.editForm.documentNumber
       };
       this.isEditing = false;
       this.isLoading = false;
-      this.profileUpdated.emit(this.userProfile);
+      this.profileUpdated.emit(this.userProfile || undefined);
     }
   }
 

@@ -235,7 +235,7 @@ export class VerRegistradosPages implements OnInit {
     return users.map(user => {
       const role = this.roles.find(r => r.id === user.roleId);
       const status = this.statuses.find(s => s.id === user.statusId);
-      const docType = this.documentTypes.find(dt => dt.id === user.documentType);
+      const docType = this.documentTypes.find(dt => dt.id === user.documentTypeId);
       
       return {
         ...user,

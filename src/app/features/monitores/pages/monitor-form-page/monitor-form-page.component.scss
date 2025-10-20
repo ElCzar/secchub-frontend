@@ -38,11 +38,42 @@
 .monitor-form {
   .form-group { margin-bottom: 16px; }
 
-  label {
+  label, legend {
     display: block;
     font-weight: 600;
     color: var(--text-700);
     margin-bottom: 6px;
+  }
+
+  // Resaltar el asterisco en los campos obligatorios
+  .required {
+    color: #d32f2f;
+  }
+
+  legend {
+    font-size: var(--fs-base);
+    padding: 0;
+    border: none;
+  }
+
+  .field-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-700);
+    margin-bottom: 6px;
+  }
+
+  .input-display {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    color: var(--text-600);
+    font-size: var(--fs-base);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
   }
 
   .input {
@@ -164,8 +195,18 @@
   font-size: var(--fs-base);
   margin-top: 12px;
   transition: background .2s;
+  cursor: pointer;
 
-  &:hover { background: #234574; }
+  &:hover:not(:disabled) { 
+    background: #234574; 
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 }
 
 /* ==========================================

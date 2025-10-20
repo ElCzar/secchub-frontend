@@ -5,24 +5,29 @@ import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { AvailabilityRow, AvailabilityTableComponent, newAvailabilityRow } from '../../components/availability-table/availability-table.component';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
+import { SuccessModal } from '../../../../shared/components/success-modal/success-modal';
 import { ProgramasService, CourseOption } from '../../../programas/services/programas.service';
 import { SectionsService, Section } from '../../../../shared/services/sections.service';
 import { StudentApplicationService } from '../../services/student-application.service';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
+import { ParametricService } from '../../../../shared/services/parametric.service';
 
 
 @Component({
   selector: 'app-monitor-form-page',
   standalone: true,
   // Si aún NO vas a usar <app-availability-table>, puedes quitarlo de imports
-  imports: [CommonModule, FormsModule, HeaderComponent, AvailabilityTableComponent, ConfirmSendPopupComponent],
+  imports: [CommonModule, FormsModule, HeaderComponent, AvailabilityTableComponent, ConfirmSendPopupComponent, SuccessModal],
   templateUrl: './monitor-form-page.component.html',
   styleUrls: ['./monitor-form-page.component.scss'],
 })
 export class MonitorFormPageComponent implements OnInit {
   /** Inyección de servicios */
-  private programasService = inject(ProgramasService);
-  private sectionsService = inject(SectionsService);
-  private studentApplicationService = inject(StudentApplicationService);
+  private readonly programasService = inject(ProgramasService);
+  private readonly sectionsService = inject(SectionsService);
+  private readonly studentApplicationService = inject(StudentApplicationService);
+  private readonly userInformationService = inject(UserInformationService);
+  private readonly parametricService = inject(ParametricService);
 
   /** Catálogos (si luego los conectas al backend, cámbialos por servicios) */
   docTypes = ['CC', 'TI', 'NIT', 'PP', 'RC', 'CE', 'TE'];
@@ -38,18 +43,61 @@ export class MonitorFormPageComponent implements OnInit {
   availabilityRows: AvailabilityRow[] = [newAvailabilityRow()];
 
   /** Estado para controles de radio (binding con ngModel) */
-  academicMonitor = false;
-  adminMonitor = false;
+  monitorType: 'academic' | 'administrative' = 'academic'; // Por defecto académico
   hasBeenMonitor: boolean | null = null;
   /** Mensaje de error visible cuando la validación falla al enviar */
   formError: string | null = null;
   /** Controla la visibilidad del popup de confirmación */
   showConfirmPopup = false;
+  /** Controla si se está enviando el formulario */
+  isSubmitting = false;
+  /** Controla la visibilidad del modal de éxito */
+  showSuccessModal = false;
   private _lastFormEvent: Event | null = null;
 
+  /** Propiedades para visualización (no editables) */
+  studentId = '0';
+  documentType = 'N/A';
+  documentNumber = '0';
+  firstName = 'N/A';
+  lastName = 'N/A';
+  institutionalEmail = 'N/A';
+
   ngOnInit(): void {
+    this.loadUserInformation();
     this.loadSubjects();
     this.loadSections();
+  }
+
+  /** Cargar información del usuario */
+  private loadUserInformation(): void {
+    this.userInformationService.getUserInformation().subscribe({
+      next: (userInfo) => {
+        this.studentId = String(userInfo?.id);
+        
+        if (userInfo?.documentTypeId) {
+          this.parametricService.getDocumentTypeById(userInfo.documentTypeId).subscribe({
+            next: (docType) => {
+              this.documentType = docType || 'N/A';
+            },
+            error: () => {
+              this.documentType = 'N/A';
+            }
+          });
+        } else {
+          this.documentType = 'N/A';
+        }
+        
+        this.documentNumber = userInfo?.documentNumber || '0';
+        this.firstName = userInfo?.name || 'N/A';
+        this.lastName = userInfo?.lastName || 'N/A';
+        this.institutionalEmail = userInfo?.email || 'N/A';
+        console.log('Información del usuario cargada:', userInfo);
+      },
+      error: (error) => {
+        console.error('Error cargando información del usuario:', error);
+      }
+    });
   }
 
   /** Cargar asignaturas */
@@ -141,9 +189,9 @@ export class MonitorFormPageComponent implements OnInit {
     evt.preventDefault();
     const form = evt.target as HTMLFormElement;
 
-    // Validación: debe seleccionar al menos una opción de monitoría
-    if (!this.academicMonitor && !this.adminMonitor) {
-      this.formError = 'Debe seleccionar al menos una opción: Monitor académico o Monitor administrativo.';
+    // Validación: debe seleccionar tipo de monitoría (ya está por defecto)
+    if (!this.monitorType) {
+      this.formError = 'Debe seleccionar el tipo de monitoría.';
       // Hacer scroll hacia arriba para mostrar el mensaje de error
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -192,13 +240,13 @@ export class MonitorFormPageComponent implements OnInit {
       personalEmail: (form.querySelector<HTMLInputElement>('#altEmail')?.value ?? '').trim(),
       wasTeachingAssistant: (form.querySelector<HTMLInputElement>('input[name="hasBeenMonitor"]:checked')?.value ?? 'false') === 'true',
 
-      // === MONITOR ACADÉMICO (solo si aplica) ===
-      courseId: this.academicMonitor ? this.getCourseId(form) : undefined,
-      courseAverage: this.academicMonitor ? this.getCourseAverage(form) : undefined,
-      courseTeacher: this.academicMonitor ? this.getCourseTeacher(form) : undefined,
+      // === MONITOR ACADÉMICO (solo si es académico) ===
+      courseId: this.monitorType === 'academic' ? this.getCourseId(form) : undefined,
+      courseAverage: this.monitorType === 'academic' ? this.getCourseAverage(form) : undefined,
+      courseTeacher: this.monitorType === 'academic' ? this.getCourseTeacher(form) : undefined,
 
-      // === MONITOR ADMINISTRATIVO (solo si aplica) ===
-      sectionId: this.adminMonitor ? this.getSectionId(form) : undefined,
+      // === MONITOR ADMINISTRATIVO (solo si es administrativo) ===
+      sectionId: this.monitorType === 'administrative' ? this.getSectionId(form) : undefined,
 
       // === HORARIOS ===
       schedules: this.availabilityRows.map(row => {
@@ -214,25 +262,41 @@ export class MonitorFormPageComponent implements OnInit {
 
     console.log('FORM MONITOR → payload listo para enviar (confirmado):', payload);
 
+    // Activar estado de carga
+    this.isSubmitting = true;
+
     // Enviar al backend
     this.studentApplicationService.submitApplication(payload).subscribe({
       next: (response) => {
         console.log('Solicitud enviada exitosamente:', response);
         
+        // Desactivar estado de carga
+        this.isSubmitting = false;
+        
         // Limpiar formulario después de envío exitoso
         (evt.target as HTMLFormElement).reset();
         this.availabilityRows = [newAvailabilityRow()];
-        this.adminMonitor = false;
+        this.monitorType = 'academic'; // Resetear a valor por defecto
         this.hasBeenMonitor = null;
         this._lastFormEvent = null;
         
-        // TODO: Mostrar mensaje de éxito al usuario
+        // Mostrar modal de éxito
+        this.showSuccessModal = true;
       },
       error: (error) => {
         console.error('Error enviando solicitud:', error);
-        // TODO: Mostrar mensaje de error al usuario
+        
+        // Desactivar estado de carga
+        this.isSubmitting = false;
+        
+        // Mostrar mensaje de error al usuario
         this.formError = 'Error enviando la solicitud. Por favor, intente nuevamente.';
       }
     });
+  }
+
+  /** Cerrar modal de éxito */
+  onSuccessModalClose(): void {
+    this.showSuccessModal = false;
   }
 }

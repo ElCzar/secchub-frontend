@@ -66,7 +66,7 @@ export class RegisteredUsersService {
                 name: userInfo.name,
                 lastName: userInfo.lastName,
                 email: userInfo.email,
-                documentTypeId: userInfo.documentType.toString(),
+                documentTypeId: userInfo.documentTypeId.toString(),
                 documentNumber: userInfo.documentNumber
               },
               role: UserRole.TEACHER,
@@ -95,7 +95,7 @@ export class RegisteredUsersService {
                 name: userInfo.name,
                 lastName: userInfo.lastName,
                 email: userInfo.email,
-                documentTypeId: userInfo.documentType.toString(),
+                documentTypeId: userInfo.documentTypeId.toString(),
                 documentNumber: userInfo.documentNumber
               },
               role: UserRole.SECTION_HEAD,
@@ -126,7 +126,7 @@ export class RegisteredUsersService {
                   name: user.name,
                   lastName: user.lastName,
                   email: user.email,
-                  documentTypeId: user.documentType.toString(),
+                  documentTypeId: user.documentTypeId.toString(),
                   documentNumber: user.documentNumber
                 },
                 role: UserRole.ADMIN,

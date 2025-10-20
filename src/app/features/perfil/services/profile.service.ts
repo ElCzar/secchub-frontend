@@ -58,7 +58,7 @@ export class ProfileService {
       faculty: dto.faculty,
       nombreCompleto: `${dto.name} ${dto.lastName}`,
       correo: dto.email,
-      documentType: dto.documentType.toString(),
+      documentType: dto.documentTypeId.toString(),
       documentNumber: dto.documentNumber,
       isActive: dto.statusId === 1,
       rol: dto.roleId === 1 ? 'administrador' : 'jefe_seccion'
