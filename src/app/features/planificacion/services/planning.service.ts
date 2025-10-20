@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 import { PlanningRow, PlanningStatus } from '../models/planificacion.models';
 import { CourseService } from './course.service';
 import { ClassroomService } from './classroom.service';
+import { SemesterInformationService } from '../../../shared/services/semester-information.service';
 
 export interface ClassDTO {
   id?: number;           // BIGINT UNSIGNED (opcional para creación)
@@ -79,8 +80,12 @@ export class PlanningService {
   constructor(
     private readonly http: HttpClient,
     private readonly courseService: CourseService,
-    private readonly classroomService: ClassroomService
+    private readonly classroomService: ClassroomService,
+    private readonly semesterService: SemesterInformationService
   ) {}
+
+  // Cache de secciones (name -> id) para evitar múltiples llamadas
+  private sectionNameToIdCache: Map<string, number> = new Map();
 
   // ==========================================
   // GESTIÓN DE CLASES ACADÉMICAS
@@ -219,7 +224,7 @@ export class PlanningService {
         
         // Combinar todas las peticiones de cursos
         return forkJoin(courseRequests).pipe(
-          map(courses => {
+          switchMap(courses => {
             console.log('Cursos obtenidos:', courses);
             
             // Crear mapa courseId -> courseData
@@ -230,27 +235,70 @@ export class PlanningService {
               }
             });
             
-            // Enriquecer las clases con información de curso
-            const enrichedClasses = classes.map(cls => {
-              const course = courseMap.get(cls.courseId);
-              const enriched = {
-                ...cls,
-                courseName: course?.name || course?.courseName || `Curso ${cls.courseId}`,
-                sectionName: cls.sectionName || course?.section || 'Sin sección'
-              };
-              
-              console.log(`Enriqueciendo clase ${cls.id}:`, {
-                original: cls,
-                course: course,
-                enriched: enriched
-              });
-              
-              return enriched;
-            });
+            // Obtener IDs únicos de secciones de los cursos
+            const uniqueSectionIds = [...new Set(
+              courses
+                .filter((course): course is NonNullable<typeof course> => course !== null && course !== undefined && course.sectionId !== undefined && course.sectionId !== null)
+                .map(course => course.sectionId!)
+            )];
             
-            console.log('=== CLASES FINALES ENRIQUECIDAS ===');
-            console.log('Clases enriquecidas:', enrichedClasses);
-            return enrichedClasses;
+            console.log('Secciones únicas a buscar:', uniqueSectionIds);
+            
+            // Si no hay secciones, usar datos sin sección
+            if (uniqueSectionIds.length === 0) {
+              return of(this.createEnrichedClassesWithoutSections(classes, courseMap));
+            }
+            
+            // Obtener información de todas las secciones necesarias
+            const sectionRequests = uniqueSectionIds.map((sectionId: number) => 
+              this.getSectionNameById(sectionId).pipe(
+                map(sectionName => ({ sectionId, sectionName })),
+                catchError(error => {
+                  console.warn(`Error obteniendo sección ${sectionId}:`, error);
+                  return of({ sectionId, sectionName: 'Sin sección' });
+                })
+              )
+            );
+            
+            // Combinar peticiones de secciones
+            return forkJoin(sectionRequests).pipe(
+              map(sectionsData => {
+                console.log('Secciones obtenidas:', sectionsData);
+                
+                // Crear mapa sectionId -> sectionName
+                const sectionMap = new Map();
+                sectionsData.forEach(({ sectionId, sectionName }) => {
+                  sectionMap.set(sectionId, sectionName);
+                });
+                
+                // Enriquecer las clases con información de curso Y sección
+                const enrichedClasses = classes.map(cls => {
+                  const course = courseMap.get(cls.courseId);
+                  const sectionName = course?.sectionId 
+                    ? sectionMap.get(course.sectionId) 
+                    : 'Sin sección';
+                  
+                  const enriched = {
+                    ...cls,
+                    courseName: course?.name || course?.courseName || `Curso ${cls.courseId}`,
+                    sectionName: cls.sectionName || sectionName || 'Sin sección'
+                  };
+                  
+                  console.log(`Enriqueciendo clase ${cls.id}:`, {
+                    original: cls,
+                    course: course,
+                    sectionFromCourse: sectionName,
+                    enriched: enriched
+                  });
+                  
+                  return enriched;
+                });
+                
+                console.log('=== CLASES FINALES ENRIQUECIDAS ===');
+                console.log('Clases enriquecidas:', enrichedClasses);
+                return enrichedClasses;
+              })
+            );
           })
         );
       })
@@ -922,7 +970,7 @@ export class PlanningService {
       _editing: false,
       courseName: classDTO.courseName || '',
       courseId: classDTO.courseId.toString(), // Convertir number a string para el frontend
-      section: 'Computer Science', // Nombre de sección por defecto
+  section: classDTO.sectionName || 'Sin sección', // Usar sectionName si viene del backend
       classId: classDTO.id?.toString() || 'nuevo',
       startDate: startDateFormatted,
       endDate: endDateFormatted,
@@ -957,18 +1005,28 @@ export class PlanningService {
       endDateEmpty: !planningRow.endDate
     });
     
-    const classDTO = {
+    // Nota: necesitamos enviar el semesterId actual (is_current = true) y el section como ID numérico.
+    // Por compatibilidad con llamadas síncronas en el flujo actual, construiremos el objeto con los
+    // campos disponibles y, cuando sea necesario, el llamador puede usar `prepareClassDataForBackend`
+    // y/o llamar a `semesterService.getCurrentSemester()` si necesita el ID actualizado antes de enviar.
+
+    const classDTO: ClassDTO = {
       id: planningRow.backendId,
       courseId: parseInt(planningRow.courseId), // Convertir string a number para el backend
-      semesterId: 1, // ID del semestre fijo como solicitado
-      section: 1, // ID por defecto de la sección
-      sectionName: planningRow.section, // Usar el nombre de la sección
+      // semesterId: se asignará dinámicamente por quien invoque create/update si hace falta
+      sectionName: planningRow.section || 'Sin sección', // Mantener nombre para lectura
       startDate: planningRow.startDate,
       endDate: planningRow.endDate,
       observation: planningRow.notes?.join('; '),
       capacity: planningRow.seats,
       // statusId se manejará separadamente según el esquema de la BD
     };
+
+    // Intento no bloqueante: si ya tenemos el mapping name->id en cache, adjuntar section numeric
+    const cachedSectionId = this.getSectionIdFromCache(planningRow.section || '');
+    if (cachedSectionId) {
+      classDTO.section = cachedSectionId;
+    }
     
     console.log('ClassDTO convertido:', classDTO);
     console.log('Fechas en ClassDTO:', {
@@ -1049,16 +1107,70 @@ export class PlanningService {
    * Obtener nombre de la sección para un curso específico
    */
   getSectionByCourseId(courseId: string): Observable<string> {
+    console.log('🔍 getSectionByCourseId llamado para courseId:', courseId);
+    
     return this.courseService.getCourseById(courseId).pipe(
-      map(course => {
-        // Siempre devolvemos "Computer Science" ya que es la sección por defecto según la BD
-        return 'Computer Science';
+      switchMap(course => {
+        console.log('📚 Curso obtenido:', course);
+        
+        if (!course || !course.sectionId) {
+          console.warn('⚠️ Curso sin sección asociada:', course);
+          return of('Sin sección');
+        }
+        
+        console.log('🔍 Obteniendo sección con ID:', course.sectionId);
+        return this.getSectionNameById(course.sectionId);
       }),
-      catchError(() => {
-        console.error('Error al obtener la sección del curso:', courseId);
-        return of('Computer Science');
+      catchError((error) => {
+        console.error('❌ Error al obtener la sección del curso:', courseId, error);
+        return of('Sin sección');
       })
     );
+  }
+
+  /**
+   * Obtener el nombre de una sección por su ID
+   */
+  getSectionNameById(sectionId: number): Observable<string> {
+    console.log('🏢 getSectionNameById llamado para sectionId:', sectionId);
+    
+    // Usar la URL correcta del backend (sin /planning/)
+    const sectionUrl = `http://localhost:8080/sections/${sectionId}`;
+    console.log('🔗 URL de sección:', sectionUrl);
+    
+    return this.http.get<any>(sectionUrl).pipe(
+      map(sectionResponse => {
+        console.log('✅ Sección obtenida:', sectionResponse);
+        return sectionResponse.name || 'Sin nombre';
+      }),
+      catchError((error) => {
+        console.error('❌ Error al obtener sección por ID:', sectionId, error);
+        console.error('🔗 URL que falló:', sectionUrl);
+        return of('Sin sección');
+      })
+    );
+  }
+
+  /**
+   * Crear clases enriquecidas sin consultar secciones (fallback)
+   */
+  private createEnrichedClassesWithoutSections(classes: any[], courseMap: Map<any, any>): any[] {
+    return classes.map(cls => {
+      const course = courseMap.get(cls.courseId);
+      const enriched = {
+        ...cls,
+        courseName: course?.name || course?.courseName || `Curso ${cls.courseId}`,
+        sectionName: cls.sectionName || 'Sin sección'
+      };
+      
+      console.log(`Enriqueciendo clase ${cls.id} (sin sección):`, {
+        original: cls,
+        course: course,
+        enriched: enriched
+      });
+      
+      return enriched;
+    });
   }
 
   /**
@@ -1066,6 +1178,53 @@ export class PlanningService {
    */
   getCourseById(courseId: string | number): Observable<any> {
     return this.courseService.getCourseById(courseId);
+  }
+
+  /**
+   * Obtener ID de sección por nombre (usa cache si está disponible, sino intenta buscar todas las secciones)
+   */
+  getSectionIdByName(sectionName: string): Observable<number | null> {
+    if (!sectionName) return of(null);
+
+    const cached = this.getSectionIdFromCache(sectionName);
+    if (cached) {
+      return of(cached);
+    }
+
+    // Intentar obtener todas las secciones desde el backend y llenar el cache
+    return this.http.get<any[]>(`${environment.apiUrl}/sections/all`).pipe(
+      map(sections => {
+        sections.forEach(s => {
+          if (s && s.name) {
+            this.sectionNameToIdCache.set(s.name, s.id);
+          }
+        });
+        return this.getSectionIdFromCache(sectionName) || null;
+      }),
+      catchError(err => {
+        console.warn('No se pudo obtener lista completa de secciones para resolver por nombre:', err);
+        return of(null);
+      })
+    );
+  }
+
+  private getSectionIdFromCache(sectionName: string): number | null {
+    if (!sectionName) return null;
+    const found = Array.from(this.sectionNameToIdCache.entries()).find(([name]) => name === sectionName);
+    return found ? found[1] : null;
+  }
+
+  /**
+   * Devuelve observable con el ID del semestre actual (backend determina is_current = true)
+   */
+  getCurrentSemesterIdObservable(): Observable<number | null> {
+    return this.semesterService.getCurrentSemester().pipe(
+      map(sem => sem?.id || null),
+      catchError(err => {
+        console.warn('No se pudo obtener semestre actual:', err);
+        return of(null);
+      })
+    );
   }
 
   // ==========================================
