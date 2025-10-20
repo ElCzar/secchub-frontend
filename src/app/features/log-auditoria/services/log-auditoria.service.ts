@@ -1,162 +1,145 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { LogEntry } from '../pages/log-auditoria-page/log-auditoria-page';
+import { Observable, map } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { AuditLogResponseDTO } from '../../../shared/model/dto/log/AuditLogResponseDTO.model';
+import { environment } from '../../../../environments/environment';
 
 /**
- * Servicio simulado para el Log de Auditoría
- * NOTA: Este servicio es temporal y será reemplazado por la conexión real al backend
+ * Servicio para manejar las operaciones relacionadas con el log de auditoría.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class LogAuditoriaService {
+  private readonly baseUrl = environment.apiUrl + '/audit-logs';
 
-  constructor() { }
+
+  constructor(private readonly http: HttpClient) { }
 
   /**
-   * Obtiene todas las entradas del log de auditoría (simulado)
+   * Obtiene las entradas del log de auditoría con paginación y filtros mediante streaming NDJSON
+   * @param page Número de página (0-indexed)
+   * @param size Cantidad de entradas por página
+   * @param action Filtro por acción (opcional)
+   * @param date Filtro por fecha en formato dd/MM/yyyy (opcional)
    * @returns Observable con las entradas del log
    */
-  getAllLogEntries(): Observable<LogEntry[]> {
-    const mockData: LogEntry[] = [
-      {
-        id: 1,
-        usuario: 'Edgar Enrique',
-        accion: 'Editó clase',
-        descripcion: 'Redes (SIS-01)',
-        fecha: '05/08/2025',
-        hora: '2:00pm'
-      },
-      {
-        id: 2,
-        usuario: 'Diana',
-        accion: 'Registro usuario',
-        descripcion: 'jefe_sis03@javeriana',
-        fecha: '07/08/2025',
-        hora: '4:00pm'
-      },
-      {
-        id: 3,
-        usuario: 'Maria Rodriguez',
-        accion: 'Creó materia',
-        descripcion: 'Algoritmos (SIS-02)',
-        fecha: '08/08/2025',
-        hora: '9:30am'
-      },
-      {
-        id: 4,
-        usuario: 'Carlos Mendez',
-        accion: 'Eliminó usuario',
-        descripcion: 'monitor01@javeriana',
-        fecha: '09/08/2025',
-        hora: '11:15am'
-      },
-      {
-        id: 5,
-        usuario: 'Ana Lopez',
-        accion: 'Modificó horario',
-        descripcion: 'Base de Datos (SIS-03)',
-        fecha: '10/08/2025',
-        hora: '3:45pm'
-      },
-      {
-        id: 6,
-        usuario: 'Pedro García',
-        accion: 'Creó usuario',
-        descripcion: 'estudiante_nuevo@javeriana',
-        fecha: '11/08/2025',
-        hora: '10:20am'
-      },
-      {
-        id: 7,
-        usuario: 'Laura Martinez',
-        accion: 'Eliminó materia',
-        descripcion: 'Cálculo I (MAT-01)',
-        fecha: '12/08/2025',
-        hora: '1:15pm'
-      },
-      {
-        id: 8,
-        usuario: 'Diego Silva',
-        accion: 'Actualizó perfil',
-        descripcion: 'Información personal',
-        fecha: '13/08/2025',
-        hora: '8:45am'
-      },
-      {
-        id: 9,
-        usuario: 'Sofia Ramirez',
-        accion: 'Generó reporte',
-        descripcion: 'Reporte de asistencia mensual',
-        fecha: '14/08/2025',
-        hora: '4:30pm'
-      },
-      {
-        id: 10,
-        usuario: 'Roberto Herrera',
-        accion: 'Cambió contraseña',
-        descripcion: 'Actualización de seguridad',
-        fecha: '15/08/2025',
-        hora: '11:50am'
-      }
-    ];
+  getLogEntries(
+    page: number = 0, 
+    size: number = 50, 
+    action?: string, 
+    date?: string
+  ): Observable<AuditLogResponseDTO[]> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
 
-    // Simular delay de red
-    return of(mockData).pipe(delay(500));
-  }
+    if (action) {
+      params = params.set('action', action);
+    }
 
-  /**
-   * Busca entradas por término de búsqueda (simulado)
-   * @param searchTerm Término de búsqueda
-   * @returns Observable con las entradas filtradas
-   */
-  searchLogEntries(searchTerm: string): Observable<LogEntry[]> {
-    return this.getAllLogEntries().pipe(
-      delay(300) // Simular búsqueda
+    if (date) {
+      params = params.set('date', date);
+    }
+
+    // Request as text to handle NDJSON manually
+    return this.http.get(this.baseUrl, { 
+      params,
+      headers: {
+        'Accept': 'application/x-ndjson'
+      },
+      responseType: 'text'
+    }).pipe(
+      map((ndjsonText: string) => this.parseNDJSON(ndjsonText))
     );
   }
 
   /**
-   * Filtra entradas por usuario (simulado)
-   * @param usuario Nombre del usuario
-   * @returns Observable con las entradas del usuario
+   * Obtiene todas las entradas del log de auditoría (sin paginación, streaming completo)
+   * @returns Observable con todas las entradas del log
    */
-  getLogEntriesByUser(usuario: string): Observable<LogEntry[]> {
-    return this.getAllLogEntries().pipe(
-      delay(300) // Simular filtrado
+  getAllLogEntries(): Observable<AuditLogResponseDTO[]> {
+    return this.http.get(this.baseUrl, {
+      headers: {
+        'Accept': 'application/x-ndjson'
+      },
+      responseType: 'text'
+    }).pipe(
+      map((ndjsonText: string) => this.parseNDJSON(ndjsonText))
     );
   }
 
   /**
-   * Filtra entradas por rango de fechas (simulado)
-   * @param fechaInicio Fecha de inicio
-   * @param fechaFin Fecha de fin
-   * @returns Observable con las entradas en el rango
+   * Obtiene las entradas del log de auditoría para un email específico mediante streaming NDJSON
+   * @param email Email del usuario
+   * @returns Observable con las entradas del log para el usuario
    */
-  getLogEntriesByDateRange(fechaInicio: string, fechaFin: string): Observable<LogEntry[]> {
-    return this.getAllLogEntries().pipe(
-      delay(400) // Simular filtrado por fecha
+  getLogEntriesByEmail(email: string): Observable<AuditLogResponseDTO[]> {
+    return this.http.get(`${this.baseUrl}/email/${email}`, {
+      headers: {
+        'Accept': 'application/x-ndjson'
+      },
+      responseType: 'text'
+    }).pipe(
+      map((ndjsonText: string) => this.parseNDJSON(ndjsonText))
     );
   }
 
   /**
-   * Obtiene la lista de usuarios únicos (simulado)
-   * @returns Observable con la lista de usuarios
+   * Obtiene las entradas del log de auditoría para una acción específica mediante streaming NDJSON
+   * @param action Tipo de acción (CREATE, UPDATE, DELETE)
+   * @returns Observable con las entradas del log para la acción
    */
-  getUniqueUsers(): Observable<string[]> {
-    const users = [
-      'Edgar Enrique',
-      'Diana',
-      'Maria Rodriguez',
-      'Carlos Mendez',
-      'Ana Lopez',
-      'Pedro García',
-      'Laura Martinez',
-      'Diego Silva',
-      'Sofia Ramirez',
-      'Roberto Herrera'
-    ];
+  getLogEntriesByAction(action: string): Observable<AuditLogResponseDTO[]> {
+    return this.http.get(`${this.baseUrl}/action/${action}`, {
+      headers: {
+        'Accept': 'application/x-ndjson'
+      },
+      responseType: 'text'
+    }).pipe(
+      map((ndjsonText: string) => this.parseNDJSON(ndjsonText))
+    );
+  }
 
-    return of(users).pipe(delay(200));
+  /**
+   * Obtiene las entradas del log de auditoría para un email y acción específicos mediante streaming NDJSON
+   * @param email Email del usuario
+   * @param action Tipo de acción (CREATE, UPDATE, DELETE)
+   * @returns Observable con las entradas del log
+   */
+  getLogEntriesByEmailAndAction(email: string, action: string): Observable<AuditLogResponseDTO[]> {
+    return this.http.get(`${this.baseUrl}/email/${email}/action/${action}`, {
+      headers: {
+        'Accept': 'application/x-ndjson'
+      },
+      responseType: 'text'
+    }).pipe(
+      map((ndjsonText: string) => this.parseNDJSON(ndjsonText))
+    );
+  }
+
+  /**
+   * Parse NDJSON (newline-delimited JSON) text into array of objects
+   * @param ndjsonText NDJSON formatted string
+   * @returns Array of parsed AuditLogResponseDTO objects
+   */
+  private parseNDJSON(ndjsonText: string): AuditLogResponseDTO[] {
+    if (!ndjsonText || ndjsonText.trim() === '') {
+      return [];
+    }
+
+    return ndjsonText
+      .trim()
+      .split('\n')
+      .filter(line => line.trim() !== '')
+      .map(line => {
+        try {
+          return JSON.parse(line) as AuditLogResponseDTO;
+        } catch (error) {
+          console.error('Error parsing NDJSON line:', line, error);
+          return null;
+        }
+      })
+      .filter((entry): entry is AuditLogResponseDTO => entry !== null);
   }
 }

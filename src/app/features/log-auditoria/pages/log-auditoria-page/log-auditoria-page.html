@@ -22,17 +22,9 @@
         <input 
           id="search-input"
           [(ngModel)]="searchTerm" 
-          (ngModelChange)="applyFilters()" 
-          placeholder="Buscar usuario, acción o descripción..." 
+          (ngModelChange)="applyClientSideFilters()" 
+          placeholder="Buscar usuario, acción o método..." 
           class="search-bar">
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="usuario-filter">Filtrar por usuario:</label>
-        <select id="usuario-filter" [(ngModel)]="usuarioFilter" (ngModelChange)="applyFilters()" class="filter-select">
-          <option value="">Todos los usuarios</option>
-          <option *ngFor="let usuario of availableUsuarios" [value]="usuario">{{usuario}}</option>
-        </select>
       </div>
       
       <div class="filter-group">
@@ -46,10 +38,12 @@
       </div>
       
       <div class="filter-group">
-        <label class="filter-label" for="hora-filter">Filtrar por hora:</label>
-        <select id="hora-filter" [(ngModel)]="horaFilter" (ngModelChange)="applyFilters()" class="filter-select">
-          <option value="">Todas las horas</option>
-          <option *ngFor="let hora of availableHoras" [value]="hora">{{hora}}</option>
+        <label class="filter-label" for="page-size">Entradas por página:</label>
+        <select id="page-size" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="filter-select">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
         </select>
       </div>
     </div>
@@ -58,12 +52,11 @@
     <app-log-auditoria-table 
       [logEntries]="filteredLogEntries"
       [loading]="loading"
+      [currentPage]="currentPage"
+      [totalEntries]="totalEntries"
+      [hasMorePages]="hasMorePages"
       (refresh)="loadLogEntries()"
+      (pageChange)="onPageChange($event)"
     ></app-log-auditoria-table>
-
-    <!-- Paginación (pendiente de implementar) -->
-    <div class="pagination-container" style="display: none;">
-      <p>Paginación pendiente</p>
-    </div>
   </div>
 </main>
