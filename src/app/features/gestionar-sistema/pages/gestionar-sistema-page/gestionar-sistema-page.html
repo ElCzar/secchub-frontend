@@ -67,8 +67,8 @@
                   class="form-select"
                   required
                 >
-                  <option [value]="1">1 - Primer Semestre</option>
-                  <option [value]="2">2 - Segundo Semestre</option>
+                  <option [value]="10">1 - Primer Semestre</option>
+                  <option [value]="30">2 - Segundo Semestre</option>
                 </select>
               </div>
               
@@ -149,27 +149,24 @@
             </div>
           
           <div class="form-group">
-            <label class="form-label" for="fecha-inicio">Fecha Inicio Planificación:</label>
+            <label class="form-label" for="fecha-inicio">Fecha Inicio Semestre:</label>
             <input 
               id="fecha-inicio"
-              type="date" 
-              [(ngModel)]="fechaInicioPlanificacion"
-              (ngModelChange)="onPlanningFormChange()"
+              type="text" 
+              [value]="fechaInicioPlanificacion"
               class="form-input"
-              required
+              readonly
             />
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="fecha-fin">Fecha Fin Planificación:</label>
+            <label class="form-label" for="fecha-fin">Fecha Fin Semestre:</label>
             <input 
               id="fecha-fin"
-              type="date" 
-              [(ngModel)]="fechaFinPlanificacion"
-              (ngModelChange)="onPlanningFormChange()"
+              type="text" 
+              [value]="fechaFinPlanificacion"
               class="form-input"
-              [min]="fechaInicioPlanificacion"
-              required
+              readonly
             />
           </div>
         </div>

@@ -13,7 +13,6 @@ import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/Semester
 import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { StatusDTO } from '../../../../shared/model/dto/parametric';
-import { CourseRequestDTO } from '../../../../shared/model/dto/admin/CourseRequestDTO.model';
 import { SemesterChangeService } from '../../services/semester-change-service.service';
 import { SemesterRequestDTO } from '../../../../shared/model/dto/admin/SemesterRequestDTO.model';
 
@@ -200,6 +199,20 @@ export class GestionarSistemaPage implements OnInit {
         console.warn('La fecha de inicio no puede ser posterior a la fecha de fin');
       }
     }
+    
+    // Update dates when semester changes
+    const selectedSemesterInfo = this.getSelectedSemester();
+    if (selectedSemesterInfo) {
+      this.fechaInicioPlanificacion = selectedSemesterInfo.startDate;
+      this.fechaFinPlanificacion = selectedSemesterInfo.endDate;
+    }
+  }
+
+  getSelectedSemester(): SemesterResponseDTO | null {
+    if (!this.selectedSemestre) {
+      return null;
+    }
+    return this.availableSemestres.find(sem => sem.id?.toString() === this.selectedSemestre) || null;
   }
 
   savePlanningInfo(): void {
