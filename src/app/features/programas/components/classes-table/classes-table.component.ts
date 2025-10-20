@@ -154,12 +154,12 @@ export class ClassesTableComponent implements OnInit {
   }
 
   /**
-   * Realiza la búsqueda de cursos al escribir en el campo de nombre.
-   * Busca únicamente por nombre del curso en los datos cargados previamente.
+   * Realiza la búsqueda de cursos al escribir en el campo de ID o nombre.
    * @param i Índice de la fila
    * @param term Término de búsqueda ingresado
+   * @param searchById Si es true, busca por ID; si es false, busca por nombre
    */
-  onSearch(i: number, term: string) {
+  onSearch(i: number, term: string, searchById: boolean = false) {
     const q = term?.trim();
     if (!q || q.length < 2) { // Iniciar búsqueda a partir de 2 caracteres
       this.suggestions[i] = [];
@@ -167,8 +167,8 @@ export class ClassesTableComponent implements OnInit {
       return;
     }
 
-    // Buscar por nombre en los cursos cargados localmente
-    this.api.searchCourses(q).subscribe({
+    // Buscar por ID o nombre en los cursos cargados localmente
+    this.api.searchCourses(q, searchById).subscribe({
       next: (list) => {
         this.suggestions[i] = list;
         this.showList[i] = list.length > 0;

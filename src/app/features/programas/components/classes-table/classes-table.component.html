@@ -27,29 +27,22 @@
     </thead>
 
     <tbody>
-      <ng-container *ngFor="let row of rows; let i = index">
+      @for (row of rows; track $index) {
         <!-- Fila principal -->
         <tr [class.is-deleted]="row._state==='deleted'">
           <td class="acciones">
-            <button type="button" class="btn-icon" (click)="remove.emit(i)">-</button>
+            <button type="button" class="btn-icon" (click)="remove.emit($index)">-</button>
             <button type="button" class="btn-icon" (click)="add.emit()">+</button>
           </td>
 
           <!-- ID -->
-          <td class="cell-autocomplete">
+          <td>
             <input
               class="input"
               [class.input--invalid]="!row.courseId.trim()"
               [ngModel]="row.courseId"
-              (ngModelChange)="patch.emit({index:i, data:{courseId: $event}}); onSearch(i, $event)"
-              (focus)="onSearch(i, row.courseId)"
-              (blur)="closeList(i)"
+              readonly
               placeholder="ID del curso *" />
-            <ul class="suggest suggest--id-only" *ngIf="showList[i]">
-              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keydown.enter)="selectCourse(i, s)">
-                <span class="id">{{ s.id }}</span>
-              </li>
-            </ul>
           </td>
 
           <!-- Nombre -->
@@ -58,15 +51,19 @@
               class="input"
               [class.input--invalid]="!row.courseName.trim()"
               [ngModel]="row.courseName"
-              (ngModelChange)="patch.emit({index:i, data:{courseName: $event}}); onSearch(i, $event)"
-              (focus)="onSearch(i, row.courseName)"
-              (blur)="closeList(i)"
+              (ngModelChange)="patch.emit({index:$index, data:{courseName: $event}}); onSearch($index, $event)"
+              (focus)="onSearch($index, row.courseName)"
+              (blur)="closeList($index)"
               placeholder="Buscar por nombre *" />
-            <ul class="suggest suggest--name-only" *ngIf="showList[i]">
-              <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keydown.enter)="selectCourse(i, s)">
-                <span class="name">{{ s.name }}</span>
-              </li>
-            </ul>
+            @if (showList[$index]) {
+              <ul class="suggest suggest--name-only">
+                @for (s of suggestions[$index]; track s.id) {
+                  <li (click)="selectCourse($index, s)" (keydown.enter)="selectCourse($index, s)">
+                    <span class="name">{{ s.name }}</span>
+                  </li>
+                }
+              </ul>
+            }
           </td>
 
           <td>
@@ -80,7 +77,7 @@
               type="number"
               min="1"
               [ngModel]="row.seats"
-              (ngModelChange)="onSeatsInput(i, $event)"
+              (ngModelChange)="onSeatsInput($index, $event)"
               placeholder="Cupos *" />
           </td>
 
@@ -88,19 +85,20 @@
             <div class="date-field-wrapper">
               <input
                 class="input"
-                [class.input--invalid]="!row.startDate || getStartDateError(i)"
+                [class.input--invalid]="!row.startDate || getStartDateError($index)"
                 type="date"
                 [ngModel]="row.startDate"
-                (ngModelChange)="onStartChange(i, $event)" />
-              <div class="error-icon" 
-                   *ngIf="getStartDateError(i)"
-                   [title]="getStartDateError(i)"
-                   [attr.aria-label]="getStartDateError(i)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
-                        stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
+                (ngModelChange)="onStartChange($index, $event)" />
+              @if (getStartDateError($index)) {
+                <div class="error-icon" 
+                    [title]="getStartDateError($index)"
+                    [attr.aria-label]="getStartDateError($index)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                          stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
             </div>
           </td>
 
@@ -108,19 +106,20 @@
             <div class="date-field-wrapper">
               <input
                 class="input"
-                [class.input--invalid]="!row.endDate || getEndDateError(i)"
+                [class.input--invalid]="!row.endDate || getEndDateError($index)"
                 type="date"
                 [ngModel]="row.endDate"
-                (ngModelChange)="onEndChange(i, $event)" />
-              <div class="error-icon" 
-                   *ngIf="getEndDateError(i)"
-                   [title]="getEndDateError(i)"
-                   [attr.aria-label]="getEndDateError(i)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
-                        stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
+                (ngModelChange)="onEndChange($index, $event)" />
+              @if (getEndDateError($index)) {
+                <div class="error-icon" 
+                    [title]="getEndDateError($index)"
+                    [attr.aria-label]="getEndDateError($index)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                          stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
             </div>
           </td>
 
@@ -134,7 +133,7 @@
               class="input comments-textarea"
               rows="1"
               [ngModel]="row.comments"
-              (ngModelChange)="onCommentChange(i, $event)"
+              (ngModelChange)="onCommentChange($index, $event)"
               (input)="autoGrow($event.target)"
               placeholder="Comentarios..."
             ></textarea>
@@ -147,7 +146,9 @@
             <button class="expander" type="button" (click)="row._open = !row._open">
               <span class="caret" [class.open]="row._open">▸</span>
               Horarios
-              <span class="required-indicator" *ngIf="!hasValidSchedules(row)">*</span>
+              @if (!hasValidSchedules(row)) {
+                <span class="required-indicator">*</span>
+              }
             </button>
           </td>
         </tr>
@@ -158,7 +159,7 @@
             <app-schedules-table [(rows)]="row.schedules"></app-schedules-table>
           </td>
         </tr>
-      </ng-container>
+              }
     </tbody>
   </table>
 </div>

@@ -116,8 +116,8 @@ export class ProgramasService {
     });
   }
 
-  // Local search in cached courses by name only
-  searchCourses(q: string): Observable<CourseOption[]> {
+  // Local search in cached courses by name or ID
+  searchCourses(q: string, searchById: boolean = false): Observable<CourseOption[]> {
     if (!q || q.length < 2) {
       return of([]);
     }
@@ -128,7 +128,9 @@ export class ProgramasService {
         return this.coursesCache
           .filter(course =>
             course.isValid && // Only include valid courses
-            course.name.toLowerCase().includes(searchTerm) // Search only by name
+            (searchById
+              ? course.id.toString().toLowerCase().includes(searchTerm) // Search by ID
+              : course.name.toLowerCase().includes(searchTerm)) // Search by name
           )
           .map(course => ({
             id: course.id.toString(),

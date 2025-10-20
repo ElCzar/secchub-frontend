@@ -15,8 +15,8 @@
   --col-section: 120px;
   --col-seats: 160px;
   --col-comments: 360px;
-  --col-start: 150px;
-  --col-end: 150px;
+  --col-start: 200px;
+  --col-end: 200px;
   --col-weeks: 110px;
 }
 
@@ -71,22 +71,20 @@
   position: relative;
   width: 100%;
   overflow: visible; /* Permitir que los tooltips se desborden */
+  display: block; /* Asegurar que ocupe todo el ancho disponible */
   
-  /* Ajustar padding del input cuando hay ícono de error */
-  &:has(.error-icon) input {
-    padding-right: 32px; /* Espacio para el ícono */
+  input {
+    width: 100%;
+    box-sizing: border-box;
   }
   
-  /* Fallback para navegadores que no soporten :has() */
-  input.input--invalid {
-    padding-right: 32px;
-  }
+  /* Ya no es necesario ajustar padding del input porque el ícono está fuera */
 }
 
 .error-icon {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: -24px; /* Mover fuera del input, al lado derecho */
   transform: translateY(-50%);
   cursor: help;
   z-index: 10;
@@ -200,6 +198,10 @@
     border-bottom: 1px solid var(--border);
     overflow: visible; /* Permitir overflow para mensajes de error */
     position: relative; /* Para permitir posicionamiento absoluto de hijos */
+  }
+
+  tbody td.acciones {
+    padding: 10px 12px; /* 2px más arriba y abajo = 4px total */
   }
 
   /* Fila marcada como eliminada se muestra atenuada */

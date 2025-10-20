@@ -6,22 +6,20 @@
     <div class="hr-line"></div>
 
     <!-- Contexto cargado desde backend -->
-    <ng-container *ngIf="context$ | async as ctx; else ctxLoading">
+    @if (context$ | async; as ctx) {
       <div class="meta">
         <span><strong>ID Carrera:</strong> {{ ctx.careerId }}</span>
         <span><strong>Carrera:</strong> {{ ctx.careerName }}</span>
         <span><strong>Semestre:</strong> {{ ctx.semester }}</span>
       </div>
-    </ng-container>
-
-    <!-- Placeholder mientras carga -->
-    <ng-template #ctxLoading>
+    } @else {
+      <!-- Placeholder mientras carga -->
       <div class="meta">
         <span><strong>ID Carrera:</strong> …</span>
         <span><strong>Carrera:</strong> …</span>
         <span><strong>Semestre:</strong> …</span>
       </div>
-    </ng-template>
+    }
 
     <!-- Contador de clases (solo front) -->
     <div class="meta">
@@ -35,19 +33,22 @@
         class="btn btn--secondary" 
         [disabled]="loadingPrevious"
         (click)="loadPrevious()">
-        <span *ngIf="!loadingPrevious">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          Duplicar Solicitudes
-        </span>
-        <span *ngIf="loadingPrevious">
-          <svg class="loading-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 11-6.219-8.56"/>
-          </svg>
-          Cargando...
-        </span>
+        @if (!loadingPrevious) {
+          <span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Duplicar Solicitudes
+          </span>
+        } @else {
+          <span>
+            <svg class="loading-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 11-6.219-8.56"/>
+            </svg>
+            Cargando...
+          </span>
+        }
       </button>
     </div>
   </header>
@@ -84,10 +85,11 @@
 </app-confirm-send-popup>
 
 <!-- Modal de duplicación de solicitudes -->
-<app-pop-duplicacion-solicitud
-  *ngIf="showDuplicateModal"
-  (closeModal)="closeDuplicateModal()"
-  (applySemester)="onApplyDuplicatedRequests($event)">
-</app-pop-duplicacion-solicitud>
+@if (showDuplicateModal) {
+  <app-pop-duplicacion-solicitud
+    (closeModal)="closeDuplicateModal()"
+    (applySemester)="onApplyDuplicatedRequests($event)">
+  </app-pop-duplicacion-solicitud>
+}
 
 </div>
