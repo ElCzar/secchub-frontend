@@ -8,7 +8,7 @@ import { ScheduleRow } from '../../models/schedule.models';
 import { Component, OnInit } from '@angular/core';
 import { ProgramaContextDto } from '../../models/context.models';
 import { Observable } from 'rxjs';
-import { AcademicRequestBatchDTO, AcademicRequestDTO, RequestScheduleDTO } from '../../models/academic-request.models';
+import { AcademicRequestBatchDTO, AcademicRequestRequestDTO, RequestScheduleRequestDTO, AcademicRequestResponseDTO } from '../../models/academic-request.models';
 
 
 type RowState = 'new' | 'existing' | 'deleted';
@@ -36,9 +36,23 @@ export class ProgramasPageComponent implements OnInit {
   constructor(private readonly programas: ProgramasService) {}
 
   ngOnInit(): void {
+    console.log('🚀 ProgramasPageComponent: Iniciando componente...');
+    console.log('🔄 ProgramasPageComponent: Obteniendo contexto...');
     this.context$ = this.programas.getContext();
+    
+    // Agregar suscripción para ver qué pasa con el contexto
+    this.context$.subscribe({
+      next: (context) => {
+        console.log('✅ ProgramasPageComponent: Contexto recibido:', context);
+      },
+      error: (error) => {
+        console.error('❌ ProgramasPageComponent: Error en contexto:', error);
+      }
+    });
+    
     // Siempre iniciar con una fila vacía
     this.ensureAtLeastOneRow();
+    console.log('✅ ProgramasPageComponent: Componente inicializado');
   }
 
   /**
@@ -114,27 +128,24 @@ export class ProgramasPageComponent implements OnInit {
   private createAcademicRequestBatch(): AcademicRequestBatchDTO {
     const validRows = this.rows.filter(r => r._state !== 'deleted');
 
-    const requests: AcademicRequestDTO[] = validRows.map(row => ({
+    const requests: AcademicRequestRequestDTO[] = validRows.map(row => ({
       courseId: parseInt(row.courseId),
       capacity: row.seats,
       startDate: row.startDate,
       endDate: row.endDate,
       observation: (row.comments?.trim() || undefined),
-      schedules: row.schedules.map(schedule => this.convertToRequestSchedule(schedule)),
-      weeks: row.weeks,
-      sectionId: row.section ? parseInt(row.section) : undefined
+      schedules: row.schedules.map(schedule => this.convertToRequestSchedule(schedule))
     }));
 
     return {
-      userId: 1, // This should be obtained from authentication context
       requests
     };
   }
 
   /**
-   * Convierte un ScheduleRow a RequestScheduleDTO
+   * Convierte un ScheduleRow a RequestScheduleRequestDTO
    */
-  private convertToRequestSchedule(schedule: ScheduleRow): RequestScheduleDTO {
+  private convertToRequestSchedule(schedule: ScheduleRow): RequestScheduleRequestDTO {
     return {
       day: schedule.day,
       startTime: schedule.startTime + ':00', // Agregar segundos si es necesario
@@ -186,7 +197,7 @@ export class ProgramasPageComponent implements OnInit {
 
   loadPrevious(): void {
     this.programas.loadPreviousSemesterRequests().subscribe({
-      next: (requests: AcademicRequestDTO[]) => {
+      next: (requests: AcademicRequestResponseDTO[]) => {
         // Mapear TODAS las solicitudes del semestre anterior (una fila por cada solicitud)
         // Si había 3 cursos solicitados, se crearán 3 filas prellenadas para autofill
         const mapped: ClaseRow[] = (requests || []).map(req => {
@@ -194,13 +205,13 @@ export class ProgramasPageComponent implements OnInit {
           
           return {
             courseId: String(req.courseId ?? ''),
-            courseName: course?.name || '',
+            courseName: req.courseName || course?.name || '',
             section: course?.sectionId ? String(course.sectionId) : '',
             roomType: '',
             seats: req.capacity,
             startDate: req.startDate,
             endDate: req.endDate,
-            weeks: req.weeks ?? 0,
+            weeks: this.calculateWeeks(req.startDate, req.endDate),
             _state: 'existing' as RowState,
             schedules: (req.schedules || []).map(s => ({
               day: this.normalizeDay(s.day),
@@ -220,12 +231,7 @@ export class ProgramasPageComponent implements OnInit {
         // Reemplazar todas las filas con las del semestre anterior (autofill completo)
         this.rows = mapped.length > 0 ? mapped : [this.emptyRow()];
         
-        // Recalcular semanas directamente para cada fila cargada
-        this.rows.forEach((row, index) => {
-          if (row.startDate && row.endDate) {
-            row.weeks = this.calculateWeeks(row.startDate, row.endDate);
-          }
-        });
+        // Las semanas ya se calculan en el mapeo anterior
       },
       error: () => {
         // En error, mantener al menos una fila

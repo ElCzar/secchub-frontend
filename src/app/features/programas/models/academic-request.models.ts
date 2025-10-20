@@ -43,14 +43,56 @@ export interface AcademicRequestDTO {
   sectionId?: number;   // se deriva del curso
 }
 
+export interface AcademicRequestResponseDTO {
+  id: number;
+  userId: number;
+  courseId: number;
+  semesterId: number;
+  startDate: string; // LocalDate as ISO string
+  endDate: string;   // LocalDate as ISO string
+  capacity: number;
+  requestDate: string; // LocalDate as ISO string
+  observation?: string;
+  schedules: RequestScheduleResponseDTO[];
+  
+  // Campos enriquecidos desde el backend
+  userName?: string;        // Nombre completo del usuario
+  courseName?: string;      // Nombre del curso
+  programName?: string;     // Nombre del programa
+}
+
+export interface RequestScheduleResponseDTO {
+  id: number;
+  day: string;
+  startTime: string; // formato "HH:mm:ss"
+  endTime: string;   // formato "HH:mm:ss"
+  classRoomTypeId: number;
+  modalityId: number;
+  disability: boolean;
+}
+
 export interface AcademicRequestBatchDTO {
   /**
-   * Identificador del usuario que realiza las solicitudes.
-   */
-  userId: number;
-  /**
    * Lista de solicitudes académicas individuales.
-   * El semestre se obtiene automáticamente del backend (is_current = 1).
+   * El usuario se obtiene del contexto de autenticación en el backend.
    */
-  requests: AcademicRequestDTO[];
+  requests: AcademicRequestRequestDTO[];
+}
+
+export interface AcademicRequestRequestDTO {
+  courseId: number;
+  startDate: string; // LocalDate as ISO string  
+  endDate: string;   // LocalDate as ISO string
+  capacity: number;
+  observation?: string;
+  schedules: RequestScheduleRequestDTO[];
+}
+
+export interface RequestScheduleRequestDTO {
+  classRoomTypeId: number;
+  startTime: string; // formato "HH:mm:ss"
+  endTime: string;   // formato "HH:mm:ss"
+  day: string;
+  modalityId: number;
+  disability: boolean;
 }
