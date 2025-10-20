@@ -49,7 +49,7 @@ export class ClassesTableComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['rows'] && Array.isArray(this.rows)) {
       for (const r of this.rows) {
-        if (!this.states[r.id]) this.states[r.id] = 'none';
+        if (!this.states[r.id.toString()]) this.states[r.id.toString()] = 'none';
       }
     }
   }

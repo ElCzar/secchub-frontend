@@ -21,7 +21,7 @@
     </thead>
 
     <tbody>
-  <tr *ngFor="let r of rows; trackBy: trackById" [class.accept]="getState(r.id) === 'accept'" [class.reject]="getState(r.id) === 'reject'" [class.review]="getState(r.id) === 'review'">
+  <tr *ngFor="let r of rows; trackBy: trackById" [class.accept]="getState(r.id.toString()) === 'accept'" [class.reject]="getState(r.id.toString()) === 'reject'" [class.review]="getState(r.id.toString()) === 'review'">
         <td>{{ r.section }}</td>
         <td>{{ r.subject }}</td>
         <td>{{ r.semester }}</td>
@@ -30,11 +30,13 @@
           <div *ngFor="let s of r.schedules; let last = last">
             {{ s }}<br *ngIf="!last">
           </div>
+          <div *ngIf="!r.schedules || r.schedules.length === 0" class="no-schedule">
+            Sin horarios
+          </div>
         </td>
         <td *ngIf="selectable" class="sel-cell">
-          <button class="btn btn--small btn--accept" [attr.aria-pressed]="getState(r.id) === 'accept'" (click)="setAccept(r.id)">Aceptar</button>
-          <button class="btn btn--small btn--reject" [attr.aria-pressed]="getState(r.id) === 'reject'" (click)="setReject(r.id)">Rechazar</button>
-          <button class="btn btn--small btn--secondary comment-btn" (click)="openComment(r.id)">Enviar comentario</button>
+          <button class="btn btn--small btn--accept" [attr.aria-pressed]="getState(r.id.toString()) === 'accept'" (click)="setAccept(r.id.toString())">Aceptar</button>
+          <button class="btn btn--small btn--reject" [attr.aria-pressed]="getState(r.id.toString()) === 'reject'" (click)="setReject(r.id.toString())">Rechazar</button>
         </td>
       </tr>
     </tbody>

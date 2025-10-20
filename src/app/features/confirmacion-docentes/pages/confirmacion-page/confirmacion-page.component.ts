@@ -3,8 +3,19 @@ import { Component, OnInit } from '@angular/core';
 import { ClassesTableComponent } from '../../components/classes-table/classes-table.component';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { TeacherClassRow } from '../../models/class.models';
-import { ConfirmacionService } from '../../services/confirmacion.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
+import { TeacherClassDecisionService } from '../../services/teacher-class-decision.service';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
+import { ParametricService } from '../../../../shared/services/parametric.service';
+import { StatusDTO } from '../../../../shared/model/dto/parametric';
+import { SectionInformationService } from '../../../../shared/services/section-information.service';
+import { TeacherClassResponseDTO } from '../../../../shared/model/dto/admin/TeacherClassResponseDTO.model';
+import { CourseResponseDTO } from '../../../../shared/model/dto/admin/CourseResponseDTO.model';
+import { SectionDTO } from '../../../planificacion/services/course.service';
+import { ClassResponseDTO } from '../../../../shared/model/dto/planning/ClassResponseDTO.model';
+import { CourseInformationService } from '../../../../shared/services/course-information.service';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 
 
 @Component({
@@ -17,6 +28,13 @@ import { HeaderComponent } from "../../../../layouts/header/header.component";
 export class ConfirmacionPageComponent implements OnInit {
   accepted: TeacherClassRow[] = [];
   pending: TeacherClassRow[] = [];
+  all: TeacherClassRow[] = [];
+
+  // Parameters
+  statuses: StatusDTO[] = [];
+  sections: SectionDTO[] = [];
+  courses: CourseResponseDTO[] = [];
+  semester: SemesterResponseDTO | null = null;
 
   // selección de la tabla “por aceptar”
   selectedPending = new Set<string>();
@@ -29,26 +47,107 @@ export class ConfirmacionPageComponent implements OnInit {
   // controls visibility of the confirm-send popup
   popupVisible = false;
 
-  constructor(private readonly api: ConfirmacionService) {}
+  constructor(
+    private readonly teacherClassDecisionService: TeacherClassDecisionService,
+    private readonly userInformationService: UserInformationService,
+    private readonly parametricService: ParametricService,
+    private readonly sectionInformationService: SectionInformationService,
+    private readonly courseInformationService: CourseInformationService,
+    private readonly semesterInformationService: SemesterInformationService
+  ) {}
 
   ngOnInit(): void {
+    this.loadParameters();
+    this.loadTeacherClasses();
+  }
+
+  private loadParameters(): void {
+    this.parametricService.getAllStatuses().subscribe(statuses => {
+      this.statuses = statuses;
+    });
+    this.sectionInformationService.findAllSections().subscribe(sections => {
+      this.sections = sections;
+    });
+    this.courseInformationService.findAllCourses().subscribe(courses => {
+      this.courses = courses;
+    });
+    this.semesterInformationService.getCurrentSemester().subscribe(sem => {
+      this.semester = sem;
+    });
+  }
+
+  private loadTeacherClasses(): void {
     this.loading = true;
-    this.api.getAccepted().subscribe(a => this.accepted = a);
-    this.api.getPending().subscribe(p => {
-      this.pending = p;
-      this.loading = false;
+    this.userInformationService.getUserInformation().subscribe(userInfo => {
+      if (!userInfo) {
+        this.loading = false;
+        return;
+      }
+      
+      const userId = userInfo.id;
+      this.teacherClassDecisionService.getTeacherByUserId(userId).subscribe(teacher => {
+        const teacherId = teacher.id;
+        this.teacherClassDecisionService.getCurrentSemesterTeacherClassesByTeacher(teacherId)
+          .subscribe(classes => {
+            this.processTeacherClasses(classes);
+            this.loading = false;
+          });
+      });
+    });
+  }
+
+  private processTeacherClasses(classes: TeacherClassResponseDTO[]): void {
+    // First, map all classes to TeacherClassRow format
+    const promises = classes.map(teacherClass => this.mapToTeacherClassRow(teacherClass));
+    
+    // Wait for all mapping operations to complete
+    Promise.all(promises).then(mappedClasses => {
+      this.all = mappedClasses;
+      // Filter out null values
+      this.all = this.all.filter(c => c !== null);
+      this.pending = this.all.filter(c => c.accepted === undefined || c.accepted === false);
+      this.accepted = this.all.filter(c => c.accepted === true);
+    });
+  }
+
+  private mapToTeacherClassRow(teacherClass: TeacherClassResponseDTO): Promise<TeacherClassRow> {
+    return new Promise((resolve) => {
+      this.teacherClassDecisionService.getClassById(teacherClass.classId).subscribe(classInfo => {
+        const classInfoDTO = classInfo as ClassResponseDTO;
+        const course = this.courses.find(c => c.id === classInfoDTO.courseId);
+        const schedules = classInfoDTO.schedules?.map(s => {
+          return `${s.day}. ${s.startTime}-${s.endTime}`;
+        }) || [];
+
+        if (!!teacherClass.decision === false) {
+          resolve(null as any);
+          return;
+        }
+
+        const row: TeacherClassRow = {
+          teacherClassId: teacherClass.id,
+          id: teacherClass.classId,
+          section: this.sections.find(s => s.id === course?.sectionId)?.name || 'Desconocida',
+          subject: course?.name || 'Desconocida',
+          semester: this.semester ? `${this.semester.year}-${this.semester.period}` : 'Desconocida',
+          schedules: schedules,
+          accepted: teacherClass.decision ?? false
+        };
+        
+        resolve(row);
+      });
     });
   }
 
   onAccept(): void {
-  // show confirmation popup before proceeding
-  console.log('Pedir confirmación para aceptar:', Array.from(this.selectedPending));
-  this.popupVisible = true;
-  }
+    // Check if there are any decisions to process
+    if (!this.canSubmitAny) {
+      console.warn('No decisions made to process');
+      return;
+    }
 
-  onReject(): void {
-    console.log('RECHAZAR:', Array.from(this.selectedPending));
-    this.selectedPending.clear();
+    // Show confirmation popup - the actual processing happens in onPopupConfirm()
+    this.popupVisible = true;
   }
 
   get canSubmit() { return this.selectedPending.size > 0; }
@@ -64,36 +163,56 @@ export class ConfirmacionPageComponent implements OnInit {
 
   // user confirmed in the popup
   onPopupConfirm(): void {
-    // process per-row states: accept -> move to accepted; reject -> remove from pending
-    const moving: TeacherClassRow[] = [];
-    const rejected: string[] = [];
-    const reviews: { id: string; message?: string }[] = [];
-    const states = this.pendingStates || {};
-
-    this.pending = this.pending.filter(p => {
-      const s = states[p.id] ?? (this.selectedPending.has(p.id) ? 'accept' : 'none');
-      if (s === 'accept') {
-        moving.push(p);
-        return false;
+    // Use the new service method to process mixed decisions
+    this.teacherClassDecisionService.processMixedDecisions(
+      this.pending, 
+      this.pendingStates, 
+      this.commentRequests
+    ).subscribe({
+      next: (results) => {
+        console.log('Mixed decisions processed:', results);
+        
+        // Update UI based on results
+        if (results.accepted.length > 0) {
+          // Move accepted classes to accepted list
+          const acceptedClassIds = new Set(results.accepted.map(r => r.classId.toString()));
+          const movedRows = this.pending
+            .filter(row => acceptedClassIds.has(row.id.toString()))
+            .map(row => ({ ...row, accepted: true }));
+          
+          this.accepted = [...this.accepted, ...movedRows];
+        }
+        
+        // Remove accepted and rejected classes from pending
+        const processedClassIds = new Set([
+          ...results.accepted.map(r => r.classId.toString()),
+          ...results.rejected.map(r => r.classId.toString())
+        ]);
+        
+        this.pending = this.pending.filter(row => !processedClassIds.has(row.id.toString()));
+        
+        // Clear states
+        this.selectedPending.clear();
+        this.pendingStates = {};
+        this.commentRequests = {};
+        this.popupVisible = false;
+        
+        // Show results summary
+        const summary = [];
+        if (results.accepted.length > 0) summary.push(`${results.accepted.length} aceptada${results.accepted.length > 1 ? 's' : ''}`);
+        if (results.rejected.length > 0) summary.push(`${results.rejected.length} rechazada${results.rejected.length > 1 ? 's' : ''}`);
+        if (results.reviewed.length > 0) summary.push(`${results.reviewed.length} en revisión`);
+        
+        if (summary.length > 0) {
+          alert(`✅ Operación completada:\n${summary.join(', ')}`);
+        }
+      },
+      error: (error) => {
+        console.error('Error processing decisions:', error);
+        alert('❌ Error al procesar las decisiones. Por favor, inténtelo de nuevo.');
+        this.popupVisible = false;
       }
-      if (s === 'reject') {
-        rejected.push(p.id);
-        return false;
-      }
-      if (s === 'review') {
-        // keep in pending but record as a review request
-        reviews.push({ id: p.id, message: this.commentRequests[p.id] });
-        return true;
-      }
-      return true;
     });
-
-    // append moved rows to accepted
-    this.accepted = [...this.accepted, ...moving];
-    this.selectedPending.clear();
-    this.pendingStates = {};
-    this.popupVisible = false;
-    console.log('Confirmado envío, filas aceptadas:', moving.map(m => m.id), 'rechazadas:', rejected, 'revisiones:', reviews);
   }
 
   onPendingStateChange(states: Record<string, 'accept' | 'reject' | 'review' | 'none'>): void {
@@ -107,7 +226,7 @@ export class ConfirmacionPageComponent implements OnInit {
   }
 
   onCommentRequest(ev: { id: string; message: string }): void {
-    if (!ev || !ev.id) return;
+    if (!ev?.id) return;
     this.commentRequests[ev.id] = ev.message || '';
     console.log('Solicitud de revisión añadida:', ev.id, ev.message);
   }
