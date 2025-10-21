@@ -156,6 +156,7 @@ export class ProgramasPageComponent implements OnInit {
    * Convierte un ScheduleRow a RequestScheduleRequestDTO
    */
   private convertToRequestSchedule(schedule: ScheduleRow): RequestScheduleRequestDTO {
+    console.log("Convirtiendo horario:", schedule);
     return {
       day: schedule.day,
       startTime: schedule.startTime + ':00', // Agregar segundos si es necesario

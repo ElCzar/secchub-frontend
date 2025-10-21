@@ -168,34 +168,47 @@ export class SolicitudProgramasPages implements OnInit {
     this.rows = list.map((r: AcademicRequestResponseDTO) => {
       let courseId: number | undefined;
       let sectionId: number | undefined;
-      let sectionName = r.programName || '';
+      let sectionName = '';
 
-      // Prefer lookup by courseId (most reliable). If backend returned courseId and we have it cached,
-      // use that to derive section info. Otherwise try to find by course name as a fallback.
+      // Follow the chain: academicRequest.courseId -> course.sectionId -> section.name
       if (r.courseId) {
         const cachedCourse = this.coursesMap.get(r.courseId as number);
         if (cachedCourse) {
           courseId = cachedCourse.id;
           sectionId = cachedCourse.sectionId;
-          sectionName = cachedCourse.sectionName || sectionName;
+          
+          // Get section name from sections cache using the course's sectionId
+          if (sectionId) {
+            const section = this.sectionsMap.get(sectionId);
+            if (section) {
+              sectionName = section.name;
+            }
+          }
         }
       }
 
+      // Fallback: if no courseId but we have courseName, try to find by name
       if (!courseId && r.courseName) {
         for (const [id, course] of this.coursesMap.entries()) {
           if (course.name === r.courseName) {
             courseId = id;
             sectionId = course.sectionId;
-            sectionName = course.sectionName || sectionName;
+            
+            // Get section name from sections cache
+            if (sectionId) {
+              const section = this.sectionsMap.get(sectionId);
+              if (section) {
+                sectionName = section.name;
+              }
+            }
             break;
           }
         }
       }
 
-      // If still no sectionName but we have sectionId, use the sections cache
-      if (!sectionName && sectionId) {
-        const section = this.sectionsMap.get(sectionId);
-        if (section) sectionName = section.name;
+      // Final fallback: use programName from request if we couldn't resolve section
+      if (!sectionName) {
+        sectionName = r.programName || 'Sin sección';
       }
 
       const mappedRow: SolicitudRow = {
@@ -216,11 +229,20 @@ export class SolicitudProgramasPages implements OnInit {
             return parts.length >= 2 ? parts[0].padStart(2,'0') + ':' + parts[1].padStart(2,'0') : t;
           };
 
+          // Get classroom type name from classRoomTypeId
+          let roomTypeName = 'Aulas'; // Default
+          if (s.classRoomTypeId) {
+            const classroomType = this.classroomTypesMap.get(s.classRoomTypeId);
+            if (classroomType) {
+              roomTypeName = classroomType.name;
+            }
+          }
+
           return {
             day: this.mapDayFromBackend(s.day) as any,
             startTime: normalizeTime(s.startTime),
             endTime: normalizeTime(s.endTime),
-            roomType: this.mapRoomTypeIdToName(s.classRoomTypeId) as any,
+            roomType: roomTypeName as any,
             roomTypeId: s.classRoomTypeId,
             modality: this.mapModalityIdToName(s.modalityId) as any,
             disability: s.disability
