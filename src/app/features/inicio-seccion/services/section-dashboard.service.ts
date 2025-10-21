@@ -3,13 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { SectionDashboardResponse } from '../models/section-dashboard.models';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SectionDashboardService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private baseUrl = '/api/section-dashboard'; // ajusta a tu URL real
+  private readonly sectionCloseUrl = environment.apiUrl + '/sections/close-planning';
 
   getSectionDashboard(): Observable<SectionDashboardResponse> {
     // Comentando la llamada real al backend por ahora
@@ -51,5 +53,11 @@ export class SectionDashboardService {
     };
 
     return of(mockData);
+  }
+
+  closeSectionPlanning(): Observable<void> {
+    return this.http.post<void>(`${this.sectionCloseUrl}`, {
+      observe: 'response'
+    });
   }
 }

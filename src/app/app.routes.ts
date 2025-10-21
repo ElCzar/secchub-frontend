@@ -9,6 +9,7 @@ import { DocentesPage } from './features/docentes/pages/docentes-page/docentes-p
 
 import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/inicio-admi-page';
 import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
+import { InicioSeccionDeshabilitadaPage } from './features/inicio-seccion-deshabilitada/pages/inicio-seccion-deshabilitada-page/inicio-seccion-deshabilitada-page';
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
 import { ENVIO_CORREO_ROUTES } from './features/envio-correo/envio-correo.routes';
 import { VER_REGISTRADOS_ROUTES } from './features/ver-registrados/ver-registrados.routes';
@@ -35,6 +36,8 @@ export const routes: Routes = [
     { path: 'inicio-admi', component: InicioAdmiPage },
   
     { path: 'inicio-seccion', component: InicioSeccionPage },
+
+    { path: 'inicio-seccion-deshabilitada', component: InicioSeccionDeshabilitadaPage },
 
     { path: 'solicitud-programas', component: SolicitudProgramasPages },
 

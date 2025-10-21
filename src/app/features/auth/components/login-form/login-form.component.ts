@@ -52,7 +52,14 @@ export class LoginFormComponent {
           } else if (userRoles.includes('ROLE_STUDENT')) {
             this.router.navigate(['/FormularioMonitores']);
           } else if (userRoles.includes('ROLE_USER')) {
-            this.router.navigate(['/inicio-seccion']);
+            // Checks if section is disabled for the user
+            this.authService.sectionInformation().subscribe(isDisabled => {
+              if (isDisabled) {
+                this.router.navigate(['/inicio-seccion-deshabilitada']);
+              } else {
+                this.router.navigate(['/inicio-seccion']);
+              }
+            });
           } else {
             // Default fallback
             this.router.navigate(['/inicio-seccion']);

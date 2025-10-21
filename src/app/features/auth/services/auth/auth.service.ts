@@ -25,4 +25,9 @@ export class AuthService {
       })
     );
   }
+
+  // The response is text adjust it
+  sectionInformation(): Observable<boolean> {
+    return this.http.get<boolean>(`${this.baseUrl}/sections/is-planning-closed`);
+  }
 }

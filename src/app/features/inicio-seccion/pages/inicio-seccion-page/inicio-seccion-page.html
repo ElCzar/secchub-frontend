@@ -35,3 +35,10 @@
     </main>
   </div>
 </div>
+
+<!-- Popup de confirmación -->
+<app-pop-up-cerrar-planificacion
+  [visible]="mostrarPopupCerrar"
+  (confirm)="confirmarCierrePlanificacion()"
+  (cancelled)="cancelarCierrePlanificacion()">
+</app-pop-up-cerrar-planificacion>
