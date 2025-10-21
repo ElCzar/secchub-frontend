@@ -189,6 +189,7 @@ export class ClassesTableComponent implements OnInit {
    * @param opt Opción de curso seleccionada
    */
   selectCourse(i: number, opt: CourseOption) {
+    console.log(`🎯 selectCourse llamado con índice: ${i}, curso: ${opt.name}`);
     this.showList[i] = false;
     this.suggestions[i] = [];
 
@@ -202,6 +203,20 @@ export class ClassesTableComponent implements OnInit {
         section: section
       }
     });
+  }
+
+  /**
+   * Wrapper para el evento de selección que previene el comportamiento por defecto
+   * y asegura que el índice correcto se capture antes del blur
+   * @param event El evento del mouse
+   * @param i Índice de la fila
+   * @param opt Opción de curso seleccionada
+   */
+  onSelectCourse(event: Event, i: number, opt: CourseOption) {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log(`🔍 onSelectCourse wrapper - Fila: ${i}, Curso: ${opt.name}`);
+    this.selectCourse(i, opt);
   }
 
 

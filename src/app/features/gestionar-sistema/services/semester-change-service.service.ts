@@ -19,6 +19,7 @@ export class SemesterChangeService {
    * @returns Observable with the created semester
    */
   createSemester(semesterRequest: SemesterRequestDTO): Observable<SemesterResponseDTO> {
+    semesterRequest.period = semesterRequest.period === 1 ? 10 : 30;
     return this.http.post<SemesterResponseDTO>(this.apiUrl, semesterRequest);
   }
 

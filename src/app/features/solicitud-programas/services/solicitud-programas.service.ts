@@ -59,37 +59,31 @@ export class SolicitudProgramasService {
 
   // Obtiene solicitudes académicas del semestre actual desde el backend
   getRequestsForSection(): Observable<SolicitudDto[]> {
-    console.log('📡 Solicitando academic requests del semestre actual...');
     return this.http.get<AcademicRequestResponseDTO[]>(`${this.baseUrl}/academic-requests/current-semester`).pipe(
       map(academicRequests => {
-        console.log('🔍 Solicitudes académicas recibidas del backend:', academicRequests);
-        console.log(`📊 Total de solicitudes: ${academicRequests.length}`);
-        
-        if (academicRequests.length === 0) {
-          console.log('⚠️ No se encontraron solicitudes académicas para el semestre actual');
+        if (!academicRequests || academicRequests.length === 0) {
           return [];
         }
-        
-        // Procesar cada solicitud y mapearla
-        const mappedSolicitudes = academicRequests.map((request, index) => {
-          console.log(`--- Procesando solicitud ${index + 1}/${academicRequests.length} ---`);
-          console.log('Solicitud original:', request);
-          
-          const mapped = this.mapAcademicRequestToSolicitud(request);
-          console.log('Solicitud mapeada:', mapped);
-          console.log(`Horarios: ${mapped.schedules?.length || 0} encontrados`);
-          
-          return mapped;
-        });
-        
-        console.log('✅ Todas las solicitudes procesadas:', mappedSolicitudes);
-        return mappedSolicitudes;
+        return academicRequests.map(request => this.mapAcademicRequestToSolicitud(request));
       }),
       catchError(error => {
-        console.error('❌ Error obteniendo solicitudes académicas:', error);
         if (error.status === 404) {
-          console.log('📝 No hay solicitudes académicas para el semestre actual');
-          return of([]); // Retornar array vacío en lugar de error
+          return of([]);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Devuelve el array sin mapear tal como viene del backend. Útil cuando el consumidor
+   * necesita trabajar con el DTO original (AcademicRequestResponseDTO).
+   */
+  getRawAcademicRequests(): Observable<AcademicRequestResponseDTO[]> {
+    return this.http.get<AcademicRequestResponseDTO[]>(`${this.baseUrl}/academic-requests/current-semester`).pipe(
+      catchError(error => {
+        if (error.status === 404) {
+          return of([] as AcademicRequestResponseDTO[]);
         }
         return throwError(() => error);
       })

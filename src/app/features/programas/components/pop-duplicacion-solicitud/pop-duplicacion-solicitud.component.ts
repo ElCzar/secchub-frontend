@@ -220,20 +220,6 @@ export class PopDuplicacionSolicitudComponent implements OnInit {
   }
   
   /**
-   * Formatear tipo de aula para mostrar
-   */
-  formatRoomType(roomTypeId: number): string {
-    const roomTypeMap: {[key: number]: string} = {
-      1: 'Aulas',
-      2: 'Laboratorio',
-      3: 'Auditorio',
-      4: 'Aulas Móviles',
-      5: 'Aulas Accesibles'
-    };
-    return roomTypeMap[roomTypeId] || 'Aulas';
-  }
-  
-  /**
    * Volver a la selección de semestre
    */
   onBackToSelection(): void {

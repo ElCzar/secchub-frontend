@@ -67,8 +67,8 @@
                   class="form-select"
                   required
                 >
-                  <option [value]="10">1 - Primer Semestre</option>
-                  <option [value]="30">2 - Segundo Semestre</option>
+                  <option [value]="1">1 - Primer Semestre</option>
+                  <option [value]="2">2 - Segundo Semestre</option>
                 </select>
               </div>
               
@@ -114,7 +114,7 @@
                 class="btn btn--primary" 
                 type="button" 
                 (click)="saveNewSemester()"
-                [disabled]="!validateNewSemester()"
+                [disabled]="!validateNewSemester() || loadingSemester"
               >
                 ✅ Guardar Semestre
               </button>
@@ -206,3 +206,11 @@
     </div>
   </div>
 </main>
+
+<!-- Success Modal -->
+<app-success-modal
+  [visible]="showSuccessModal"
+  [title]="successModalTitle"
+  [message]="successModalMessage"
+  (closed)="onSuccessModalClose()"
+></app-success-modal>

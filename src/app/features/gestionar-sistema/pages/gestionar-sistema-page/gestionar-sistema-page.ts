@@ -1,10 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
 import { SidebarToggleButtonComponent } from "../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button";
 import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
 import { SubjectsTable } from '../../components/subjects-table/subjects-table';
+import { SuccessModal } from '../../../../shared/components/success-modal/success-modal';
 import { CourseInformationService } from '../../../../shared/services/course-information.service';
 import { CourseResponseDTO } from '../../../../shared/model/dto/admin/CourseResponseDTO.model';
 import { SectionInformationService } from '../../../../shared/services/section-information.service';
@@ -24,12 +26,13 @@ import { SemesterRequestDTO } from '../../../../shared/model/dto/admin/SemesterR
     HeaderComponent, 
     SidebarToggleButtonComponent, 
     AccesosRapidosAdmi,
-    SubjectsTable
+    SubjectsTable,
+    SuccessModal
   ],
   templateUrl: './gestionar-sistema-page.html',
   styleUrl: './gestionar-sistema-page.scss'
 })
-export class GestionarSistemaPage implements OnInit {
+export class GestionarSistemaPage implements OnInit, OnDestroy {
   @ViewChild('subjectsTable') subjectsTable!: SubjectsTable;
   
   // Datos de la tabla
@@ -38,6 +41,7 @@ export class GestionarSistemaPage implements OnInit {
   
   // Estado de carga
   loading = false;
+  loadingSemester = false;
   
   // Búsqueda y filtros
   searchTerm = '';
@@ -61,12 +65,18 @@ export class GestionarSistemaPage implements OnInit {
     endDate: ''
   };
 
+  // Success modal
+  showSuccessModal = false;
+  successModalTitle = 'Semestre creado';
+  successModalMessage = 'El semestre ha sido creado exitosamente.';
+
   constructor(
     private readonly courseInformationService: CourseInformationService,
     private readonly sectionInformationService: SectionInformationService,
     private readonly semesterInformationService: SemesterInformationService,
     private readonly parametricService: ParametricService,
-    private readonly semesterChangeService: SemesterChangeService
+    private readonly semesterChangeService: SemesterChangeService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -243,22 +253,34 @@ export class GestionarSistemaPage implements OnInit {
 
   saveNewSemester(): void {
     if (this.validateNewSemester()) {
+      this.loadingSemester = true;
       const semesterRequest: SemesterRequestDTO = this.semesterChangeService.createRequestDTO(this.newSemester);
       
       this.semesterChangeService.createSemester(semesterRequest).subscribe({
         next: (newSemester) => {
           console.log('Semester created successfully:', newSemester);
-          this.availableSemestres.push(newSemester);
+          this.loadingSemester = false;
           this.isAddingNewSemester = false;
           this.resetNewSemester();
-          alert('Semestre creado exitosamente');
+          
+          // Show success modal
+          this.showSuccessModal = true;
         },
         error: (error) => {
           console.error('Error creating semester:', error);
+          this.loadingSemester = false;
           alert('Error al crear el semestre. Por favor, inténtelo de nuevo.');
         }
       });
     }
+  }
+
+  onSuccessModalClose(): void {
+    this.showSuccessModal = false;
+    // Reload the page to get fresh data
+    this.router.navigate([this.router.url]).then(() => {
+      globalThis.location.reload();
+    });
   }
 
   validateNewSemester(): boolean {
@@ -277,5 +299,23 @@ export class GestionarSistemaPage implements OnInit {
   // Computed property to determine if semester form fields should be editable
   isSemesterFormEditable(): boolean {
     return this.isAddingNewSemester;
+  }
+
+  ngOnDestroy(): void {
+    // Reset all values when component is destroyed
+    this.courses = [];
+    this.filteredCourses = [];
+    this.loading = false;
+    this.searchTerm = '';
+    this.seccionFilter = '';
+    this.availableSecciones = [];
+    this.sectionResponseDTO = [];
+    this.statusResponseDTO = [];
+    this.selectedSemestre = '';
+    this.fechaInicioPlanificacion = '';
+    this.fechaFinPlanificacion = '';
+    this.availableSemestres = [];
+    this.isAddingNewSemester = false;
+    this.resetNewSemester();
   }
 }
