@@ -24,6 +24,7 @@ import { HorarioMonitor } from '../../model/horario-monitor.model';
 import { TeachingAssistantScheduleResponseDTO } from '../../../../shared/model/dto/planning/TeachingAssistantScheduleResponseDTO.model';
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
 import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
+import { ClassResponseDTO } from '../../../../shared/model/dto/planning/ClassResponseDTO.model';
 
 @Component({
   selector: 'app-solicitud-monitores-page',
@@ -49,6 +50,7 @@ export class SolicitudMonitoresPage implements OnInit {
   statuses: StatusDTO[] = [];
   courses: CourseResponseDTO[] = [];
   sections: SectionResponseDTO[] = [];
+  classes: ClassResponseDTO[] = [];
 
 
   // UI Filters
@@ -181,8 +183,17 @@ export class SolicitudMonitoresPage implements OnInit {
 
   ngOnInit(): void {
     this.loadParameters();
+    this.loadClasses();
     this.loadMonitores();
     this.applyFilters();
+  }
+
+  // Load available classes for current semester
+  loadClasses() {
+    this.monitoresService.getCurrentSemesterClassesAvailable().subscribe(response => {
+      this.classes = response.body as ClassResponseDTO[] || [];
+      console.log('Classes loaded:', this.classes.length, this.classes);
+    });
   }
 
   // Load data for Student Applications
@@ -293,8 +304,10 @@ export class SolicitudMonitoresPage implements OnInit {
         const existingTA = this.teachingAssistants.find(ta => ta.studentApplicationId === monitor.id);
         const teachingAssistantRequestDTO = {
           studentApplicationId: monitor.id,
+          classId: monitor.noClase || null,
           weeklyHours: monitor.horasSemanales || 0,
           weeks: monitor.semanas || 0,
+          totalHours: (monitor.horasSemanales || 0) * (monitor.semanas || 0),
           schedules: (monitor.horarios ?? []).filter(h => h.dia && h.horaInicio && h.horaFinal).map(h => ({
             day: h.dia,
             startTime: (h.horaInicio.split(':').length === 2) ? h.horaInicio + ":00" : h.horaInicio,
@@ -442,4 +455,3 @@ export class SolicitudMonitoresPage implements OnInit {
     this.showSendModal = false;
   }
 }
-

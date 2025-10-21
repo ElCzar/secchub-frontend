@@ -554,10 +554,28 @@ export class PlanningService {
     
     return this.http.put<ClassScheduleDTO>(`${this.baseUrl}/schedules/${scheduleId}`, scheduleData).pipe(
       switchMap(response => {
+        // Handle null response from backend
+        if (!response) {
+          console.warn('Backend returned null response, using request data as response');
+          return of({
+            id: scheduleId,
+            classId: scheduleData.classId,
+            day: scheduleData.day,
+            startTime: scheduleData.startTime,
+            endTime: scheduleData.endTime,
+            classroomId: scheduleData.classroomId,
+            classRoomTypeId: scheduleData.classRoomTypeId,
+            modalityId: scheduleData.modalityId,
+            disability: scheduleData.disability
+          } as ClassScheduleDTO);
+        }
+
+        // If response has classroom info, return as-is
         if (response.classroomRoom) {
           return of(response);
         }
 
+        // Try to enrich with classroom name if we have classroomId
         if (response.classroomId) {
           return this.classroomService.getClassroomById(Number(response.classroomId)).pipe(
             map(classroom => ({ ...response, classroomRoom: classroom.name, classroomName: classroom.name } as ClassScheduleDTO)),
@@ -571,7 +589,7 @@ export class PlanningService {
         return of(response);
       }),
       tap(response => {
-        console.log(`Horario ${scheduleId} actualizado exitosamente (enriquecido):`, response);
+        console.log(`Horario ${scheduleId} actualizado exitosamente:`, response);
       }),
       catchError(error => {
         console.error(`=== ERROR AL ACTUALIZAR HORARIO ${scheduleId} ===`);

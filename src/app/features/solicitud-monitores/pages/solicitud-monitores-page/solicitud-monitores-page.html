@@ -69,6 +69,7 @@
     @if (showAdminTable) {
       <app-monitores-table
         [monitores]="adminMonitores"
+        [classes]="classes"
         [adminMode]="true"
         [showMonitorAdministrativo]="false"
         (update)="onMonitoresUpdate($event)">
@@ -84,6 +85,7 @@
     @if (showAcademicTable) {
       <app-monitores-table
         [monitores]="nonAdminMonitores"
+        [classes]="classes"
         [adminMode]="false"
         [showMonitorAdministrativo]="false"
         (update)="onMonitoresUpdate($event)">

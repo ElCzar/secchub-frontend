@@ -1,36 +1,35 @@
 <div class="table-container">
-  <table class="monitores-table">
+  <table class="monitores-table" [class.admin-mode]="adminMode" [class.academic-mode]="!adminMode">
     <thead>
       <tr>
         <th class="approval-column">Acciones</th>
-        <th>ID del<br>estudiante</th>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Carrera</th>
-        <th>Semestre</th>
-        <th>Promedio<br>Acumulado</th>
+        <th class="id-column">ID del<br>estudiante</th>
+        <th class="name-column">Nombre</th>
+        <th class="lastname-column">Apellido</th>
+        <th class="career-column">Carrera</th>
+        <th class="average-column">Promedio<br>Acumulado</th>
         @if (!adminMode) {
-          <th>Nombre del profesor<br>con quien tomó<br>la asignatura</th>
+          <th class="professor-column">Nombre del profesor<br>con quien tomó<br>la asignatura</th>
         }
         @if (!adminMode) {
-          <th>No.<br>Clase</th>
+          <th class="class-number-column">No.<br>Clase</th>
         }
         @if (!adminMode) {
-          <th>Nombre<br>Asignatura</th>
+          <th class="subject-column">Nombre<br>Asignatura</th>
         }
         @if (!adminMode) {
-          <th>Nota<br>Obtenida</th>
+          <th class="grade-column">Nota<br>Obtenida</th>
         }
         @if (adminMode) {
-          <th>Sección<br>Académica</th>
+          <th class="section-column">Sección<br>Académica</th>
         }
-        <th>Horas<br>Semanales</th>
-        <th>Semanas</th>
-        <th>Total<br>Horas</th>
-        <th>Correo<br>Institucional</th>
-        <th>ANTIGUO</th>
+        <th class="hours-column">Horas<br>Semanales</th>
+        <th class="weeks-column">Semanas</th>
+        <th class="total-column">Total<br>Horas</th>
+        <th class="email-column">Correo<br>Institucional</th>
+        <th class="old-column">ANTIGUO</th>
         @if (showMonitorAdministrativo) {
-          <th>Monitor<br>Administrativo</th>
+          <th class="admin-monitor-column">Monitor<br>Administrativo</th>
         }
       </tr>
     </thead>
@@ -43,23 +42,25 @@
               <button type="button" class="btn-reject" (click)="rechazarMonitor(m)" title="Rechazar">✕</button>
             </div>
           </td>
-          <td>{{ m.id }}</td>
+          <td>{{ m.userId }}</td>
           <td>{{ m.nombre }}</td>
           <td>{{ m.apellido }}</td>
           <td>{{ m.carrera }}</td>
-          <td>{{ m.semestre }}</td>
           <td>{{ m.promedio }}</td>
           @if (!adminMode) {
             <td>{{ m.profesor }}</td>
           }
           @if (!adminMode) {
             <td class="editable-cell">
-              <input 
-                type="number" 
+              <select 
                 class="table-input" 
-                [(ngModel)]="m.noClase" 
-                placeholder=""
-              />
+                [(ngModel)]="m.noClase"
+              >
+                <option [ngValue]="undefined">-</option>
+                @for (classOption of getClassesByCourse(m.courseId); track classOption.id) {
+                  <option [ngValue]="classOption.id">{{ classOption.id }}</option>
+                }
+              </select>
             </td>
           }
           @if (!adminMode) {
@@ -71,15 +72,7 @@
           @if (adminMode) {
             <td>{{ m.seccionAcademica || '-' }}</td>
           }
-          <td class="editable-cell">
-            <input 
-              type="number" 
-              class="table-input" 
-              [(ngModel)]="m.horasSemanales" 
-              (change)="calcularTotal(m)" 
-              placeholder=""
-            />
-          </td>
+          <td class="total-horas">{{ m.horasSemanales || 0 }}</td>
           <td class="editable-cell">
             <input 
               type="number" 
@@ -113,7 +106,10 @@
         @if (m.showHorarios) {
           <tr [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
             <td [attr.colspan]="getColspan()">
-              <app-horarios-monitores [horarios]="m.horarios || []"></app-horarios-monitores>
+              <app-horarios-monitores 
+                [horarios]="m.horarios || []"
+                (horariosChange)="onHorariosChange(m)">
+              </app-horarios-monitores>
             </td>
           </tr>
         }

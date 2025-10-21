@@ -10,6 +10,7 @@ export class SolicitudMonitoresService {
   private readonly baseUrl = environment.apiUrl;
   private readonly studentApplicationsEndpoint = '/student-applications';
   private readonly teachingAssistantsEndpoint = '/teaching-assistants';
+  private readonly classesAvailableEndpoint = '/planning/classes';
 
   constructor(private readonly http: HttpClient) {}
 
@@ -63,6 +64,12 @@ export class SolicitudMonitoresService {
 
   deleteTeachingAssistant(id: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}${this.teachingAssistantsEndpoint}/${id}`,{
+      observe: 'response'
+    });
+  }
+
+  getCurrentSemesterClassesAvailable(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}${this.classesAvailableEndpoint}/current-semester`,{
       observe: 'response'
     });
   }

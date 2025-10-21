@@ -46,7 +46,10 @@
     <div class="table-footer">
       @if (logEntries.length > 0) {
         <div class="table-info">
-          <p class="entries-count">Mostrando {{ logEntries.length }} entradas - Página {{ currentPage + 1 }}</p>
+          <p class="entries-count">
+            Mostrando {{ (currentPage * pageSize) + 1 }} - {{ (currentPage * pageSize) + logEntries.length }} de {{ totalEntries }} entradas
+            (Página {{ currentPage + 1 }} de {{ totalPages }})
+          </p>
         </div>
       }
       
@@ -58,7 +61,7 @@
           [disabled]="!canGoPrevious">
           ← Anterior
         </button>
-        <span class="page-number">Página {{ currentPage + 1 }}</span>
+        <span class="page-number">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
         <button 
           class="btn btn--secondary" 
           (click)="onNextPage()" 

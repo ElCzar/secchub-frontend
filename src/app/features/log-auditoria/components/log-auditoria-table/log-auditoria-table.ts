@@ -12,8 +12,9 @@ export class LogAuditoriaTable {
   @Input() logEntries: AuditLogResponseDTO[] = [];
   @Input() loading = false;
   @Input() currentPage = 0;
+  @Input() pageSize = 10;
   @Input() totalEntries = 0;
-  @Input() hasMorePages = true;
+  @Input() totalPages = 0;
   @Output() refresh = new EventEmitter<void>();
   @Output() pageChange = new EventEmitter<number>();
 
@@ -55,6 +56,6 @@ export class LogAuditoriaTable {
   }
 
   get canGoNext(): boolean {
-    return this.hasMorePages;
+    return this.currentPage < this.totalPages - 1;
   }
 }

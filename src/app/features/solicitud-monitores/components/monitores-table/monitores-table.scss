@@ -13,13 +13,31 @@
 
 .monitores-table {
   width: 100%;
-  min-width: 1820px;
-  border-collapse: collapse;
+  border-collapse: separate;
   border-spacing: 0;
-  table-layout: fixed;
+  table-layout: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+}
+
+/* Academic mode table - wider with all academic columns */
+.monitores-table.academic-mode {
+  min-width: 2400px;
+  
+  th, td {
+    padding: 12px 10px;
+  }
+}
+
+/* Admin mode table - narrower, focused on administrative info */
+.monitores-table.admin-mode {
+  min-width: 1600px;
+  max-width: 100%;
+  
+  th, td {
+    padding: 12px 10px;
+  }
 }
 .monitores-table thead th:first-child,
 .monitores-table tbody td:first-child {
@@ -60,9 +78,18 @@
   border-bottom: 1px solid var(--border);
   border-left: none;
   border-right: none;
-  padding: 10px;
+  padding: 12px 10px;
   text-align: center;
   vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Email column exception - allow wrapping */
+.monitores-table .email-column {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
 }
 
 /* Filas alternadas y hover */
@@ -96,9 +123,17 @@
 
 /* Horarios anidados */
 .monitores-table tr:has(app-horarios-monitores) td {
-  padding: 0 !important;
+  padding: 12px !important;
   border-top: none;
   border-bottom: 1px solid var(--border);
+}
+
+/* Ensure horarios section fits within table width */
+app-horarios-monitores {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
 }
 
 /* Quitar línea entre la fila de datos y el botón Horarios */
@@ -106,12 +141,122 @@
   border-bottom: none;
 }
 
-/* Columna de checkbox */
-/* Columna de acciones (Aceptar / Rechazar) */
+/* Column-specific widths */
 .approval-column {
-  width: 120px;
+  width: 140px;
+  min-width: 140px;
   text-align: center;
   padding: 8px !important;
+}
+
+.id-column {
+  width: 120px;
+  min-width: 120px;
+}
+
+.name-column {
+  width: 160px;
+  min-width: 160px;
+}
+
+.lastname-column {
+  width: 160px;
+  min-width: 160px;
+}
+
+.career-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+.average-column {
+  width: 130px;
+  min-width: 130px;
+}
+
+/* Academic mode specific columns */
+.professor-column {
+  width: 220px;
+  min-width: 220px;
+}
+
+.class-number-column {
+  width: auto;
+  min-width: 120px;
+}
+
+.subject-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+.grade-column {
+  width: 110px;
+  min-width: 110px;
+}
+
+/* Admin mode specific columns */
+.section-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+/* Shared columns with different widths per mode */
+.academic-mode .hours-column {
+  width: auto;
+  min-width: 150px;
+}
+
+.admin-mode .hours-column {
+  width: auto;
+  min-width: 170px;
+}
+
+.academic-mode .weeks-column {
+  width: auto;
+  min-width: 140px;
+}
+
+.admin-mode .weeks-column {
+  width: auto;
+  min-width: 160px;
+}
+
+.academic-mode .total-column {
+  width: 110px;
+  min-width: 110px;
+}
+
+.admin-mode .total-column {
+  width: 130px;
+  min-width: 130px;
+}
+
+.academic-mode .email-column {
+  width: 280px;
+  min-width: 280px;
+}
+
+.admin-mode .email-column {
+  width: 300px;
+  min-width: 300px;
+}
+
+.email-column {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  text-align: left;
+  padding-left: 12px !important;
+}
+
+.old-column {
+  width: 100px;
+  min-width: 100px;
+}
+
+.admin-monitor-column {
+  width: 130px;
+  min-width: 130px;
 }
 
 .row-approval { display: flex; gap: 8px; justify-content: center; }
@@ -133,87 +278,16 @@
 .btn-reject { color: #b42318; border-color: #f2c6c3; background: #fdecea; }
 .btn-reject:hover { background: #fbd5d2; }
 
-/* Anchos específicos para columnas importantes */
-.monitores-table th:nth-child(2) { /* ID del estudiante */
-  width: 90px;
-}
-
-.monitores-table th:nth-child(3), /* Nombre */
-.monitores-table th:nth-child(4) { /* Apellido */
-  width: 120px;
-}
-
-.monitores-table th:nth-child(5) { /* Carrera */
-  width: 100px;
-}
-
-.monitores-table th:nth-child(6) { /* Semestre */
-  width: 80px;
-}
-
-.monitores-table th:nth-child(7) { /* Promedio Acumulado */
-  width: 90px;
-}
-
-.monitores-table th:nth-child(8) { /* Nombre del profesor */
-  width: 140px;
-}
-
-.monitores-table th:nth-child(9) { /* No. Clase */
-  width: 70px;
-}
-
-.monitores-table th:nth-child(10) { /* Nombre Asignatura */
-  width: 120px;
-}
-
-.monitores-table th:nth-child(11) { /* Nota Obtenida */
-  width: 80px;
-}
-
-.monitores-table th:nth-child(12) { /* Horas Semanales */
-  width: 110px; /* asignar un poco más de espacio para el input */
-  min-width: 90px;
-}
-
-.monitores-table th:nth-child(13) { /* Semanas */
-  width: 90px;
-  min-width: 70px;
-}
-
-.monitores-table th:nth-child(14) { /* Total Horas */
-  width: 80px;
-}
-
-.monitores-table th:nth-child(15) { /* Correo Institucional */
-  width: 260px; /* aumentar para que la mayoría de correos quepan en una línea */
-  min-width: 180px;
-}
-
-/* Asegurar que el contenido de la columna correo se ajuste al ancho y pueda envolverse */
-.monitores-table td:nth-child(15) {
-  white-space: normal; /* permitir wrap si es necesario */
-  overflow-wrap: anywhere; /* permitir romper si es necesario en palabras largas */
-  text-align: left;
-}
-
-.monitores-table th:nth-child(16) { /* ANTIGUO */
-  width: 80px;
-}
-
-.monitores-table th:nth-child(17) { /* Monitor Administrativo */
-  width: 100px;
-}
-
 /* Celdas editables */
 .editable-cell {
-  padding: 4px !important;
+  padding: 10px 8px !important;
+  min-width: fit-content;
 }
 
 .table-input {
-  width: 100%;
-  min-width: 60px;
-  padding: 6px 8px;
+  width: 120px;
+  min-width: 120px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 14px;
@@ -221,6 +295,7 @@
   outline: none;
   transition: border-color 0.2s ease;
   text-align: center;
+  box-sizing: border-box;
 
   &:focus {
     border-color: var(--brand-azul);
@@ -228,22 +303,35 @@
   }
 }
 
-/* Inputs pequeños en columnas numéricas para evitar solapamiento */
-.monitores-table td:nth-child(9) .table-input,
-.monitores-table td:nth-child(12) .table-input,
-.monitores-table td:nth-child(13) .table-input {
-  width: 64px; /* fijo y compacto */
-  max-width: 100%;
-  box-sizing: border-box;
-  display: inline-block;
-  text-align: center;
+/* Specific input sizing for different columns - inputs define column width */
+.class-number-column .table-input {
+  width: 100px;
+  min-width: 100px;
 }
 
-/* Reducir el padding de las celdas con inputs pequeños para que no parezcan encima */
-.monitores-table td:nth-child(9),
-.monitores-table td:nth-child(12),
-.monitores-table td:nth-child(13) {
-  padding: 8px 10px;
+.hours-column .table-input {
+  width: 130px;
+  min-width: 130px;
+}
+
+.weeks-column .table-input {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* Ensure proper spacing in editable cells */
+.academic-mode .editable-cell {
+  padding: 10px 12px !important;
+}
+
+.admin-mode .editable-cell {
+  padding: 10px 15px !important;
+}
+
+/* Prevent cell content from overlapping */
+.monitores-table td {
+  overflow: visible;
+  position: relative;
 }
 
 /* Columna de total horas */

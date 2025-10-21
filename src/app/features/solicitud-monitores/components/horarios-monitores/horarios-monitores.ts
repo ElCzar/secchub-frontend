@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HorarioMonitor } from '../../model/horario-monitor.model';
@@ -12,6 +12,7 @@ import { HorarioMonitor } from '../../model/horario-monitor.model';
 export class HorariosMonitores implements OnInit {
 
   @Input() horarios: HorarioMonitor[] = [];
+  @Output() horariosChange = new EventEmitter<void>();
 
   ngOnInit() {
     // Ensure there's always at least one empty row
@@ -36,12 +37,14 @@ export class HorariosMonitores implements OnInit {
       dia: '', horaInicio: '', horaFinal: '', totalHoras: 0,
       id: 0
     });
+    this.horariosChange.emit();
   }
 
   deleteHorario(index: number) {
     this.horarios.splice(index, 1);
     // Ensure there's always at least one empty row
     this.ensureEmptyRow();
+    this.horariosChange.emit();
   }
 
   /**
@@ -70,6 +73,7 @@ export class HorariosMonitores implements OnInit {
     } else {
       horario.totalHoras = 0;
     }
+    this.horariosChange.emit();
   }
 
   private timeStringToMinutes(timeString: string): number {

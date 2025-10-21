@@ -50,11 +50,12 @@
 
     <!-- Componente de tabla de log de auditoría -->
     <app-log-auditoria-table 
-      [logEntries]="filteredLogEntries"
+      [logEntries]="logEntries"
       [loading]="loading"
       [currentPage]="currentPage"
+      [pageSize]="pageSize"
       [totalEntries]="totalEntries"
-      [hasMorePages]="hasMorePages"
+      [totalPages]="totalPages"
       (refresh)="loadLogEntries()"
       (pageChange)="onPageChange($event)"
     ></app-log-auditoria-table>

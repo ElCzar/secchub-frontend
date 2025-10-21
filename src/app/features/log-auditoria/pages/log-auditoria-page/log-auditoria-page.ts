@@ -33,7 +33,8 @@ export interface LogEntry {
 })
 export class LogAuditoriaPage implements OnInit {
   // Datos del log
-  logEntries: AuditLogResponseDTO[] = [];
+  allLogEntries: AuditLogResponseDTO[] = []; // All entries from backend
+  logEntries: AuditLogResponseDTO[] = []; // Currently displayed page
   filteredLogEntries: AuditLogResponseDTO[] = [];
 
   // Estado de carga
@@ -41,9 +42,9 @@ export class LogAuditoriaPage implements OnInit {
   
   // Paginación
   currentPage = 0;
-  pageSize = 50;
+  pageSize = 10;
   totalEntries = 0;
-  hasMorePages = true;
+  totalPages = 0;
   
   // Filtros
   searchTerm = '';
@@ -61,55 +62,37 @@ export class LogAuditoriaPage implements OnInit {
 
   ngOnInit(): void {
     this.loadLogEntries();
-    this.loadAvailableFilters();
-  }
-
-  /**
-   * Carga los filtros disponibles usando los endpoints específicos
-   */
-  loadAvailableFilters(): void {
-    // Load all unique emails
-    this.logAuditoriaService.getAllLogEntries().subscribe({
-      next: (entries) => {
-        // Extract unique emails
-        const emails = entries
-          .map(entry => entry.email)
-          .filter((email, index, array) => array.indexOf(email) === index)
-          .sort((a, b) => a.localeCompare(b));
-        this.availableUsuarios = emails;
-
-        // Extract unique actions
-        const actions = entries
-          .map(entry => entry.action)
-          .filter((action, index, array) => array.indexOf(action) === index)
-          .sort((a, b) => a.localeCompare(b));
-        this.availableAcciones = actions;
-      },
-      error: (error) => {
-        console.error('Error loading available filters:', error);
-      }
-    });
   }
 
   loadLogEntries(): void {
     this.loading = true;
     
-    // Convert fecha filter to dd/MM/yyyy format if present
-    const dateFilter = this.fechaFilter ? this.convertToddMMyyyyFormat(this.fechaFilter) : undefined;
-    
-    // Use pagination with filters
+    // Load all entries from backend (since backend doesn't support pagination)
     this.logAuditoriaService.getLogEntries(
-      this.currentPage,
-      this.pageSize,
+      0,
+      9999, // Request a large number since backend returns all anyway
       this.accionFilter || undefined,
-      dateFilter
+      this.fechaFilter ? this.convertToddMMyyyyFormat(this.fechaFilter) : undefined
     ).subscribe({
       next: (entries) => {
-        this.logEntries = entries;
-        // Check if there are more pages (if we got less than pageSize, no more pages)
-        this.hasMorePages = entries.length >= this.pageSize;
+        // Sort entries from latest to oldest
+        entries.sort((a, b) => {
+          const dateA = new Date(a.timestamp).getTime();
+          const dateB = new Date(b.timestamp).getTime();
+          return dateB - dateA; // Descending order (newest first)
+        });
+        
+        // Store all entries
+        this.allLogEntries = entries;
+        this.totalEntries = entries.length;
+        this.totalPages = Math.ceil(this.totalEntries / this.pageSize);
+        
+        // Extract filters from all data
         this.extractAvailableFilters();
+        
+        // Apply client-side filters and pagination
         this.applyClientSideFilters();
+        
         this.loading = false;
       },
       error: (error) => {
@@ -156,22 +139,22 @@ export class LogAuditoriaPage implements OnInit {
   }
 
   private extractAvailableFilters(): void {
-    // Extract unique usuarios (emails)
-    const usuarios = this.logEntries
+    // Extract unique usuarios (emails) from all entries
+    const usuarios = this.allLogEntries
       .map(entry => entry.email)
       .filter((email, index, array) => array.indexOf(email) === index)
       .sort((a, b) => a.localeCompare(b));
     this.availableUsuarios = usuarios;
 
-    // Extract unique acciones
-    const acciones = this.logEntries
+    // Extract unique acciones from all entries
+    const acciones = this.allLogEntries
       .map(entry => entry.action)
       .filter((action, index, array) => array.indexOf(action) === index)
       .sort((a, b) => a.localeCompare(b));
     this.availableAcciones = acciones;
 
     // Extract unique horas from timestamps
-    const horas = this.logEntries
+    const horas = this.allLogEntries
       .map(entry => this.extractTimeFromTimestamp(entry.timestamp))
       .filter((hora, index, array) => array.indexOf(hora) === index)
       .sort((a, b) => a.localeCompare(b));
@@ -179,7 +162,7 @@ export class LogAuditoriaPage implements OnInit {
   }
 
   applyClientSideFilters(): void {
-    let filtered = [...this.logEntries];
+    let filtered = [...this.allLogEntries];
 
     // Filtro de búsqueda (client-side)
     if (this.searchTerm.trim()) {
@@ -203,25 +186,40 @@ export class LogAuditoriaPage implements OnInit {
       );
     }
 
+    // Update total after filtering
     this.filteredLogEntries = filtered;
     this.totalEntries = filtered.length;
+    this.totalPages = Math.ceil(this.totalEntries / this.pageSize);
+    
+    // Reset to first page if current page is out of bounds
+    if (this.currentPage >= this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages - 1;
+    }
+    
+    // Apply client-side pagination
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.logEntries = filtered.slice(startIndex, endIndex);
   }
 
   applyFilters(): void {
     // Reset to first page when filters change
     this.currentPage = 0;
-    this.loadLogEntries();
+    // Reapply client-side filters (don't reload from backend)
+    this.applyClientSideFilters();
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.loadLogEntries();
+    // Just update the displayed page from filtered data
+    this.applyClientSideFilters();
   }
 
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 0;
-    this.loadLogEntries();
+    // Recalculate pagination
+    this.applyClientSideFilters();
   }
 
   // Helper method to get formatted date for display
