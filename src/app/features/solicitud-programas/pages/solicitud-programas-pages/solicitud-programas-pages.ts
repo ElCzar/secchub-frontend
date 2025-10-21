@@ -310,12 +310,78 @@ export class SolicitudProgramasPages implements OnInit {
   }
 
   canCombine(): boolean {
-    return this.rows.filter(r => r.selected && r._state !== 'deleted').length >= 2;
+    const selected = this.rows.filter(r => r.selected && r._state !== 'deleted');
+    
+    // Necesita al menos 2 seleccionadas
+    if (selected.length < 2) return false;
+    
+    // Todas deben ser de la misma materia (mismo ID o mismo nombre)
+    const firstMateria = selected[0].materia?.trim().toLowerCase();
+    const firstCourseId = selected[0].courseId;
+    
+    return selected.every(row => {
+      const rowMateria = row.materia?.trim().toLowerCase();
+      const rowCourseId = row.courseId;
+      
+      // Permitir si tienen el mismo courseId o el mismo nombre
+      return (firstCourseId && rowCourseId && firstCourseId === rowCourseId) ||
+             (rowMateria === firstMateria);
+    });
+  }
+
+  getSelectedCount(): number {
+    return this.rows.filter(r => r.selected && r._state !== 'deleted').length;
+  }
+
+  getCombineButtonTooltip(): string {
+    const count = this.getSelectedCount();
+    
+    if (count < 2) {
+      return 'Selecciona al menos 2 solicitudes para combinar';
+    }
+    
+    const selected = this.rows.filter(r => r.selected && r._state !== 'deleted');
+    const firstMateria = selected[0].materia?.trim().toLowerCase();
+    const firstCourseId = selected[0].courseId;
+    
+    const allSameMateria = selected.every(row => {
+      const rowMateria = row.materia?.trim().toLowerCase();
+      const rowCourseId = row.courseId;
+      return (firstCourseId && rowCourseId && firstCourseId === rowCourseId) ||
+             (rowMateria === firstMateria);
+    });
+    
+    if (!allSameMateria) {
+      return 'Solo puedes combinar solicitudes de la misma materia (mismo ID o nombre)';
+    }
+    
+    return `Combinar ${count} solicitudes de ${selected[0].materia}`;
   }
 
   combineRequests(): void {
     this.selectedForCombine = this.rows.filter(r => r.selected && r._state !== 'deleted');
     if (this.selectedForCombine.length < 2) return;
+    
+    // Validar que todas las materias seleccionadas sean la misma
+    const firstMateria = this.selectedForCombine[0].materia?.trim().toLowerCase();
+    const firstCourseId = this.selectedForCombine[0].courseId;
+    
+    const allSameMateria = this.selectedForCombine.every(row => {
+      const rowMateria = row.materia?.trim().toLowerCase();
+      const rowCourseId = row.courseId;
+      
+      // Permitir combinación si:
+      // 1. Tienen el mismo courseId (más confiable)
+      // 2. O tienen el mismo nombre de materia (fallback)
+      return (firstCourseId && rowCourseId && firstCourseId === rowCourseId) ||
+             (rowMateria === firstMateria);
+    });
+    
+    if (!allSameMateria) {
+      alert('❌ Solo puedes combinar solicitudes de la misma materia.\n\nPor favor, selecciona únicamente solicitudes que correspondan a la misma materia (mismo ID o nombre).');
+      return;
+    }
+    
     this.combinePopupVisible = true;
   }
 

@@ -228,7 +228,21 @@ app-sidebar-toggle-button {
 .tabla tbody td { padding: 8px 12px; vertical-align: middle; border-bottom: 1px solid var(--border); }
 .tabla tbody tr.is-deleted { opacity: .5; }
 
-.actions--right { text-align: right; }
+.actions--right { 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hint-text {
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 .actions--enviar { margin-top: 20px; }
 
 .btn-icon { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background:var(--brand-azul); color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer }

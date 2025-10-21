@@ -174,3 +174,82 @@ app-sidebar-toggle-button {
         box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
     }
 }
+
+/* ==============================
+  Leyenda de estados
+  ============================== */
+.status-legend {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-700);
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.legend-items {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-700);
+}
+
+.legend-text {
+    font-weight: 500;
+}
+
+/* Reutilizar estilos de símbolos de la tabla */
+.status-symbol {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    flex-shrink: 0;
+}
+
+.symbol-pending {
+    width: 0;
+    height: 0;
+    border: none;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 12px solid #f39c12;
+    background: transparent;
+}
+
+.symbol-confirmed {
+    border-radius: 50%;
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.symbol-rejected {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Responsive para leyenda */
+@media (max-width: 768px) {
+    .legend-items {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

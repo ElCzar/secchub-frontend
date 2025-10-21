@@ -53,6 +53,25 @@
       <button class="btn btn--secondary" [routerLink]="['/solicitud-programas']">Aplicar Planeacion Programas</button>
     </div>
 
+    <!-- Leyenda de estados de docentes -->
+    <div class="status-legend">
+      <h3 class="legend-title">Estado de Confirmación del Docente:</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="status-symbol symbol-pending"></span>
+          <span class="legend-text">Pendiente</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-symbol symbol-confirmed"></span>
+          <span class="legend-text">Confirmado</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-symbol symbol-rejected"></span>
+          <span class="legend-text">Rechazado</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabla principal -->
     <app-planning-classes-table
       [rows]="rows"

@@ -89,7 +89,16 @@
 
       <!-- Botones de acción -->
       <div class="actions actions--right">
-  <button type="button" class="btn btn--accent btn--large" (click)="combineRequests()" [disabled]="!canCombine()">Combinar</button>
+        <button type="button" 
+                class="btn btn--accent btn--large" 
+                (click)="combineRequests()" 
+                [disabled]="!canCombine()"
+                [title]="getCombineButtonTooltip()">
+          Combinar
+        </button>
+        <small class="hint-text" *ngIf="!canCombine() && getSelectedCount() >= 2">
+          ⚠️ Solo puedes combinar solicitudes de la misma materia
+        </small>
       </div>
 
       <!-- Combinaciones realizadas -->
