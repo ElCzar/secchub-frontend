@@ -293,6 +293,53 @@
 }
 
 /* ==============================
+  Símbolos de estado (accesibilidad)
+  ============================== */
+.status-symbol {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border: 2px solid currentColor;
+}
+
+/* Triángulo para PENDIENTE */
+.symbol-pending {
+  width: 0;
+  height: 0;
+  border: none;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid #f39c12;
+  background: transparent;
+}
+
+/* Círculo para CONFIRMADO */
+.symbol-confirmed {
+  border-radius: 50%;
+  background-color: #2ecc71;
+  border-color: #2ecc71;
+}
+
+/* Cuadrado para RECHAZADO */
+.symbol-rejected {
+  background-color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.teacher-name-with-status {
+  display: inline-flex;
+  align-items: center;
+}
+
+.input-with-symbol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==============================
   Botones de acción
   ============================== */
 .btn--primary {
