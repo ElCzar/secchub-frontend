@@ -114,7 +114,8 @@ export class SolicitudProgramasService {
       catchError(error => {
         console.error(`❌ Error obteniendo curso ${courseId}:`, error);
         // Retornar un curso por defecto en caso de error
-        return throwError(() => ({ id: courseId, name: 'Materia Desconocida', sectionId: 1, sectionName: 'Sección Desconocida' }));
+        // Devolver un Observable con un curso por defecto en lugar de propagar el error
+        return of({ id: courseId, name: 'Materia Desconocida', sectionId: 1, sectionName: 'Sección Desconocida' } as Course);
       })
     );
   }
@@ -145,17 +146,25 @@ export class SolicitudProgramasService {
       return [];
     }
 
-    return schedules.map((schedule, index) => {
-  // Usar únicamente la convención 'classRoomTypeId' (R mayúscula)
-  const typeId = (schedule as any).classRoomTypeId;
-      const mappedSchedule = {
-        day: this.mapDayToSpanish(schedule.day),
-        startTime: schedule.startTime,
-        endTime: schedule.endTime,
-        disability: schedule.disability || false,
-        modality: this.mapModalityIdToName(schedule.modalityId),
-        roomType: this.mapClassRoomTypeIdToName(typeId)
-      };
+      return schedules.map((schedule, index) => {
+        const typeId = (schedule as any).classRoomTypeId;
+
+        // Normalize times: backend may return HH:mm:ss -> convert to HH:mm
+        const normalizeTime = (t?: string) => {
+          if (!t) return '';
+          const parts = t.split(':');
+          return parts.length >= 2 ? parts[0].padStart(2,'0') + ':' + parts[1].padStart(2,'0') : t;
+        };
+
+        const mappedSchedule = {
+          day: this.mapDayToSpanish(schedule.day),
+          startTime: normalizeTime(schedule.startTime),
+          endTime: normalizeTime(schedule.endTime),
+          disability: schedule.disability || false,
+          modality: this.mapModalityIdToName(schedule.modalityId),
+          roomType: this.mapClassRoomTypeIdToName(typeId),
+          roomTypeId: typeId
+        };
 
       console.log(`📅 Horario ${index + 1} mapeado:`, {
         backend: schedule,
@@ -168,22 +177,22 @@ export class SolicitudProgramasService {
 
   // Mapea IDs de modalidad a nombres legibles
   private mapModalityIdToName(modalityId: number): string {
-    switch (modalityId) {
-      case 1: return 'PRESENCIAL';
-      case 2: return 'VIRTUAL';
-      case 3: return 'HÍBRIDA';
-      default: return 'DESCONOCIDA';
-    }
+    const map = new Map<number, string>([
+      [1, 'PRESENCIAL'],
+      [2, 'VIRTUAL'],
+      [3, 'HIBRIDO']
+    ]);
+    return map.get(modalityId) || 'PRESENCIAL';
   }
 
   // Mapea IDs de tipo de aula a nombres legibles
   private mapClassRoomTypeIdToName(classRoomTypeId: number): string {
-    switch (classRoomTypeId) {
-      case 1: return 'Aulas';
-      case 2: return 'Laboratorio';
-      case 3: return 'Auditorio';
-      default: return 'Aula General';
-    }
+    const roomType = {
+      1: 'Aulas',
+      2: 'Laboratorio',
+      3: 'Auditorio'
+    } as { [k: number]: string };
+    return roomType[classRoomTypeId] || 'Aulas';
   }
 
   // Mapea días en inglés a español

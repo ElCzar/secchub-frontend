@@ -32,6 +32,9 @@ interface SolicitudRow {
   selected?: boolean;
   _state?: RowState;
   schedules?: ScheduleRow[];
+  // Optional resolved identifiers filled during mapping
+  courseId?: number;
+  sectionId?: number;
 }
 
 interface CombinedRequest {
@@ -134,53 +137,106 @@ export class SolicitudProgramasPages implements OnInit {
 
   private loadRequests(): void {
     this.service.getRawAcademicRequests().subscribe((list: AcademicRequestResponseDTO[]) => {
-      this.rows = list.map((r: AcademicRequestResponseDTO) => {
-        let courseId: number | undefined;
-        let sectionId: number | undefined;
-        let sectionName = r.programName || '';
+      // Determine which course IDs are missing from the local cache
+      const missingCourseIds = Array.from(new Set(list
+        .map(r => r.courseId)
+        .filter(id => !!id && !this.coursesMap.has(id as number)) as number[]));
 
+      if (missingCourseIds.length > 0) {
+        // Fetch missing courses in parallel, then map rows
+        const fetches = missingCourseIds.map(id => this.courseInformationService.findCourseById(id));
+        forkJoin(fetches).subscribe({
+          next: (courses) => {
+            courses.forEach(c => {
+              if (c && c.id != null) this.coursesMap.set(c.id, c);
+            });
+            this.mapRequestsToRows(list);
+          },
+          error: () => {
+            // If a fetch fails, still try to map with whatever cache we have
+            this.mapRequestsToRows(list);
+          }
+        });
+      } else {
+        this.mapRequestsToRows(list);
+      }
+    });
+  }
+
+  // Helper: map backend requests into UI rows (assumes coursesMap/sectionsMap populated)
+  private mapRequestsToRows(list: AcademicRequestResponseDTO[]): void {
+    this.rows = list.map((r: AcademicRequestResponseDTO) => {
+      let courseId: number | undefined;
+      let sectionId: number | undefined;
+      let sectionName = r.programName || '';
+
+      // Prefer lookup by courseId (most reliable). If backend returned courseId and we have it cached,
+      // use that to derive section info. Otherwise try to find by course name as a fallback.
+      if (r.courseId) {
+        const cachedCourse = this.coursesMap.get(r.courseId as number);
+        if (cachedCourse) {
+          courseId = cachedCourse.id;
+          sectionId = cachedCourse.sectionId;
+          sectionName = cachedCourse.sectionName || sectionName;
+        }
+      }
+
+      if (!courseId && r.courseName) {
         for (const [id, course] of this.coursesMap.entries()) {
           if (course.name === r.courseName) {
             courseId = id;
             sectionId = course.sectionId;
+            sectionName = course.sectionName || sectionName;
             break;
           }
         }
+      }
 
-        if (!sectionName && sectionId) {
-          const section = this.sectionsMap.get(sectionId);
-          if (section) sectionName = section.name;
-        }
+      // If still no sectionName but we have sectionId, use the sections cache
+      if (!sectionName && sectionId) {
+        const section = this.sectionsMap.get(sectionId);
+        if (section) sectionName = section.name;
+      }
 
-        const mappedRow: SolicitudRow = {
-          id: r.id,
-          program: sectionName || r.programName || `Usuario ${r.userId}`,
-          materia: r.courseName || `Curso ${r.courseId}`,
-          cupos: r.capacity,
-          startDate: r.startDate,
-          endDate: r.endDate,
-          comments: r.observation || '',
-          comentarios: r.observation || '',
-          selected: false,
-          _state: 'existing' as RowState,
-          schedules: r.schedules && r.schedules.length > 0 ? r.schedules.map((s: RequestScheduleResponseDTO) => {
-            return {
-              day: this.mapDayFromBackend(s.day) as any,
-              startTime: s.startTime,
-              endTime: s.endTime,
-              roomType: this.mapRoomTypeIdToName(s.classRoomTypeId) as any,
-              roomTypeId: s.classRoomTypeId,
-              modality: this.mapModalityIdToName(s.modalityId) as any,
-              disability: s.disability
-            };
-          }) : []
-        };
+      const mappedRow: SolicitudRow = {
+        id: r.id,
+        program: sectionName || r.programName || `Usuario ${r.userId}`,
+        materia: r.courseName || `Curso ${r.courseId}`,
+        cupos: r.capacity,
+        startDate: r.startDate,
+        endDate: r.endDate,
+        comments: r.observation || '',
+        comentarios: r.observation || '',
+        selected: false,
+        _state: 'existing' as RowState,
+        schedules: r.schedules && r.schedules.length > 0 ? r.schedules.map((s: RequestScheduleResponseDTO) => {
+          const normalizeTime = (t?: string) => {
+            if (!t) return '';
+            const parts = t.split(':');
+            return parts.length >= 2 ? parts[0].padStart(2,'0') + ':' + parts[1].padStart(2,'0') : t;
+          };
 
-        if (courseId) (mappedRow as any).courseId = courseId;
-        if (sectionId) (mappedRow as any).sectionId = sectionId;
+          return {
+            day: this.mapDayFromBackend(s.day) as any,
+            startTime: normalizeTime(s.startTime),
+            endTime: normalizeTime(s.endTime),
+            roomType: this.mapRoomTypeIdToName(s.classRoomTypeId) as any,
+            roomTypeId: s.classRoomTypeId,
+            modality: this.mapModalityIdToName(s.modalityId) as any,
+            disability: s.disability
+          };
+        }) : []
+      };
 
-        return mappedRow;
-      });
+      if (courseId) (mappedRow as any).courseId = courseId;
+      if (sectionId) (mappedRow as any).sectionId = sectionId;
+
+      // Debugging: log mapping decisions for problematic cases
+      if (r.courseId && (!courseId || (mappedRow.materia?.includes('Curso') && r.courseName))) {
+        console.log('🧭 Mapeo solicitud -> curso', { requestCourseId: r.courseId, requestCourseName: r.courseName, resolvedCourseId: courseId, resolvedMateria: mappedRow.materia });
+      }
+
+      return mappedRow;
     });
   }
 
@@ -208,12 +264,21 @@ export class SolicitudProgramasPages implements OnInit {
 
   private mapRoomTypeIdToName(id: number): string {
     const roomType = this.classroomTypesMap.get(id);
-    return roomType?.name || 'Aulas';
+    const raw = (roomType?.name || '').toLowerCase();
+    if (raw.includes('lab') || raw.includes('laboratorio')) return 'Laboratorio';
+    if (raw.includes('mobile') || raw.includes('móvil') || raw.includes('movil')) return 'Aulas Moviles';
+    if (raw.includes('access') || raw.includes('accesible')) return 'Aulas Accesibles';
+    if (raw.includes('audit') || raw.includes('auditorio')) return 'Auditorio';
+    return 'Aulas';
   }
 
   private mapModalityIdToName(id: number): string {
     const modality = this.modalitiesMap.get(id);
-    return modality?.name || 'PRESENCIAL';
+    const raw = (modality?.name || '').toLowerCase();
+    if (raw.includes('in-person') || raw.includes('presencial')) return 'PRESENCIAL';
+    if (raw.includes('online') || raw.includes('virtual')) return 'VIRTUAL';
+    if (raw.includes('hybrid') || raw.includes('hibr')) return 'HIBRIDO';
+    return 'PRESENCIAL';
   }
 
   toggleSelectAll(): void {
@@ -367,16 +432,16 @@ export class SolicitudProgramasPages implements OnInit {
   private mapSolicitudToClass(solicitud: SolicitudRow): ClassDTO {
     
     
-    // Use the actual courseId from the solicitud (which comes from AcademicRequestResponseDTO)
-    // The id property in SolicitudRow is the academic request ID, not the course ID
-    // We need to find the course by name or use a stored courseId
-    let courseId = 1; // Default fallback
-    
-    // Try to find the course in our map by name
-    for (const [id, course] of this.coursesMap.entries()) {
-      if (course.name === solicitud.materia) {
-        courseId = id;
-        break;
+    // Prefer using resolved courseId if available on the solicitud (set during mapping)
+    let courseId = solicitud.courseId ?? 1; // Default fallback
+
+    // If courseId is still the generic fallback, try to match by name as last resort
+    if ((!courseId || courseId === 1) && solicitud.materia) {
+      for (const [id, course] of this.coursesMap.entries()) {
+        if (course.name === solicitud.materia) {
+          courseId = id;
+          break;
+        }
       }
     }
     
@@ -410,14 +475,25 @@ export class SolicitudProgramasPages implements OnInit {
     
     
     
-    // Try to find a course ID for the first materia
+    // Try to reuse courseId from source rows (if we have them in rows cache)
     let courseId = 1; // Default fallback
-    const firstMateria = combined.materias[0];
-    if (firstMateria) {
-      for (const [id, course] of this.coursesMap.entries()) {
-        if (course.name === firstMateria) {
-          courseId = id;
-          break;
+    if (combined.sourceIds && combined.sourceIds.length > 0) {
+      const firstSourceId = combined.sourceIds[0];
+      const sourceRow = this.rows.find(r => r.id === firstSourceId) as SolicitudRow | undefined;
+      if (sourceRow && sourceRow.courseId) {
+        courseId = sourceRow.courseId;
+      }
+    }
+
+    // If still not resolved, fallback to name matching for the first materia
+    if ((!courseId || courseId === 1) && combined.materias && combined.materias.length > 0) {
+      const firstMateria = combined.materias[0];
+      if (firstMateria) {
+        for (const [id, course] of this.coursesMap.entries()) {
+          if (course.name === firstMateria) {
+            courseId = id;
+            break;
+          }
         }
       }
     }
