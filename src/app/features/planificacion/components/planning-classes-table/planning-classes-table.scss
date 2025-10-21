@@ -89,9 +89,14 @@
 .tabla col.c-end     { width: var(--col-end); }
 .tabla col.c-weeks   { width: var(--col-weeks); }
 .tabla col.c-teacher { width: var(--col-teacher); }
-.tabla col.c-status  { width: var(--col-status); }
 .tabla col.c-email   { width: var(--col-email); }
 .tabla col.c-observations { width: var(--col-observations); }
+
+/* Additional teacher inline items */
+.additional-teacher { margin-right: 6px; }
+
+/* Status classes are defined globally (.status-pending, .status-confirmed, .status-rejected)
+   those are applied via [ngClass] directly on teacher name elements and inputs. */
 
 /* ==============================
   Sección de acciones (botones)

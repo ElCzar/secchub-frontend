@@ -12,7 +12,6 @@
       <col class="c-end" />
       <col class="c-weeks" />
       <col class="c-teacher" />
-      <col class="c-status" />
       <col class="c-email" />
       <col class="c-observations" />
     </colgroup>
@@ -28,8 +27,7 @@
         <th>Fecha Inicio</th>
         <th>Fecha Final</th>
         <th>Semanas</th>
-        <th>Docente</th>
-        <th>Estado Docente</th>
+  <th>Docente</th>
         <th>Enviar Correo</th>
         <th>Observaciones</th>
       </tr>
@@ -162,13 +160,13 @@
             <ng-container *ngIf="row._editing; else showTeacher">
               <div class="teacher-edit-container" *ngIf="(row.teachers && row.teachers.length) || getTeacherName(row); else showSelectInEdit">
                 <!-- Render inputs for the primary teacher name (legacy) -->
-                <input class="input" #teacherInput [value]="getTeacherName(row)" (input)="updateTeacherName(row, $any($event.target).value)" placeholder="Nombre del docente" />
+                <input class="input" #teacherInput [value]="getTeacherName(row)" (input)="updateTeacherName(row, $any($event.target).value)" placeholder="Nombre del docente" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}" />
                 <!-- Button to open selector to add another teacher for this class -->
                 <button type="button" class="btn-icon btn-add-teacher" (click)="selectAdditionalTeacher(i)" title="Agregar docente adicional">+</button>
 
                 <!-- Show list of additional teachers if present -->
                 <div class="additional-teachers" *ngIf="row.teachers && row.teachers.length">
-                  <span *ngFor="let t of row.teachers; let ti = index" class="additional-teacher">{{ t.name }}<small *ngIf="ti===0">, </small></span>
+                  <span *ngFor="let t of row.teachers; let ti = index" class="additional-teacher" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">{{ t.name }}<small *ngIf="ti===0">, </small></span>
                 </div>
               </div>
               <ng-template #showSelectInEdit>
@@ -179,10 +177,10 @@
               <ng-container *ngIf="(row.teachers && row.teachers.length) || hasTeacher(row); else noTeacher">
                 <!-- Prefer to show teachers[] if present, otherwise fallback to legacy teacher -->
                 <ng-container *ngIf="row.teachers && row.teachers.length; else legacyTeacher">
-                  <span *ngFor="let t of row.teachers; let ti = index">{{ t.name }}<span *ngIf="ti < row.teachers.length-1">, </span></span>
+                  <span *ngFor="let t of row.teachers; let ti = index" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">{{ t.name }}<span *ngIf="ti < row.teachers.length-1">, </span></span>
                 </ng-container>
                 <ng-template #legacyTeacher>
-                  <span>{{ row.teacher?.name }}</span>
+                  <span [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">{{ row.teacher?.name }}</span>
                 </ng-template>
               </ng-container>
               <ng-template #noTeacher>
@@ -191,12 +189,7 @@
             </ng-template>
           </td>
 
-          <!-- Estado -->
-          <td>
-            <span [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">
-              {{ row.status === 'PENDIENTE' ? '⏳ Pendiente' : row.status === 'CONFIRMADO' ? '✅ Confirmado' : '❌ Rechazado' }}
-            </span>
-          </td>
+          <!-- Estado del docente eliminado como columna; el estilo se aplica directamente al nombre del docente -->
 
           <!-- Enviar Correo -->
           <td>
@@ -211,7 +204,7 @@
 
         <!-- Expander para horarios -->
         <tr class="expander-row">
-          <td colspan="14">
+          <td colspan="13">
             <div class="expander-inner">
               <button class="expander" type="button" (click)="row._open = !row._open">
                 <span class="caret" [class.open]="row._open">▸</span> Horarios
@@ -223,7 +216,7 @@
 
         <!-- Bloque de horarios (solo si _open) -->
         <tr *ngIf="row._open">
-          <td colspan="14">
+          <td colspan="13">
             <app-schedules-table-room
               [(rows)]="row.schedules"
               [editable]="row._editing || false"

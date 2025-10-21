@@ -1492,4 +1492,62 @@ export class PlanningService {
       })
     );
   }
+
+  // ==========================================
+  // ACTUALIZACIÓN EN TIEMPO REAL DE ESTADOS
+  // ==========================================
+
+  /**
+   * Obtener los estados actuales de teacher_class para las clases visibles
+   * Mapea los status_id del backend a los estados del frontend:
+   * 8 = CONFIRMADO, 4 = PENDIENTE, 9 = RECHAZADO
+   */
+  getTeacherClassStatuses(classIds: number[]): Observable<{ classId: number; status: PlanningStatus; hasAssignment: boolean }[]> {
+    if (classIds.length === 0) {
+      return of([]);
+    }
+
+    // Usar el endpoint correcto que devuelve los teacher_class con sus estados
+    const teacherClassUrl = `${environment.apiUrl}/teachers/classes/class`;
+    
+    // Crear una petición para cada classId
+    const requests = classIds.map(classId => 
+      this.http.get<any[]>(`${teacherClassUrl}/${classId}`).pipe(
+        map(teacherClasses => {
+          // Si hay múltiples asignaciones, tomar el estado de la primera (o combinarlos según lógica de negocio)
+          if (teacherClasses && teacherClasses.length > 0) {
+            const statusId = teacherClasses[0].statusId;
+            const status = this.mapStatusIdToFrontend(statusId);
+            return { classId, status, hasAssignment: true };
+          }
+          // Si no hay asignaciones, retornar sin actualizar
+          return { classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false };
+        }),
+        catchError(error => {
+          // 404 significa que no hay asignación todavía - esto es normal
+          if (error.status === 404) {
+            return of({ classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false });
+          }
+          // Para otros errores, logear pero continuar
+          console.warn(`⚠️ Error inesperado obteniendo estado de teacher_class para clase ${classId}:`, error.status, error.statusText);
+          return of({ classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false });
+        })
+      )
+    );
+
+    return forkJoin(requests);
+  }
+
+  /**
+   * Mapear status_id del backend a PlanningStatus del frontend
+   * 8 = CONFIRMADO, 4 = PENDIENTE, 9 = RECHAZADO
+   */
+  private mapStatusIdToFrontend(statusId: number): PlanningStatus {
+    const statusMap: Record<number, PlanningStatus> = {
+      8: 'CONFIRMADO',
+      4: 'PENDIENTE',
+      9: 'RECHAZADO'
+    };
+    return statusMap[statusId] || 'PENDIENTE';
+  }
 }

@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { catchError, of } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
@@ -105,7 +105,10 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     
     // Cargar datos del backend
     this.loadClassesFromBackend();
-  this.registerGlobalDebugHelpers();
+    this.registerGlobalDebugHelpers();
+    
+    // Iniciar polling para actualización automática de estados
+    this.startStatusPolling();
   }
 
   // Helper global para depuración: recargar docentes de una clase desde la consola
@@ -269,6 +272,79 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     
     // Aplicar filtro por rol y agregar fila editable
     this.applyFilters();
+  }
+
+  // ==========================================
+  // ACTUALIZACIÓN AUTOMÁTICA DE ESTADOS
+  // ==========================================
+
+  /**
+   * Inicia el polling para verificar cambios en los estados de teacher_class
+   * Se ejecuta cada 10 segundos para mantener los estados actualizados
+   */
+  private startStatusPolling() {
+    console.log('🔄 Iniciando polling de estados de teacher_class');
+    
+    // Polling cada 10 segundos
+    this.subscription.add(
+      interval(10000).pipe(
+        switchMap(() => {
+          // Obtener los IDs de las clases visibles que tienen backendId
+          const classIds = this.rows
+            .filter(row => row.backendId)
+            .map(row => row.backendId!);
+          
+          if (classIds.length === 0) {
+            return of([]);
+          }
+          
+          // Obtener los estados actuales desde el backend
+          return this.planningService.getTeacherClassStatuses(classIds).pipe(
+            catchError(error => {
+              console.warn('Error en polling de estados:', error);
+              return of([]);
+            })
+          );
+        })
+      ).subscribe(statuses => {
+        if (statuses.length > 0) {
+          this.updateRowStatuses(statuses);
+        }
+      })
+    );
+  }
+
+  /**
+   * Actualiza los estados de las filas basándose en los datos del backend
+   * Solo actualiza si hay una asignación real de teacher_class
+   */
+  private updateRowStatuses(statuses: { classId: number; status: PlanningStatus; hasAssignment: boolean }[]) {
+    let hasChanges = false;
+    
+    statuses.forEach(({ classId, status, hasAssignment }) => {
+      // Solo actualizar si realmente hay una asignación de teacher_class
+      if (!hasAssignment) {
+        return;
+      }
+      
+      // Actualizar en rows (vista actual)
+      const rowIndex = this.rows.findIndex(row => row.backendId === classId);
+      if (rowIndex !== -1 && this.rows[rowIndex].status !== status) {
+        console.log(`🔄 Actualizando estado de clase ${classId}: ${this.rows[rowIndex].status} -> ${status}`);
+        this.rows[rowIndex].status = status;
+        hasChanges = true;
+      }
+      
+      // Actualizar en originalRows (datos originales)
+      const originalIndex = this.originalRows.findIndex(row => row.backendId === classId);
+      if (originalIndex !== -1 && this.originalRows[originalIndex].status !== status) {
+        this.originalRows[originalIndex].status = status;
+      }
+    });
+    
+    if (hasChanges) {
+      console.log('✅ Estados actualizados automáticamente');
+    }
   }
 
   // ==========================================
