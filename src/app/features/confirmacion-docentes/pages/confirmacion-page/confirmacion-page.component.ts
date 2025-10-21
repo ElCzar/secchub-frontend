@@ -174,8 +174,12 @@ export class ConfirmacionPageComponent implements OnInit {
         
         // Update UI based on results
         if (results.accepted.length > 0) {
-          // Move accepted classes to accepted list
-          const acceptedClassIds = new Set(results.accepted.map(r => r.classId.toString()));
+          // Move accepted classes to accepted list - filter out null values
+          const acceptedClassIds = new Set(
+            results.accepted
+              .filter(r => r?.classId != null)
+              .map(r => r.classId.toString())
+          );
           const movedRows = this.pending
             .filter(row => acceptedClassIds.has(row.id.toString()))
             .map(row => ({ ...row, accepted: true }));
@@ -183,10 +187,14 @@ export class ConfirmacionPageComponent implements OnInit {
           this.accepted = [...this.accepted, ...movedRows];
         }
         
-        // Remove accepted and rejected classes from pending
+        // Remove accepted and rejected classes from pending - filter out null values
         const processedClassIds = new Set([
-          ...results.accepted.map(r => r.classId.toString()),
-          ...results.rejected.map(r => r.classId.toString())
+          ...results.accepted
+            .filter(r => r?.classId != null)
+            .map(r => r.classId.toString()),
+          ...results.rejected
+            .filter(r => r?.classId != null)
+            .map(r => r.classId.toString())
         ]);
         
         this.pending = this.pending.filter(row => !processedClassIds.has(row.id.toString()));
@@ -205,6 +213,8 @@ export class ConfirmacionPageComponent implements OnInit {
         
         if (summary.length > 0) {
           alert(`✅ Operación completada:\n${summary.join(', ')}`);
+          // Refresh the page
+          this.loadTeacherClasses();
         }
       },
       error: (error) => {
