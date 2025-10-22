@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { AlertPanelData } from '../../../core/services/alert-panel.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
 import * as XLSX from 'xlsx-js-style';
@@ -75,6 +76,69 @@ export interface CourseOption {
   providedIn: 'root'
 })
 export class PlanningService {
+  /**
+   * Obtiene la cantidad de clases sin docente asignado para el jefe de sección autenticado
+   */
+  getMissingTeachersCountForSectionChief(userId: string): Observable<number> {
+    // Endpoint: /planning/classes/section-chief/{userId}/without-teacher
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/${userId}/without-teacher`).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+  /**
+   * Devuelve los datos agregados para el panel de alertas del jefe de sección
+   */
+  getDashboardAlerts(): Observable<AlertPanelData> {
+    return this.getAllClassesWithSchedules().pipe(
+      switchMap((classes: any[]) => {
+        const missingTeachers = classes.filter((cls: any) => !cls.teacherAssigned || cls.teacherAssigned.length === 0).length;
+        const missingRooms = classes.filter((cls: any) => !cls.schedules || cls.schedules.length === 0 || cls.schedules.some((sch: any) => !sch.classroomId)).length;
+        const pendingConfirmations = classes.filter((cls: any) => cls.statusName === 'PENDIENTE').length;
+        const scheduleConflicts = classes.filter((cls: any) => {
+          if (!cls.schedules || cls.schedules.length < 2) return false;
+          const seen = new Set();
+          return cls.schedules.some((sch: any) => {
+            const key = `${sch.day}-${sch.startTime}-${sch.endTime}`;
+            if (seen.has(key)) return true;
+            seen.add(key);
+            return false;
+          });
+        }).length;
+        return this.getCurrentSemesterIdObservable().pipe(
+          switchMap(semesterId => {
+            if (!semesterId) return of({
+              missingTeachers,
+              missingRooms,
+              pendingConfirmations,
+              scheduleConflicts,
+              daysLeft: 0,
+              endDate: undefined
+            });
+            return this.semesterService.getCurrentSemester().pipe(
+              map((sem: any) => {
+                let daysLeft = 0;
+                let endDate = undefined;
+                if (sem && sem.endDate) {
+                  const end = new Date(sem.endDate);
+                  const now = new Date();
+                  daysLeft = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+                  endDate = sem.endDate;
+                }
+                return {
+                  missingTeachers,
+                  missingRooms,
+                  pendingConfirmations,
+                  scheduleConflicts,
+                  daysLeft,
+                  endDate
+                };
+              })
+            );
+          })
+        );
+      })
+    );
+  }
   private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(
