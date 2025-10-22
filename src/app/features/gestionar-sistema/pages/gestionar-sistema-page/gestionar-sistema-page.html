@@ -214,3 +214,14 @@
   [message]="successModalMessage"
   (closed)="onSuccessModalClose()"
 ></app-success-modal>
+
+<!-- Confirm Modal for Semester Creation -->
+<app-confirm-modal
+  [visible]="showConfirmModal"
+  [title]="confirmModalTitle"
+  [message]="confirmModalMessage"
+  [confirmText]="confirmModalConfirmText"
+  [cancelText]="confirmModalCancelText"
+  (confirm)="confirmCreateSemester()"
+  (cancelled)="cancelCreateSemester()"
+></app-confirm-modal>

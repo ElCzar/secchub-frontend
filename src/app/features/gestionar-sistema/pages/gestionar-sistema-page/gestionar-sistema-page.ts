@@ -7,6 +7,7 @@ import { SidebarToggleButtonComponent } from "../../../../shared/components/side
 import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
 import { SubjectsTable } from '../../components/subjects-table/subjects-table';
 import { SuccessModal } from '../../../../shared/components/success-modal/success-modal';
+import { ConfirmModal } from '../../../../shared/components/confirm-modal/confirm-modal';
 import { CourseInformationService } from '../../../../shared/services/course-information.service';
 import { CourseResponseDTO } from '../../../../shared/model/dto/admin/CourseResponseDTO.model';
 import { SectionInformationService } from '../../../../shared/services/section-information.service';
@@ -27,7 +28,8 @@ import { SemesterRequestDTO } from '../../../../shared/model/dto/admin/SemesterR
     SidebarToggleButtonComponent, 
     AccesosRapidosAdmi,
     SubjectsTable,
-    SuccessModal
+    SuccessModal,
+    ConfirmModal
   ],
   templateUrl: './gestionar-sistema-page.html',
   styleUrl: './gestionar-sistema-page.scss'
@@ -69,6 +71,13 @@ export class GestionarSistemaPage implements OnInit, OnDestroy {
   showSuccessModal = false;
   successModalTitle = 'Semestre creado';
   successModalMessage = 'El semestre ha sido creado exitosamente.';
+
+  // Confirm modal for semester creation
+  showConfirmModal = false;
+  confirmModalTitle = 'Crear Nuevo Semestre';
+  confirmModalMessage = '⚠️ ADVERTENCIA: Crear un nuevo semestre cerrará la planificación del semestre anterior e iniciará una nueva planificación.\n\nEsta acción es IRREVERSIBLE.\n\n¿Está seguro de que desea continuar?';
+  confirmModalConfirmText = 'Sí, crear semestre';
+  confirmModalCancelText = 'Cancelar';
 
   constructor(
     private readonly courseInformationService: CourseInformationService,
@@ -253,26 +262,38 @@ export class GestionarSistemaPage implements OnInit, OnDestroy {
 
   saveNewSemester(): void {
     if (this.validateNewSemester()) {
-      this.loadingSemester = true;
-      const semesterRequest: SemesterRequestDTO = this.semesterChangeService.createRequestDTO(this.newSemester);
-      
-      this.semesterChangeService.createSemester(semesterRequest).subscribe({
-        next: (newSemester) => {
-          console.log('Semester created successfully:', newSemester);
-          this.loadingSemester = false;
-          this.isAddingNewSemester = false;
-          this.resetNewSemester();
-          
-          // Show success modal
-          this.showSuccessModal = true;
-        },
-        error: (error) => {
-          console.error('Error creating semester:', error);
-          this.loadingSemester = false;
-          alert('Error al crear el semestre. Por favor, inténtelo de nuevo.');
-        }
-      });
+      // Show confirmation modal before proceeding
+      this.showConfirmModal = true;
     }
+  }
+
+  // Called when user confirms in the modal
+  confirmCreateSemester(): void {
+    this.showConfirmModal = false;
+    this.loadingSemester = true;
+    const semesterRequest: SemesterRequestDTO = this.semesterChangeService.createRequestDTO(this.newSemester);
+    
+    this.semesterChangeService.createSemester(semesterRequest).subscribe({
+      next: (newSemester) => {
+        console.log('Semester created successfully:', newSemester);
+        this.loadingSemester = false;
+        this.isAddingNewSemester = false;
+        this.resetNewSemester();
+        
+        // Show success modal
+        this.showSuccessModal = true;
+      },
+      error: (error) => {
+        console.error('Error creating semester:', error);
+        this.loadingSemester = false;
+        alert('Error al crear el semestre. Por favor, inténtelo de nuevo.');
+      }
+    });
+  }
+
+  // Called when user cancels in the modal
+  cancelCreateSemester(): void {
+    this.showConfirmModal = false;
   }
 
   onSuccessModalClose(): void {

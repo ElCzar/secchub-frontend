@@ -18,6 +18,11 @@ export class ConfirmModal {
   @Output() confirm = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
 
+  get formattedMessage(): string {
+    if (!this.message) return '';
+    return this.message.replaceAll('\n', '<br>');
+  }
+
   onConfirm() {
     this.confirm.emit();
   }

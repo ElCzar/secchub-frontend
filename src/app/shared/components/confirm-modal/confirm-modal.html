@@ -4,7 +4,7 @@
     <h2 class="confirm-modal__title">{{ title }}</h2>
     <div class="confirm-modal__divider"></div>
     <div class="confirm-modal__body">
-      <p *ngIf="message">{{ message }}</p>
+      <p *ngIf="message" [innerHTML]="formattedMessage"></p>
     </div>
     <div class="confirm-modal__actions">
       <button class="btn" (click)="onCancel()">{{ cancelText }}</button>
