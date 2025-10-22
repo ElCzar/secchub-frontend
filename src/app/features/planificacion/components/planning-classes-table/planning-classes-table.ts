@@ -461,6 +461,40 @@ export class PlanningClassesTable {
     // TODO: Mostrar modal o navegar a detalles del docente
   }
 
+  /**
+   * Obtiene el índice de una fila en el array rows
+   */
+  getRowIndex(row: PlanningRow): number {
+    return this.rows.indexOf(row);
+  }
+
+  /**
+   * Elimina un profesor de una clase
+   */
+  removeTeacherFromClass(row: PlanningRow, teacherIndex: number) {
+    if (!row.teachers || teacherIndex < 0 || teacherIndex >= row.teachers.length) {
+      console.warn('Índice de profesor inválido');
+      return;
+    }
+
+    const teacherToRemove = row.teachers[teacherIndex];
+    console.log(`Eliminando profesor ${teacherToRemove.name} (ID: ${teacherToRemove.id}) de la clase`);
+
+    // Eliminar el profesor del array
+    row.teachers.splice(teacherIndex, 1);
+
+    // Si no quedan profesores, limpiar el array
+    if (row.teachers.length === 0) {
+      row.teachers = [];
+    }
+
+    // Emitir el cambio
+    const rowIndex = this.getRowIndex(row);
+    if (rowIndex !== -1) {
+      this.patchRow.emit({ index: rowIndex, data: { teachers: row.teachers } });
+    }
+  }
+
   // Métodos para manejo de fechas y cálculo automático de semanas
   onStartDateChange(index: number, newStartDate: string) {
     const row = this.rows[index];

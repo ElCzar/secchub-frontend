@@ -158,45 +158,62 @@
           <!-- Docente -->
           <td>
             <ng-container *ngIf="row._editing; else showTeacher">
-              <div class="teacher-edit-container" *ngIf="(row.teachers && row.teachers.length) || getTeacherName(row); else showSelectInEdit">
-                <!-- Render inputs for the primary teacher name (legacy) -->
-                <div class="input-with-symbol">
-                  <span class="status-symbol" [ngClass]="{'symbol-pending': row.status === 'PENDIENTE', 'symbol-confirmed': row.status === 'CONFIRMADO', 'symbol-rejected': row.status === 'RECHAZADO'}"></span>
-                  <input class="input" #teacherInput [value]="getTeacherName(row)" (input)="updateTeacherName(row, $any($event.target).value)" placeholder="Nombre del docente" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}" />
+              <div class="teacher-edit-container">
+                <!-- Mostrar profesores existentes en recuadros -->
+                <div class="teacher-boxes" *ngIf="row.teachers && row.teachers.length > 0">
+                  <div *ngFor="let teacher of row.teachers; let ti = index" 
+                       class="teacher-box"
+                       [ngClass]="{
+                         'status-pending': teacher.status === 'PENDIENTE',
+                         'status-confirmed': teacher.status === 'CONFIRMADO',
+                         'status-rejected': teacher.status === 'RECHAZADO'
+                       }">
+                    <span class="status-symbol" 
+                          [ngClass]="{
+                            'symbol-pending': teacher.status === 'PENDIENTE',
+                            'symbol-confirmed': teacher.status === 'CONFIRMADO',
+                            'symbol-rejected': teacher.status === 'RECHAZADO'
+                          }"></span>
+                    <span class="teacher-name">{{ teacher.name }}</span>
+                    <button type="button" 
+                            class="btn-remove-teacher" 
+                            (click)="removeTeacherFromClass(row, ti)"
+                            title="Eliminar docente">×</button>
+                  </div>
                 </div>
-                <!-- Button to open selector to add another teacher for this class -->
-                <button type="button" class="btn-icon btn-add-teacher" (click)="selectAdditionalTeacher(i)" title="Agregar docente adicional">+</button>
-
-                <!-- Show list of additional teachers if present -->
-                <div class="additional-teachers" *ngIf="row.teachers && row.teachers.length">
-                  <span *ngFor="let t of row.teachers; let ti = index" class="additional-teacher" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">
-                    <span class="status-symbol" [ngClass]="{'symbol-pending': row.status === 'PENDIENTE', 'symbol-confirmed': row.status === 'CONFIRMADO', 'symbol-rejected': row.status === 'RECHAZADO'}"></span>
-                    {{ t.name }}<small *ngIf="ti===0">, </small>
-                  </span>
-                </div>
+                
+                <!-- Botón para agregar docente -->
+                <button type="button" 
+                        class="btn--primary btn-add-teacher-main" 
+                        (click)="selectAdditionalTeacher(getRowIndex(row))"
+                        title="Agregar docente">
+                  {{ (row.teachers && row.teachers.length > 0) ? '+ Agregar otro docente' : 'Seleccionar Docente' }}
+                </button>
               </div>
-              <ng-template #showSelectInEdit>
-                <button type="button" class="btn--primary" (click)="selectTeacher(i)">Seleccionar Docente</button>
-              </ng-template>
             </ng-container>
             <ng-template #showTeacher>
-              <ng-container *ngIf="(row.teachers && row.teachers.length) || hasTeacher(row); else noTeacher">
-                <!-- Prefer to show teachers[] if present, otherwise fallback to legacy teacher -->
-                <ng-container *ngIf="row.teachers && row.teachers.length; else legacyTeacher">
-                  <span *ngFor="let t of row.teachers; let ti = index" class="teacher-name-with-status" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">
-                    <span class="status-symbol" [ngClass]="{'symbol-pending': row.status === 'PENDIENTE', 'symbol-confirmed': row.status === 'CONFIRMADO', 'symbol-rejected': row.status === 'RECHAZADO'}"></span>
-                    {{ t.name }}<span *ngIf="ti < row.teachers.length-1">, </span>
-                  </span>
-                </ng-container>
-                <ng-template #legacyTeacher>
-                  <span class="teacher-name-with-status" [ngClass]="{'status-pending': row.status === 'PENDIENTE', 'status-confirmed': row.status === 'CONFIRMADO', 'status-rejected': row.status === 'RECHAZADO'}">
-                    <span class="status-symbol" [ngClass]="{'symbol-pending': row.status === 'PENDIENTE', 'symbol-confirmed': row.status === 'CONFIRMADO', 'symbol-rejected': row.status === 'RECHAZADO'}"></span>
-                    {{ row.teacher?.name }}
-                  </span>
-                </ng-template>
+              <ng-container *ngIf="row.teachers && row.teachers.length > 0; else noTeacher">
+                <!-- Vista de solo lectura: mostrar profesores en recuadros -->
+                <div class="teacher-boxes">
+                  <div *ngFor="let teacher of row.teachers" 
+                       class="teacher-box"
+                       [ngClass]="{
+                         'status-pending': teacher.status === 'PENDIENTE',
+                         'status-confirmed': teacher.status === 'CONFIRMADO',
+                         'status-rejected': teacher.status === 'RECHAZADO'
+                       }">
+                    <span class="status-symbol" 
+                          [ngClass]="{
+                            'symbol-pending': teacher.status === 'PENDIENTE',
+                            'symbol-confirmed': teacher.status === 'CONFIRMADO',
+                            'symbol-rejected': teacher.status === 'RECHAZADO'
+                          }"></span>
+                    <span class="teacher-name">{{ teacher.name }}</span>
+                  </div>
+                </div>
               </ng-container>
               <ng-template #noTeacher>
-                <button type="button" class="btn--primary" (click)="selectTeacher(i)" [disabled]="!row._editing">Seleccionar Docente</button>
+                <button type="button" class="btn--primary" (click)="selectTeacher(getRowIndex(row))" [disabled]="!row._editing">Seleccionar Docente</button>
               </ng-template>
             </ng-template>
           </td>

@@ -35,6 +35,7 @@ export interface TeacherRef {
   maxHours?: number;
   assignedHours?: number;
   availableHours?: number;
+  status?: PlanningStatus;  // Estado individual del profesor para esta clase
 }
 
 // Fila principal de planificación (tabla grande)

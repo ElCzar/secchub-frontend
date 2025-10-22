@@ -317,33 +317,48 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   /**
    * Actualiza los estados de las filas basándose en los datos del backend
    * Solo actualiza si hay una asignación real de teacher_class
+   * ACTUALIZADO: Ahora actualiza el estado individual de cada profesor
    */
-  private updateRowStatuses(statuses: { classId: number; status: PlanningStatus; hasAssignment: boolean }[]) {
+  private updateRowStatuses(statuses: { 
+    classId: number; 
+    teacherStatuses: { teacherId: number; status: PlanningStatus }[]; 
+    hasAssignment: boolean 
+  }[]) {
     let hasChanges = false;
     
-    statuses.forEach(({ classId, status, hasAssignment }) => {
+    statuses.forEach(({ classId, teacherStatuses, hasAssignment }) => {
       // Solo actualizar si realmente hay una asignación de teacher_class
-      if (!hasAssignment) {
+      if (!hasAssignment || !teacherStatuses || teacherStatuses.length === 0) {
         return;
       }
       
       // Actualizar en rows (vista actual)
       const rowIndex = this.rows.findIndex(row => row.backendId === classId);
-      if (rowIndex !== -1 && this.rows[rowIndex].status !== status) {
-        console.log(`🔄 Actualizando estado de clase ${classId}: ${this.rows[rowIndex].status} -> ${status}`);
-        this.rows[rowIndex].status = status;
-        hasChanges = true;
+      if (rowIndex !== -1 && this.rows[rowIndex].teachers) {
+        this.rows[rowIndex].teachers?.forEach(teacher => {
+          const teacherStatus = teacherStatuses.find(ts => ts.teacherId === teacher.id);
+          if (teacherStatus && teacher.status !== teacherStatus.status) {
+            console.log(`🔄 Actualizando estado del profesor ${teacher.name} (ID: ${teacher.id}) en clase ${classId}: ${teacher.status} -> ${teacherStatus.status}`);
+            teacher.status = teacherStatus.status;
+            hasChanges = true;
+          }
+        });
       }
       
       // Actualizar en originalRows (datos originales)
       const originalIndex = this.originalRows.findIndex(row => row.backendId === classId);
-      if (originalIndex !== -1 && this.originalRows[originalIndex].status !== status) {
-        this.originalRows[originalIndex].status = status;
+      if (originalIndex !== -1 && this.originalRows[originalIndex].teachers) {
+        this.originalRows[originalIndex].teachers?.forEach(teacher => {
+          const teacherStatus = teacherStatuses.find(ts => ts.teacherId === teacher.id);
+          if (teacherStatus && teacher.status !== teacherStatus.status) {
+            teacher.status = teacherStatus.status;
+          }
+        });
       }
     });
     
     if (hasChanges) {
-      console.log('✅ Estados actualizados automáticamente');
+      console.log('✅ Estados de profesores actualizados automáticamente');
     }
   }
 

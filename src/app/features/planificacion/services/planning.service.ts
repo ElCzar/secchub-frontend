@@ -1583,8 +1583,13 @@ export class PlanningService {
    * Obtener los estados actuales de teacher_class para las clases visibles
    * Mapea los status_id del backend a los estados del frontend:
    * 8 = CONFIRMADO, 4 = PENDIENTE, 9 = RECHAZADO
+   * ACTUALIZADO: Ahora devuelve el estado de cada profesor individualmente
    */
-  getTeacherClassStatuses(classIds: number[]): Observable<{ classId: number; status: PlanningStatus; hasAssignment: boolean }[]> {
+  getTeacherClassStatuses(classIds: number[]): Observable<{ 
+    classId: number; 
+    teacherStatuses: { teacherId: number; status: PlanningStatus }[]; 
+    hasAssignment: boolean 
+  }[]> {
     if (classIds.length === 0) {
       return of([]);
     }
@@ -1596,23 +1601,25 @@ export class PlanningService {
     const requests = classIds.map(classId => 
       this.http.get<any[]>(`${teacherClassUrl}/${classId}`).pipe(
         map(teacherClasses => {
-          // Si hay múltiples asignaciones, tomar el estado de la primera (o combinarlos según lógica de negocio)
+          // Devolver el estado de cada profesor
           if (teacherClasses && teacherClasses.length > 0) {
-            const statusId = teacherClasses[0].statusId;
-            const status = this.mapStatusIdToFrontend(statusId);
-            return { classId, status, hasAssignment: true };
+            const teacherStatuses = teacherClasses.map(tc => ({
+              teacherId: tc.teacherId,
+              status: this.mapStatusIdToFrontend(tc.statusId)
+            }));
+            return { classId, teacherStatuses, hasAssignment: true };
           }
           // Si no hay asignaciones, retornar sin actualizar
-          return { classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false };
+          return { classId, teacherStatuses: [], hasAssignment: false };
         }),
         catchError(error => {
           // 404 significa que no hay asignación todavía - esto es normal
           if (error.status === 404) {
-            return of({ classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false });
+            return of({ classId, teacherStatuses: [], hasAssignment: false });
           }
           // Para otros errores, logear pero continuar
           console.warn(`⚠️ Error inesperado obteniendo estado de teacher_class para clase ${classId}:`, error.status, error.statusText);
-          return of({ classId, status: 'PENDIENTE' as PlanningStatus, hasAssignment: false });
+          return of({ classId, teacherStatuses: [], hasAssignment: false });
         })
       )
     );
