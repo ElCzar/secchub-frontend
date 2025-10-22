@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { environment } from '../../../../environments/environment';
 import { PlanningRow, PlanningStatus } from '../models/planificacion.models';
 import { CourseService } from './course.service';

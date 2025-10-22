@@ -25,6 +25,7 @@ import { TeachingAssistantScheduleResponseDTO } from '../../../../shared/model/d
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
 import { AccesosRapidosAdmi } from "../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi";
 import { ClassResponseDTO } from '../../../../shared/model/dto/planning/ClassResponseDTO.model';
+import * as XLSX from 'xlsx-js-style';
 
 @Component({
   selector: 'app-solicitud-monitores-page',
@@ -365,8 +366,105 @@ export class SolicitudMonitoresPage implements OnInit {
     // TODO: Implementar lógica de envío real de alerta
   }
 
+  /**
+   * Exports payroll report in Excel format
+   * Uses XLSX library to generate the file
+   */
   exportarNomina() {
-    // TODO: lógica de exportación de nómina
+    this.guardarCambios();
+    
+    // Monitores Académicos
+    const monitoresAcademicosNomina = this.nonAdminMonitores.map(m => ({
+      "Documento de Identidad": this.userInformation.find(u => u.id === m.userId)?.documentNumber || '',
+      "ID de Estudiante": m.userId || '',
+      "Apellidos": m.apellido || '',
+      "Nombres": m.nombre || '',
+      "Nombres Completos": `${m.apellido || ''} ${m.nombre || ''}`.trim(),
+      "Numero de Clase": m.noClase || '',
+      "Nombre Asignatura": this.courses.find(c => c.id === m.courseId)?.name || '',
+      "Horas Semanales": m.horasSemanales || 0,
+      "Semanas": m.semanas || 0,
+      "Total Horas": m.totalHoras || 0,
+      "Celular": this.studentApplications.find(sa => sa.id === m.userId)?.phoneNumber || '',
+      "Celular Alterno": this.studentApplications.find(sa => sa.id === m.userId)?.alternatePhoneNumber || '',
+      "Correo Institucional": m.correo || '',
+      "Correo Alterno": this.studentApplications.find(sa => sa.id === m.userId)?.personalEmail || '',
+      "Dirección": this.studentApplications.find(sa => sa.id === m.userId)?.address || '',
+      "ANTIGUO": m.antiguo ? 'Sí' : 'No'
+    }));
+    
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(monitoresAcademicosNomina);
+    
+    // Apply styles and auto-size for Académicos
+    this.applyStylesAndAutoSize(ws, monitoresAcademicosNomina);
+    
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Nomina');
+    XLSX.writeFile(wb, 'nominaMonitoresAcademicos.xlsx');
+    
+    // Monitores Administrativos
+    const monitoresAdministrativosNomina = this.adminMonitores.map(m => ({
+      "Documento de Identidad": this.userInformation.find(u => u.id === m.userId)?.documentNumber || '',
+      "ID de Estudiante": m.userId || '',
+      "Apellidos": m.apellido || '',
+      "Nombres": m.nombre || '',
+      "Nombres Completos": `${m.apellido || ''} ${m.nombre || ''}`.trim(),
+      "Sección": this.sections.find(s => s.id === m.sectionId)?.name || '',
+      "Horas Semanales": m.horasSemanales || 0,
+      "Semanas": m.semanas || 0,
+      "Total Horas": m.totalHoras || 0,
+      "Celular": this.studentApplications.find(sa => sa.id === m.userId)?.phoneNumber || '',
+      "Celular Alterno": this.studentApplications.find(sa => sa.id === m.userId)?.alternatePhoneNumber || '',
+      "Correo Institucional": m.correo || '',
+      "Correo Alterno": this.studentApplications.find(sa => sa.id === m.userId)?.personalEmail || '',
+      "Dirección": this.studentApplications.find(sa => sa.id === m.userId)?.address || '',
+      "ANTIGUO": m.antiguo ? 'Sí' : 'No'
+    }));
+    
+    const wsAdmin: XLSX.WorkSheet = XLSX.utils.json_to_sheet(monitoresAdministrativosNomina);
+    
+    // Apply styles and auto-size for Administrativos
+    this.applyStylesAndAutoSize(wsAdmin, monitoresAdministrativosNomina);
+    
+    const wbAdmin: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbAdmin, wsAdmin, 'Nomina');
+    XLSX.writeFile(wbAdmin, 'nominaMonitoresAdministrativos.xlsx');
+  }
+
+  /**
+   * Applies styles to header row and auto-sizes columns based on content length
+   */
+  private applyStylesAndAutoSize(ws: XLSX.WorkSheet, data: any[]) {
+    if (!data || data.length === 0) return;
+    
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    
+    // Apply bold and grey background to header row
+    for (let col = range.s.c; col <= range.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+      
+      if (ws[cellAddress]) {
+        ws[cellAddress].s = {
+          font: { bold: true, color: { rgb: "000000" } },
+          fill: { fgColor: { rgb: "D3D3D3" } },
+          alignment: { vertical: 'center', horizontal: 'center' }
+        };
+      }
+    }
+    
+    // Calculate column widths based on content
+    const colWidths = Object.keys(data[0]).map(key => {
+      const headerLength = key.length;
+      const maxContentLength = Math.max(
+        ...data.map(row => {
+          const value = row[key];
+          return value ? value.toString().length : 0;
+        })
+      );
+      return { wch: Math.max(headerLength, maxContentLength) + 2 };
+    });
+    
+    ws['!cols'] = colWidths;
   }
 
   // Método para obtener el conteo de cambios
