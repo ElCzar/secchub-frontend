@@ -17,6 +17,8 @@ import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
 import { SelectedTeachersService } from '../../../docentes/services/selected-teachers.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 
 @Component({
   selector: 'app-planificacion-clases-page',
@@ -57,6 +59,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   private dataLoaded = false; // Bandera para indicar si los datos están cargados
   private pendingTeacherSelections: Map<string, any> = new Map(); // Selecciones pendientes
   
+  // Información del semestre actual
+  currentSemester: SemesterResponseDTO | null = null;
+  
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -64,7 +69,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     private readonly selectedTeachersService: SelectedTeachers,
     private readonly planningService: PlanningService,
     private readonly teacherAssignmentService: TeacherAssignmentService,
-    private readonly newSelectedTeachersService: SelectedTeachersService
+    private readonly newSelectedTeachersService: SelectedTeachersService,
+    private readonly semesterService: SemesterInformationService
   ) {
     // Verificar si venimos de la selección de docentes
     const navigation = this.router.getCurrentNavigation();
@@ -102,6 +108,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         }
       })
     );
+    
+    // Cargar información del semestre actual
+    this.loadCurrentSemester();
     
     // Cargar datos del backend
     this.loadClassesFromBackend();
@@ -149,6 +158,25 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   // ==========================================
   // CARGA DE DATOS DEL BACKEND
   // ==========================================
+
+  /**
+   * Carga la información del semestre actual
+   */
+  private loadCurrentSemester() {
+    this.subscription.add(
+      this.semesterService.getCurrentSemester()
+        .pipe(
+          catchError((error: any) => {
+            console.error('Error al cargar semestre actual:', error);
+            return of(null);
+          })
+        )
+        .subscribe((semester: SemesterResponseDTO | null) => {
+          this.currentSemester = semester;
+          console.log('📅 Semestre actual cargado:', semester);
+        })
+    );
+  }
 
   private loadClassesFromBackend() {
     this.loading = true;
