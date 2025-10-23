@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { AlertPanelData } from '../../../core/services/alert-panel.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
 import * as XLSX from 'xlsx-js-style';
 import { environment } from '../../../../environments/environment';
@@ -77,11 +78,13 @@ export interface CourseOption {
 })
 export class PlanningService {
   /**
-   * Obtiene la cantidad de clases sin docente asignado para el jefe de sección autenticado
+   * Obtiene la cantidad de clases sin docente asignado para el jefe de sección autenticado (JWT)
    */
-  getMissingTeachersCountForSectionChief(userId: string): Observable<number> {
-    // Endpoint: /planning/classes/section-chief/{userId}/without-teacher
-    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/${userId}/without-teacher`).pipe(
+  getMissingTeachersCountForSectionChief(): Observable<number> {
+    // Endpoint: /planning/classes/section-chief/without-teacher (JWT en header)
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/without-teacher`, { headers }).pipe(
       map((classes: any[]) => classes.length)
     );
   }

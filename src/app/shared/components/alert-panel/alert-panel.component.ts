@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
         </li>
         <li *ngIf="alerts.missingTeachers > 0" class="alert-list-item alert-normal">
           <span class="alert-icon">🚩</span>
-          {{ alerts.missingTeachers }} Clases sin docente asignado
+          {{ alerts.missingTeachers }} {{ alerts.missingTeachers === 1 ? 'Clase' : 'Clases' }} sin docente asignado
         </li>
         <li *ngIf="alerts.scheduleConflicts > 0" class="alert-list-item alert-warning">
           <span class="alert-icon">⚠️</span>

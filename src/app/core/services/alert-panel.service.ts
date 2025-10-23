@@ -25,6 +25,16 @@ export class AlertPanelService {
   }
 
   private fetchAlerts(): Observable<AlertPanelData> {
-    return this.planningService.getDashboardAlerts();
+    // Consultar cantidad de clases sin docente para la sección del jefe autenticado
+    return this.planningService.getMissingTeachersCountForSectionChief().pipe(
+      switchMap((missingTeachers: number) =>
+        this.planningService.getDashboardAlerts().pipe(
+          map((alerts: AlertPanelData) => ({
+            ...alerts,
+            missingTeachers
+          }))
+        )
+      )
+    );
   }
 }
