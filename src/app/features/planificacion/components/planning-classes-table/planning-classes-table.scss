@@ -545,28 +545,34 @@ tr + tr.expander-row + tr[ngif] .separator-line.separator-under {
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
 
-  // Colores para cada estado
-  &.estado-subido {
+  // Colores para cada estado de la clase (basados en status_id de la BD)
+  &.estado-uploaded {
     background-color: #d4edda;
     border-color: #c3e6cb;
     color: #155724;
   }
 
-  &.estado-cambiar {
+  &.estado-created {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+  }
+
+  &.estado-change {
     background-color: #fff3cd;
     border-color: #ffeaa7;
     color: #856404;
   }
 
-  &.estado-eliminar {
+  &.estado-deleted {
     background-color: #f8d7da;
     border-color: #f5c6cb;
     color: #721c24;
   }
 
-  &.estado-crear {
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-    color: #0c5460;
+  &.estado-completed {
+    background-color: #e7f3ff;
+    border-color: #b3d9ff;
+    color: #004085;
   }
 }

@@ -17,6 +17,8 @@ import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
 import { SelectedTeachersService } from '../../../docentes/services/selected-teachers.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 
 @Component({
   selector: 'app-planificacion-clases-page',
@@ -57,6 +59,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   private dataLoaded = false; // Bandera para indicar si los datos están cargados
   private pendingTeacherSelections: Map<string, any> = new Map(); // Selecciones pendientes
   
+  // Información del semestre actual
+  currentSemester: SemesterResponseDTO | null = null;
+  
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -64,7 +69,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     private readonly selectedTeachersService: SelectedTeachers,
     private readonly planningService: PlanningService,
     private readonly teacherAssignmentService: TeacherAssignmentService,
-    private readonly newSelectedTeachersService: SelectedTeachersService
+    private readonly newSelectedTeachersService: SelectedTeachersService,
+    private readonly semesterService: SemesterInformationService
   ) {
     // Verificar si venimos de la selección de docentes
     const navigation = this.router.getCurrentNavigation();
@@ -102,6 +108,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         }
       })
     );
+    
+    // Cargar información del semestre actual
+    this.loadCurrentSemester();
     
     // Cargar datos del backend
     this.loadClassesFromBackend();
@@ -149,6 +158,25 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   // ==========================================
   // CARGA DE DATOS DEL BACKEND
   // ==========================================
+
+  /**
+   * Carga la información del semestre actual
+   */
+  private loadCurrentSemester() {
+    this.subscription.add(
+      this.semesterService.getCurrentSemester()
+        .pipe(
+          catchError((error: any) => {
+            console.error('Error al cargar semestre actual:', error);
+            return of(null);
+          })
+        )
+        .subscribe((semester: SemesterResponseDTO | null) => {
+          this.currentSemester = semester;
+          console.log('📅 Semestre actual cargado:', semester);
+        })
+    );
+  }
 
   private loadClassesFromBackend() {
     this.loading = true;
@@ -280,14 +308,17 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
 
   /**
    * Inicia el polling para verificar cambios en los estados de teacher_class
-   * Se ejecuta cada 10 segundos para mantener los estados actualizados
+   * Se ejecuta cada 3 segundos para mantener los estados actualizados en tiempo real
    */
   private startStatusPolling() {
-    console.log('🔄 Iniciando polling de estados de teacher_class');
+    console.log('🔄 Iniciando polling de estados de teacher_class (cada 3 segundos)');
     
-    // Polling cada 10 segundos
+    // Hacer una actualización inmediata al iniciar
+    this.forceStatusUpdate();
+    
+    // Polling cada 3 segundos para respuesta más rápida
     this.subscription.add(
-      interval(10000).pipe(
+      interval(3000).pipe(
         switchMap(() => {
           // Obtener los IDs de las clases visibles que tienen backendId
           const classIds = this.rows
@@ -312,6 +343,34 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  /**
+   * Fuerza una actualización inmediata de los estados de los profesores
+   * Útil para actualizar después de asignar un profesor
+   */
+  forceStatusUpdate() {
+    const classIds = this.rows
+      .filter(row => row.backendId)
+      .map(row => row.backendId!);
+    
+    if (classIds.length === 0) {
+      return;
+    }
+
+    console.log('⚡ Forzando actualización inmediata de estados...');
+    
+    this.planningService.getTeacherClassStatuses(classIds).pipe(
+      catchError(error => {
+        console.warn('Error forzando actualización de estados:', error);
+        return of([]);
+      })
+    ).subscribe(statuses => {
+      if (statuses.length > 0) {
+        this.updateRowStatuses(statuses);
+        console.log('✅ Actualización forzada completada');
+      }
+    });
   }
 
   /**
@@ -1293,6 +1352,12 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           // Recargar las asignaciones para esta clase para confirmar
           this.reloadTeacherAssignmentForClass(classRow.backendId!);
           
+          // Forzar actualización inmediata de estados
+          setTimeout(() => {
+            console.log('⚡ Forzando actualización de estados después de asignar docente...');
+            this.forceStatusUpdate();
+          }, 500); // Pequeño delay para dar tiempo al backend
+          
           // Mostrar mensaje de éxito (opcional)
           console.log(`🎉 ${selectedTeacher.name} asignado correctamente a ${classRow.courseName}`);
         },
@@ -1339,6 +1404,12 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
               console.log('ℹ️ Fila no encontrada en la vista filtrada, forzando applyFilters()');
               this.applyFilters();
             }
+            
+            // Forzar actualización de estados después de recargar
+            setTimeout(() => {
+              console.log('⚡ Actualizando estados después de recargar docentes...');
+              this.forceStatusUpdate();
+            }, 300);
           }
         },
         error: (error) => {
