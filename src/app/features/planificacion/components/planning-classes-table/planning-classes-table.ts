@@ -7,6 +7,8 @@ import { SchedulesTableRoom } from "../schedules-table-room/schedules-table-room
 import { SelectedTeachers } from '../../services/selected-teachers';
 import { ObservacionesModal } from '../observaciones-modal/observaciones-modal';
 import { PlanningService } from '../../services/planning.service';
+import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
+import { firstValueFrom } from 'rxjs';
 
 // Interfaz para las opciones de curso en el autocompletado
 export interface CourseOption {
@@ -35,6 +37,7 @@ export class PlanningClassesTable {
     private readonly datePipe: DatePipe, 
     private readonly selectedTeachersService: SelectedTeachers,
     private readonly planningService: PlanningService,
+    private readonly teacherAssignmentService: TeacherAssignmentService,
     private readonly cdr: ChangeDetectorRef
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
@@ -473,27 +476,50 @@ export class PlanningClassesTable {
   /**
    * Elimina un profesor de una clase
    */
-  removeTeacherFromClass(row: PlanningRow, teacherIndex: number) {
+  async removeTeacherFromClass(row: PlanningRow, teacherIndex: number) {
     if (!row.teachers || teacherIndex < 0 || teacherIndex >= row.teachers.length) {
       console.warn('Índice de profesor inválido');
       return;
     }
 
     const teacherToRemove = row.teachers[teacherIndex];
-    console.log(`Eliminando profesor ${teacherToRemove.name} (ID: ${teacherToRemove.id}) de la clase`);
+    console.log(`🗑️ Iniciando eliminación de profesor ${teacherToRemove.name} (ID: ${teacherToRemove.id}) de la clase ${row.backendId}`);
 
-    // Eliminar el profesor del array
-    row.teachers.splice(teacherIndex, 1);
-
-    // Si no quedan profesores, limpiar el array
-    if (row.teachers.length === 0) {
-      row.teachers = [];
+    // Verificar que tenemos los IDs necesarios
+    if (!teacherToRemove.id || !row.backendId) {
+      console.error('❌ No se puede eliminar: faltan IDs', { teacherId: teacherToRemove.id, classId: row.backendId });
+      alert('Error: No se puede eliminar el profesor (faltan identificadores)');
+      return;
     }
 
-    // Emitir el cambio
-    const rowIndex = this.getRowIndex(row);
-    if (rowIndex !== -1) {
-      this.patchRow.emit({ index: rowIndex, data: { teachers: row.teachers } });
+    try {
+      // Llamar al backend para eliminar la asignación
+      await firstValueFrom(
+        this.teacherAssignmentService.removeTeacherFromClass(teacherToRemove.id, row.backendId)
+      );
+
+      console.log(`✅ Profesor eliminado del backend exitosamente`);
+
+      // Eliminar el profesor del array local
+      row.teachers.splice(teacherIndex, 1);
+
+      // Si no quedan profesores, limpiar el array
+      if (row.teachers.length === 0) {
+        row.teachers = [];
+      }
+
+      // Emitir el cambio
+      const rowIndex = this.getRowIndex(row);
+      if (rowIndex !== -1) {
+        this.patchRow.emit({ index: rowIndex, data: { teachers: row.teachers } });
+      }
+
+      // Forzar detección de cambios
+      this.cdr.detectChanges();
+
+    } catch (error) {
+      console.error('❌ Error al eliminar profesor del backend:', error);
+      alert(`Error al eliminar el profesor: ${error}`);
     }
   }
 

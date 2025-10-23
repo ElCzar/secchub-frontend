@@ -1254,8 +1254,36 @@ export class PlanningService {
   /**
    * Exportar planificación a Excel
    */
-  exportToExcel(rows: PlanningRow[]) {
-    // Definir la interfaz para los datos de Excel
+  exportToExcel(rows: PlanningRow[], originalRows?: PlanningRow[], currentSemester?: any) {
+    console.log('📊 Exportando a Excel con las siguientes filas:', rows);
+    console.log('📊 originalRows disponibles:', originalRows);
+    console.log('📊 Semestre actual:', currentSemester);
+    console.log('📊 Detalle de docentes por fila:');
+    rows.forEach((row, index) => {
+      console.log(`  Fila ${index} - ${row.courseName}:`, {
+        teachers: row.teachers,
+        teacher: row.teacher,
+        teachersLength: row.teachers?.length || 0
+      });
+    });
+
+    // Calcular el número máximo de docentes que tiene una clase
+    const maxTeachers = Math.max(
+      1, // Al menos una columna de docente
+      ...rows.map(row => {
+        // Contar teachers[] si existe, o 1 si tiene teacher (singular)
+        if (row.teachers && row.teachers.length > 0) {
+          return row.teachers.length;
+        } else if (row.teacher) {
+          return 1;
+        }
+        return 0;
+      })
+    );
+    
+    console.log(`📊 Máximo de docentes por clase: ${maxTeachers}`);
+
+    // Definir la interfaz dinámica para los datos de Excel
     interface ExcelRow {
       'Materia': string;
       'ID Materia': string;
@@ -1266,6 +1294,7 @@ export class PlanningService {
       'Semanas': number;
       'Cupos': number;
       'Estado': PlanningStatus;
+      [key: string]: any; // Para las columnas dinámicas de docentes
       'Día': string;
       'Hora Inicial': string;
       'Hora Final': string;
@@ -1288,9 +1317,28 @@ export class PlanningService {
       // Crear un array para almacenar todas las filas de esta clase
       const classRows: ExcelRow[] = [];
 
+      // Intentar obtener docentes de originalRows si no están en la fila actual
+      let teachersList: any[] = [];
+      if (row.teachers && row.teachers.length > 0) {
+        teachersList = row.teachers;
+      } else if (row.teacher) {
+        teachersList = [row.teacher];
+      } else if (originalRows && row.backendId) {
+        // Buscar en originalRows por backendId
+        const originalRow = originalRows.find(r => r.backendId === row.backendId);
+        if (originalRow) {
+          teachersList = (originalRow.teachers && originalRow.teachers.length > 0) 
+            ? originalRow.teachers 
+            : (originalRow.teacher ? [originalRow.teacher] : []);
+          console.log(`📚 Docentes encontrados en originalRows para clase ${row.backendId}:`, teachersList);
+        }
+      }
+
+      console.log(`📝 Clase "${row.courseName}" - Docentes finales:`, teachersList);
+
       // Si no hay horarios, crear una fila con la información básica
       if (!row.schedules || row.schedules.length === 0) {
-        classRows.push({
+        const baseRow: ExcelRow = {
           'ID Materia': row.courseId,
           'Materia': row.courseName,
           'Sección': row.section,
@@ -1305,13 +1353,25 @@ export class PlanningService {
           'Hora Final': '-',
           'Salón': '-',
           'Observaciones': row.notes.join('\n')
-        });
+        };
+        
+        // Agregar columnas de docentes
+        for (let i = 0; i < maxTeachers; i++) {
+          const teacherKey = `Docente ${i + 1}`;
+          if (teachersList[i]) {
+            baseRow[teacherKey] = `${teachersList[i].name} ${teachersList[i].lastName || ''}`.trim();
+          } else {
+            baseRow[teacherKey] = i === 0 ? 'Sin docente' : 'No aplica';
+          }
+        }
+        
+        classRows.push(baseRow);
         return classRows;
       }
 
       // Crear una fila por cada horario
       row.schedules.forEach(schedule => {
-        classRows.push({
+        const scheduleRow: ExcelRow = {
           'Materia': row.courseName,
           'ID Materia': row.courseId,
           'Sección': row.section,
@@ -1326,7 +1386,19 @@ export class PlanningService {
           'Hora Final': schedule.endTime || '-',
           'Salón': schedule.room || 'Sin salón',
           'Observaciones': row.notes.join('\n')
-        });
+        };
+        
+        // Agregar columnas de docentes
+        for (let i = 0; i < maxTeachers; i++) {
+          const teacherKey = `Docente ${i + 1}`;
+          if (teachersList[i]) {
+            scheduleRow[teacherKey] = `${teachersList[i].name} ${teachersList[i].lastName || ''}`.trim();
+          } else {
+            scheduleRow[teacherKey] = i === 0 ? 'Sin docente' : 'No aplica';
+          }
+        }
+        
+        classRows.push(scheduleRow);
       });
 
       return classRows;
@@ -1336,7 +1408,7 @@ export class PlanningService {
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
 
-    // Ajustar el ancho de las columnas
+    // Ajustar el ancho de las columnas dinámicamente
     const columnWidths = [
       { wch: 30 }, // Materia
       { wch: 15 }, // ID Materia
@@ -1347,12 +1419,21 @@ export class PlanningService {
       { wch: 10 }, // Semanas
       { wch: 10 }, // Cupos
       { wch: 15 }, // Estado
+    ];
+    
+    // Agregar anchos de columna para cada docente
+    for (let i = 0; i < maxTeachers; i++) {
+      columnWidths.push({ wch: 25 }); // Docente 1, Docente 2, etc.
+    }
+    
+    // Continuar con las demás columnas
+    columnWidths.push(
       { wch: 10 }, // Día
       { wch: 10 }, // Hora Inicial
       { wch: 10 }, // Hora Final
       { wch: 15 }, // Salón
       { wch: 40 }  // Observaciones
-    ];
+    );
 
     // Aplicar colores según el estado
     const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
@@ -1378,8 +1459,16 @@ export class PlanningService {
     }
     worksheet['!cols'] = columnWidths;
 
-    // Agregar el título
-    const title = `Programación clases ${new Date().getFullYear()}${Math.floor((new Date().getMonth() + 3) / 6)}0`;
+    // Agregar el título usando el semestre actual si está disponible
+    let title: string;
+    if (currentSemester && currentSemester.year && currentSemester.period) {
+      title = `Programación clases ${currentSemester.year}${currentSemester.period}0`;
+    } else {
+      // Fallback al cálculo anterior si no hay semestre actual
+      title = `Programación clases ${new Date().getFullYear()}${Math.floor((new Date().getMonth() + 3) / 6)}0`;
+    }
+    
+    console.log('📋 Título del Excel:', title);
     XLSX.utils.book_append_sheet(workbook, worksheet, title);
 
     // Descargar el archivo
