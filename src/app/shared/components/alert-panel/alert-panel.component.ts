@@ -22,7 +22,19 @@ import { CommonModule } from '@angular/common';
             <span class="alert-text" [innerHTML]="alert.text"></span>
           </li>
           <li *ngIf="alert.type === 'dynamic'" class="alert-list-item alert-black" [ngClass]="{'alert-success': alert.data.type === 'accepted', 'alert-danger': alert.data.type === 'rejected'}">
-            <span class="alert-icon">{{ alert.data.type === 'accepted' ? '✅' : '❌' }}</span>
+            <span class="alert-icon">
+              <ng-container *ngIf="alert.data.type === 'accepted'; else rejectedIcon">
+                <span class="dynamic-x-icon">
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="18" height="18" rx="6" fill="rgba(220, 38, 38, 0.18)"/>
+                    <path d="M7 7l8 8M15 7l-8 8" stroke="#c41d1d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </ng-container>
+              <ng-template #rejectedIcon>
+                ❌
+              </ng-template>
+            </span>
             <span class="alert-text" [innerHTML]="alert.data.message"></span>
             <span class="alert-spacer"></span>
             <button class="btn btn--close-green" (click)="dismissDynamicAlert(alert.data.id)" title="Cerrar alerta">
@@ -45,6 +57,14 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [
     `.alert-panel-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .dynamic-x-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      height: 22px;
+      width: 22px;
+    }
     .alert-panel-title { font-size: 1.15rem; font-weight: 600; color: #c41d1d; margin-bottom: 1rem; }
     .alert-list { list-style: none; padding: 0; margin: 0 0 1rem 0; }
     .alert-list-item {
@@ -94,12 +114,12 @@ import { CommonModule } from '@angular/common';
     a.ver-detalles:hover {
       color: #40a9ff;
     }
-    .ver-detalles {
+    :host ::ng-deep .ver-detalles {
       color: #1976d2 !important;
       cursor: pointer;
       text-decoration: underline;
     }
-    .ver-detalles:hover {
+    :host ::ng-deep .ver-detalles:hover {
       color: #40a9ff !important;
     }
     .alert-list-item .btn--close-green {
@@ -156,10 +176,10 @@ export class AlertPanelComponent {
         this.fechaCierre = '';
       }
       if (alerts.missingRooms > 0) {
-        staticAlerts.push({ type: 'static', icon: '❗', text: `${alerts.missingRooms} ${alerts.missingRooms === 1 ? 'Clase' : 'Clases'} sin salón asignado`, class: 'alert-danger alert-black' });
+        staticAlerts.push({ type: 'static', icon: '❗', text: `${alerts.missingRooms} ${alerts.missingRooms === 1 ? 'Clase' : 'Clases'} sin salón asignado (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-danger alert-black' });
       }
       if (alerts.missingTeachers > 0) {
-        staticAlerts.push({ type: 'static', icon: '🚩', text: `${alerts.missingTeachers} ${alerts.missingTeachers === 1 ? 'Clase' : 'Clases'} sin docente asignado`, class: 'alert-normal alert-black' });
+        staticAlerts.push({ type: 'static', icon: '🚩', text: `${alerts.missingTeachers} ${alerts.missingTeachers === 1 ? 'Clase' : 'Clases'} sin docente asignado (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-normal alert-black' });
       }
       if (alerts.scheduleConflicts > 0) {
         staticAlerts.push({ type: 'static', icon: '⚠️', text: `Conflicto de horario en ${alerts.scheduleConflicts} clase(s)`, class: 'alert-warning alert-black' });
