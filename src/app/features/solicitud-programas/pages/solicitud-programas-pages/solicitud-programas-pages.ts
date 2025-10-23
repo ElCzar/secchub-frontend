@@ -7,7 +7,7 @@ import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rap
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { CombinePopupComponent } from '../../components/combine-popup/combine-popup.component';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
-import { ScheduleRow } from '../../../programas/models/schedule.models';
+import { ScheduleRow } from '../../../formulario-programas/models/schedule.models';
 import { SolicitudProgramasService, SolicitudDto } from '../../services/solicitud-programas.service';
 import { PlanningService, ClassDTO } from '../../../planificacion/services/planning.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
@@ -16,7 +16,7 @@ import { SectionInformationService } from '../../../../shared/services/section-i
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { ModalityDTO, ClassroomTypeDTO } from '../../../../shared/model/dto/parametric';
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
-import { AcademicRequestResponseDTO, RequestScheduleResponseDTO } from '../../../programas/models/academic-request.models';
+import { AcademicRequestResponseDTO, RequestScheduleResponseDTO } from '../../../formulario-programas/models/academic-request.models';
 
 type RowState = 'new' | 'existing' | 'deleted';
 

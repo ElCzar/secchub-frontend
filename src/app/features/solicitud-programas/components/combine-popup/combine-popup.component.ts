@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Chang
 import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
-import { ScheduleRow, newSchedule } from '../../../programas/models/schedule.models';
+import { ScheduleRow, newSchedule } from '../../../formulario-programas/models/schedule.models';
 
 interface AvailableSchedule extends ScheduleRow {
   sourceProgram?: string;
