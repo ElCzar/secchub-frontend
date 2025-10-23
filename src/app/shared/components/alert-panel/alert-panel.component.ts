@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 import { AlertPanelService, AlertPanelData } from '../../../core/services/alert-panel.service';
 import { CommonModule } from '@angular/common';
 
@@ -25,7 +26,8 @@ import { CommonModule } from '@angular/common';
         </li>
         <li *ngIf="alerts.pendingConfirmations > 0" class="alert-list-item alert-info">
           <span class="alert-icon">🕑</span>
-          {{ alerts.pendingConfirmations }} docentes sin confirmar disponibilidad
+          {{ alerts.pendingConfirmations }} {{ alerts.pendingConfirmations === 1 ? 'Docente' : 'Docentes' }} sin confirmar disponibilidad
+            (<span class="ver-detalles" (click)="verDetalles()">ver detalles</span>)
         </li>
         <li class="alert-list-item alert-date">
           <span class="alert-icon">📅</span>
@@ -52,8 +54,19 @@ import { CommonModule } from '@angular/common';
     }
     .alert-panel-title { color: #c41d1d; }
     .alert-panel-actions { text-align: right; }
-    .btn--secondary { background: #1890ff; color: #fff; border: none; border-radius: 4px; padding: 0.3rem 1rem; font-size: 0.95rem; cursor: pointer; }
-    .btn--secondary:hover { background: #40a9ff; }`
+      .btn--secondary { background: #1890ff; color: #fff; border: none; border-radius: 4px; padding: 0.3rem 1rem; font-size: 0.95rem; cursor: pointer; }
+      .btn--secondary:hover { background: #40a9ff; }
+      .ver-detalles {
+        color: #0a6bc7ff;
+        cursor: pointer;
+        margin-left: 0.5em;
+        text-decoration: underline;
+        font-weight: 500;
+      }
+      .ver-detalles:hover {
+        color: #40a9ff;
+      }
+    `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -61,15 +74,10 @@ export class AlertPanelComponent {
   alerts$: Observable<AlertPanelData | null>;
   fechaCierre: string = '';
 
-  constructor(private alertPanelService: AlertPanelService) {
+  constructor(private alertPanelService: AlertPanelService, private router: Router) {
     this.alerts$ = this.alertPanelService.alerts$;
-    // Suscribirse a la alerta y actualizar la fecha de cierre con la fecha real del semestre
     this.alerts$.subscribe(alerts => {
       if (alerts) {
-        // Obtener la fecha de cierre del semestre actual desde el backend
-        // La fecha se obtiene en getDashboardAlerts() y se puede pasar como string adicional en AlertPanelData
-        // Por ahora, la fecha se calcula en el servicio y se puede agregar como campo opcional
-        // Si no existe, mostrar vacío
         if ((alerts as any).endDate) {
           this.fechaCierre = this.formatFechaCierre((alerts as any).endDate);
         } else {
@@ -77,6 +85,10 @@ export class AlertPanelComponent {
         }
       }
     });
+  }
+
+  verDetalles() {
+    this.router.navigate(['/planificacion']);
   }
 
   formatFechaCierre(fecha: string): string {
