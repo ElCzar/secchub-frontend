@@ -498,6 +498,13 @@ export class PlanningClassesTable {
   }
 
   /**
+   * Verifica si la fila tiene profesores válidos (no vacíos, no undefined)
+   */
+  hasValidTeachers(row: PlanningRow): boolean {
+    return !!(row.teachers && row.teachers.length > 0 && row.teachers.some(t => t && t.id));
+  }
+
+  /**
    * Maneja el cambio de estado de la clase
    */
   onClassStatusChange(index: number, newStatusId: number | undefined) {

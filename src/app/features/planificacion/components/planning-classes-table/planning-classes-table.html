@@ -160,41 +160,52 @@
           <!-- Docente -->
           <td>
             <ng-container *ngIf="row._editing; else showTeacher">
-              <div class="teacher-edit-container">
-                <!-- Mostrar profesores existentes en recuadros -->
-                <div class="teacher-boxes" *ngIf="row.teachers && row.teachers.length > 0">
-                  <div *ngFor="let teacher of row.teachers; let ti = index" 
-                       class="teacher-box"
-                       [ngClass]="{
-                         'status-pending': teacher.status === 'PENDIENTE',
-                         'status-confirmed': teacher.status === 'CONFIRMADO',
-                         'status-rejected': teacher.status === 'RECHAZADO'
-                       }">
-                    <span class="status-symbol" 
-                          [ngClass]="{
-                            'symbol-pending': teacher.status === 'PENDIENTE',
-                            'symbol-confirmed': teacher.status === 'CONFIRMADO',
-                            'symbol-rejected': teacher.status === 'RECHAZADO'
-                          }"></span>
-                    <span class="teacher-name">{{ teacher.name }}</span>
-                    <button type="button" 
-                            class="btn-remove-teacher" 
-                            (click)="removeTeacherFromClass(row, ti)"
-                            title="Eliminar docente">×</button>
+              <!-- Si hay profesores válidos, mostrar recuadros + botón agregar otro -->
+              <ng-container *ngIf="hasValidTeachers(row)">
+                <div class="teacher-edit-container">
+                  <div class="teacher-boxes">
+                    <div *ngFor="let teacher of row.teachers; let ti = index" 
+                         class="teacher-box"
+                         [ngClass]="{
+                           'status-pending': teacher.status === 'PENDIENTE',
+                           'status-confirmed': teacher.status === 'CONFIRMADO',
+                           'status-rejected': teacher.status === 'RECHAZADO'
+                         }">
+                      <span class="status-symbol" 
+                            [ngClass]="{
+                              'symbol-pending': teacher.status === 'PENDIENTE',
+                              'symbol-confirmed': teacher.status === 'CONFIRMADO',
+                              'symbol-rejected': teacher.status === 'RECHAZADO'
+                            }"></span>
+                      <span class="teacher-name">{{ teacher.name }}</span>
+                      <button type="button" 
+                              class="btn-remove-teacher" 
+                              (click)="removeTeacherFromClass(row, ti)"
+                              title="Eliminar docente">×</button>
+                    </div>
                   </div>
+                  
+                  <button type="button" 
+                          class="btn--primary btn-add-teacher-main" 
+                          (click)="selectAdditionalTeacher(getRowIndex(row))"
+                          title="Agregar otro docente">
+                    + Agregar otro docente
+                  </button>
                 </div>
-                
-                <!-- Botón para agregar docente -->
+              </ng-container>
+              
+              <!-- Si NO hay profesores válidos, solo mostrar botón seleccionar -->
+              <ng-container *ngIf="!hasValidTeachers(row)">
                 <button type="button" 
-                        class="btn--primary btn-add-teacher-main" 
+                        class="btn--primary" 
                         (click)="selectAdditionalTeacher(getRowIndex(row))"
-                        title="Agregar docente">
-                  {{ (row.teachers && row.teachers.length > 0) ? '+ Agregar otro docente' : 'Seleccionar Docente' }}
+                        title="Seleccionar docente">
+                  Seleccionar Docente
                 </button>
-              </div>
+              </ng-container>
             </ng-container>
             <ng-template #showTeacher>
-              <ng-container *ngIf="row.teachers && row.teachers.length > 0; else noTeacher">
+              <ng-container *ngIf="hasValidTeachers(row); else noTeacher">
                 <!-- Vista de solo lectura: mostrar profesores en recuadros -->
                 <div class="teacher-boxes">
                   <div *ngFor="let teacher of row.teachers" 
