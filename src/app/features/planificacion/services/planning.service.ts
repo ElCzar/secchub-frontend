@@ -174,7 +174,7 @@ export class PlanningService {
   private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(
-    private readonly http: HttpClient,
+  public readonly http: HttpClient,
     private readonly courseService: CourseService,
     private readonly classroomService: ClassroomService,
     private readonly semesterService: SemesterInformationService

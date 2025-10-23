@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-inicio-seccion-page',
-  imports: [CommonModule, TaskStatusCard, ProgressSummaryTable, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent, PopUpCerrarPlanificacion, AlertPanelComponent],
+  imports: [CommonModule, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent, PopUpCerrarPlanificacion, AlertPanelComponent],
   templateUrl: './inicio-seccion-page.html',
   styleUrls: ['./inicio-seccion-page.scss']
 })
