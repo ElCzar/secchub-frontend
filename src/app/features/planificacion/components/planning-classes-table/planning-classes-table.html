@@ -46,18 +46,20 @@
           <td class="estado-cell">
             <select 
               class="estado-select"
-              [ngModel]="$any(row)._rowStatus || 'Subido'"
-              (ngModelChange)="$any(row)._rowStatus = $event"
+              [(ngModel)]="row.classStatusId"
+              (ngModelChange)="onClassStatusChange(i, row.classStatusId)"
               [ngClass]="{
-                'estado-subido': ($any(row)._rowStatus || 'Subido') === 'Subido',
-                'estado-cambiar': ($any(row)._rowStatus || 'Subido') === 'Cambiar',
-                'estado-eliminar': ($any(row)._rowStatus || 'Subido') === 'Eliminar',
-                'estado-crear': ($any(row)._rowStatus || 'Subido') === 'Crear'
+                'estado-uploaded': row.classStatusId === 14,
+                'estado-created': row.classStatusId === 11,
+                'estado-change': row.classStatusId === 12,
+                'estado-deleted': row.classStatusId === 13,
+                'estado-completed': row.classStatusId === 10
               }">
-              <option value="Subido">Subido</option>
-              <option value="Cambiar">Cambiar</option>
-              <option value="Eliminar">Eliminar</option>
-              <option value="Crear">Crear</option>
+              <option [ngValue]="14">Cargado</option>
+              <option [ngValue]="11">Creado</option>
+              <option [ngValue]="12">Cambio</option>
+              <option [ngValue]="13">Eliminado</option>
+              <option [ngValue]="10">Completado</option>
             </select>
           </td>
 

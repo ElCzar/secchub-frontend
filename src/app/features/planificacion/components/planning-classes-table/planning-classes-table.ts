@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,6 +16,7 @@ export interface CourseOption {
 
 @Component({
   selector: 'app-planning-classes-table',
+  standalone: true,
   imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal],
   templateUrl: './planning-classes-table.html',
   styleUrls: ['./planning-classes-table.scss'],
@@ -33,7 +34,8 @@ export class PlanningClassesTable {
     private readonly router: Router, 
     private readonly datePipe: DatePipe, 
     private readonly selectedTeachersService: SelectedTeachers,
-    private readonly planningService: PlanningService
+    private readonly planningService: PlanningService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
     
@@ -493,6 +495,25 @@ export class PlanningClassesTable {
     if (rowIndex !== -1) {
       this.patchRow.emit({ index: rowIndex, data: { teachers: row.teachers } });
     }
+  }
+
+  /**
+   * Maneja el cambio de estado de la clase
+   */
+  onClassStatusChange(index: number, newStatusId: number | undefined) {
+    if (newStatusId === undefined) return;
+    
+    const row = this.rows[index];
+    console.log(`Cambiando estado de clase ${row.backendId} a: ${newStatusId}`);
+    
+    // Actualizar el estado en la fila
+    row.classStatusId = newStatusId;
+    
+    // Forzar detección de cambios para que el color se actualice inmediatamente
+    this.cdr.detectChanges();
+    
+    // Emitir el cambio para que se guarde
+    this.patchRow.emit({ index, data: { classStatusId: newStatusId } });
   }
 
   // Métodos para manejo de fechas y cálculo automático de semanas
