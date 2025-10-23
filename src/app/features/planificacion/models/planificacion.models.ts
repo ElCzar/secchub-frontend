@@ -65,6 +65,8 @@ export interface PlanningRow {
   schedules: ScheduleRow[]; // horarios de la clase
   // Marca temporal para evitar re-asignaciones duplicadas (ms desde epoch)
   _teacherAssignedAt?: number;
+  /** Indica si la materia es anual (no recomendada para duplicar) */
+  isAnnual?: boolean;
 }
 
 // Interfaces para comunicación con el backend

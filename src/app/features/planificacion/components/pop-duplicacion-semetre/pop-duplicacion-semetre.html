@@ -24,7 +24,6 @@
       <div *ngIf="!showPreview" class="semester-selection">
         <!-- Pregunta -->
         <p class="question-text">¿Cuál semestre desea duplicar?</p>
-        
         <!-- Desplegable de semestres -->
         <div class="select-container">
           <select 
@@ -37,6 +36,12 @@
             </option>
           </select>
         </div>
+        <!-- Advertencia debajo del select -->
+        <p *ngIf="showAnnualWarning" class="preview-summary warning annual-warning-inline">
+          ⚠️ Advertencia:
+          <span *ngIf="annualCount === 1"><b>Se encontró {{ annualCount }} materia anual, no se recomienda duplicarla.</b></span>
+          <span *ngIf="annualCount > 1"><b>Se encontraron {{ annualCount }} materias anuales, no se recomienda duplicarlas.</b></span>
+        </p>
         
         <!-- Mensaje de error -->
         <div *ngIf="error" class="error-message">
@@ -51,10 +56,20 @@
           <p class="preview-summary" [ngClass]="{'success': previewData.classes.length > 0, 'warning': previewData.classes.length === 0}">
             {{ previewMessage }}
           </p>
+          <!-- Advertencia solo en la vista previa si no está en el select -->
+          <p *ngIf="showAnnualWarning && !selectedSemester" class="preview-summary warning annual-warning-inline">
+            ⚠️ Advertencia:
+            <span *ngIf="annualCount === 1"><b>Se encontró {{ annualCount }} materia anual, no se recomienda duplicarla.</b></span>
+            <span *ngIf="annualCount > 1"><b>Se encontraron {{ annualCount }} materias anuales, no se recomienda duplicarlas.</b></span>
+          </p>
         </div>
-        
         <div class="preview-classes" *ngIf="previewData.classes.length > 0">
-          <div class="class-item" *ngFor="let class of previewData.classes">
+          <div class="class-item" *ngFor="let class of previewData.classes" [ngClass]="{'annual-class': annualClassIds.includes(class.id || -1)}">
+            <ng-container *ngIf="annualClassIds.includes(class.id || -1)">
+              <div class="annual-class-label">
+                <span [innerHTML]="annualCount === 1 ? 'Materia anual, <b>no se recomienda duplicarla.</b>' : `Materias anuales, <b>no se recomienda duplicarlas.</b>`"></span>
+              </div>
+            </ng-container>
             <div class="class-header">
               <h4 class="course-name">{{ class.courseName || 'Curso sin nombre' }}</h4>
               <div class="class-details">
@@ -64,7 +79,6 @@
                 </span>
               </div>
             </div>
-            
             <div class="schedules" *ngIf="class.schedules && class.schedules.length > 0">
               <div class="schedule-item" *ngFor="let schedule of class.schedules">
                 <span class="day">{{ formatDay(schedule.day) }}</span>
@@ -75,7 +89,6 @@
             </div>
           </div>
         </div>
-        
         <div *ngIf="previewData.classes.length === 0" class="no-classes">
           <p>❌ {{ previewMessage }}</p>
         </div>
