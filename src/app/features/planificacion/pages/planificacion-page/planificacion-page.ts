@@ -255,18 +255,29 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   }
 
   private loadTeacherAssignments() {
+    console.log('🔄 loadTeacherAssignments iniciado');
+    console.log('📊 originalRows:', this.originalRows.length, 'filas');
+    
     // Cargar docentes asignados para cada clase que tenga backendId
     this.originalRows.forEach((row, index) => {
+      console.log(`🔍 Procesando fila ${index}:`, {
+        courseName: row.courseName,
+        backendId: row.backendId,
+        hasBackendId: !!row.backendId
+      });
+      
       if (row.backendId) {
         this.subscription.add(
           this.teacherAssignmentService.getTeachersAssignedToClass(row.backendId)
             .pipe(
               catchError((error: any) => {
-                console.error(`Error al cargar docentes para clase ${row.backendId}:`, error);
+                console.error(`❌ Error al cargar docentes para clase ${row.backendId}:`, error);
                 return of([]);
               })
             )
             .subscribe((teachers: any[]) => {
+              console.log(`👨‍🏫 Docentes recibidos para clase ${row.backendId} (${row.courseName}):`, teachers);
+              
               if (teachers.length > 0) {
                   // Map backend teachers into the new teachers[] array and keep legacy teacher as first
                   this.originalRows[index].teachers = teachers.map((t: any) => ({
@@ -281,6 +292,10 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
                   // Backwards compatibility: set legacy `teacher` to first
                   const primary = this.originalRows[index].teachers[0];
                   this.originalRows[index].teacher = primary ? { ...primary } : undefined;
+                  
+                  console.log(`✅ Docentes asignados a originalRows[${index}]:`, this.originalRows[index].teachers);
+                } else {
+                  console.log(`⚠️ No hay docentes para clase ${row.backendId} (${row.courseName})`);
                 }
             })
         );
@@ -289,6 +304,15 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
 
     // Después de cargar todo, aplicar filtros
     setTimeout(() => {
+      console.log('⏰ Timeout completado, aplicando filtros...');
+      console.log('📊 Estado de originalRows después del timeout:');
+      this.originalRows.forEach((row, idx) => {
+        console.log(`  Fila ${idx} - ${row.courseName}:`, {
+          backendId: row.backendId,
+          teachers: row.teachers,
+          teachersLength: row.teachers?.length || 0
+        });
+      });
       this.applyFilters();
     }, 500); // Pequeño delay para que se carguen las asignaciones
   }
@@ -700,7 +724,14 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
 
   // Método para aplicar filtros
   applyFilters() {
-    let filtered = [...this.originalRows];
+    // Hacer una copia profunda de las filas para preservar teachers[]
+    let filtered = this.originalRows.map(row => ({
+      ...row,
+      teachers: row.teachers ? [...row.teachers] : [],
+      teacher: row.teacher ? { ...row.teacher } : undefined,
+      schedules: row.schedules ? [...row.schedules] : [],
+      notes: row.notes ? [...row.notes] : []
+    }));
 
     // Filtro por rol (sección)
     if (this.role === 'seccion') {
@@ -732,6 +763,16 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     }
 
     this.rows = filtered;
+    
+    console.log('🔄 applyFilters ejecutado - Estado de this.rows:');
+    this.rows.forEach((row, idx) => {
+      if (idx < 3) { // Solo mostrar las primeras 3 para no llenar la consola
+        console.log(`  Fila ${idx} - ${row.courseName}:`, {
+          teachers: row.teachers,
+          teachersLength: row.teachers?.length || 0
+        });
+      }
+    });
     
     // Asegurar que siempre haya una fila editable
     this.ensureEditableRow();
@@ -1230,9 +1271,37 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       await this.reloadData();
       
       console.log('Todos los cambios guardados exitosamente');
+      
+      console.log('========================================');
+      console.log('🎯 PREPARANDO EXPORTACIÓN A EXCEL');
+      console.log('========================================');
+      console.log('📊 this.rows tiene', this.rows.length, 'filas');
+      console.log('📊 this.originalRows tiene', this.originalRows.length, 'filas');
+      
+      console.log('📊 Primeras 3 filas de this.rows:');
+      this.rows.slice(0, 3).forEach((row, idx) => {
+        console.log(`  Fila ${idx} - ${row.courseName}:`, {
+          backendId: row.backendId,
+          teachers: row.teachers,
+          teacher: row.teacher,
+          teachersLength: row.teachers?.length || 0
+        });
+      });
+      
+      console.log('📊 Primeras 3 filas de this.originalRows:');
+      this.originalRows.slice(0, 3).forEach((row, idx) => {
+        console.log(`  Fila ${idx} - ${row.courseName}:`, {
+          backendId: row.backendId,
+          teachers: row.teachers,
+          teacher: row.teacher,
+          teachersLength: row.teachers?.length || 0
+        });
+      });
 
-      // Exportar a Excel después de guardar
-      this.planningService.exportToExcel(this.rows);
+      // Exportar a Excel después de guardar, pasando originalRows y semestre actual
+      console.log('🚀 Llamando a exportToExcel...');
+      console.log('📅 Semestre actual a pasar:', this.currentSemester);
+      this.planningService.exportToExcel(this.rows, this.originalRows, this.currentSemester);
     } catch (error) {
       console.error('Error al guardar cambios:', error);
       this.error = 'Error al guardar algunos cambios. Verifique los datos e intente nuevamente.';
@@ -1242,6 +1311,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   }
 
   private async reloadData() {
+    console.log('🔄 Recargando datos del backend...');
+    
     // Recargar datos del backend sin mostrar loading adicional
     const classes = await this.planningService.getAllClassesWithSchedules().toPromise();
     if (classes) {
@@ -1249,11 +1320,69 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         this.planningService.convertClassDTOToPlanningRow(classDTO)
       );
       
+      console.log('✅ Clases recargadas, ahora cargando docentes...');
+      
+      // Cargar docentes y esperar a que terminen
+      await this.loadTeacherAssignmentsAsync();
+      
+      console.log('✅ Docentes cargados, aplicando filtros...');
+      
       // Aplicar filtros para actualizar this.rows
       this.applyFilters();
       
-      this.loadTeacherAssignments();
+      console.log('✅ Datos completamente recargados');
     }
+  }
+
+  /**
+   * Versión asíncrona de loadTeacherAssignments que espera a que todos los docentes se carguen
+   */
+  private async loadTeacherAssignmentsAsync(): Promise<void> {
+    console.log('🔄 loadTeacherAssignmentsAsync iniciado');
+    
+    const promises: Promise<void>[] = [];
+    
+    this.originalRows.forEach((row, index) => {
+      if (row.backendId) {
+        const promise = this.teacherAssignmentService.getTeachersAssignedToClass(row.backendId)
+          .pipe(
+            catchError((error: any) => {
+              console.error(`❌ Error al cargar docentes para clase ${row.backendId}:`, error);
+              return of([]);
+            })
+          )
+          .toPromise()
+          .then((teachers: any[] | undefined) => {
+            console.log(`👨‍🏫 Docentes recibidos para clase ${row.backendId} (${row.courseName}):`, teachers);
+            
+            if (teachers && teachers.length > 0) {
+              this.originalRows[index].teachers = teachers.map((t: any) => ({
+                id: t.id,
+                name: t.name,
+                lastName: t.lastName,
+                email: t.email,
+                maxHours: t.maxHours,
+                assignedHours: (t as any).totalHours ?? t.assignedHours,
+                availableHours: (t as any).availableHours ?? (t.maxHours - ((t as any).totalHours ?? t.assignedHours))
+              }));
+              
+              const primary = this.originalRows[index].teachers[0];
+              this.originalRows[index].teacher = primary ? { ...primary } : undefined;
+              
+              console.log(`✅ Docentes asignados a originalRows[${index}]:`, this.originalRows[index].teachers);
+            } else {
+              console.log(`⚠️ No hay docentes para clase ${row.backendId} (${row.courseName})`);
+            }
+          });
+        
+        promises.push(promise);
+      }
+    });
+    
+    // Esperar a que todas las peticiones terminen
+    await Promise.all(promises);
+    
+    console.log('✅ Todos los docentes cargados');
   }
 
   // Métodos para el modal de conflicto de horarios
@@ -1279,15 +1408,7 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   }
 
   // Método de prueba para mostrar el modal
-  testScheduleConflict() {
-    this.showConflictModal(
-      'Maria Sanchez',
-      'Lunes 08:00 - 10:00',
-      'Programación I',
-      'Lunes 08:00 - 10:00',
-      'Base de Datos'
-    );
-  }
+
 
   // ==========================================
   // MANEJO DE ASIGNACIÓN DE DOCENTES

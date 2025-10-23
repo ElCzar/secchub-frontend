@@ -55,6 +55,10 @@ export interface AcademicRequestResponseDTO {
   observation?: string;
   schedules: RequestScheduleResponseDTO[];
   
+  // Nuevos campos de estado
+  accepted?: boolean;       // true si la solicitud fue aceptada y llevada a planificación
+  combined?: boolean;       // true si la solicitud fue combinada con otras
+  
   // Campos enriquecidos desde el backend
   userName?: string;        // Nombre completo del usuario
   courseName?: string;      // Nombre del curso

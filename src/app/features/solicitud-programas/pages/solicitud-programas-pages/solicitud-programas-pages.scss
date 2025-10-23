@@ -356,6 +356,47 @@ app-sidebar-toggle-button {
 .row-horarios .btn-icon.blue { width: 30px; height: 30px; }
 
 
+/* ==============================
+  Estados de solicitudes
+  ============================== */
+.tabla tbody tr.is-deleted {
+  opacity: 0.4;
+  text-decoration: line-through;
+  background-color: #f8f8f8;
+}
+
+.tabla tbody tr.is-accepted {
+  background-color: #d4edda; /* Verde suave */
+  border-left: 4px solid #28a745;
+}
+
+.tabla tbody tr.is-combined {
+  background-color: #fff3cd; /* Amarillo suave */
+  border-left: 4px solid #ffc107;
+}
+
+/* Badges de estado */
+.status-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.status-badge.status-accepted {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.status-combined {
+  background-color: #ffc107;
+  color: #333;
+}
+
 /* Responsive adjustments */
 @media (max-width: 992px) {
   /* On medium screens keep the extra 20px shift but reduce overall width */

@@ -96,6 +96,21 @@ export class TeacherAssignmentService {
     return this.http.delete<void>(`${this.baseUrl}/${assignmentId}`);
   }
 
+  /**
+   * Eliminar una asignación de profesor a clase específica
+   */
+  removeTeacherFromClass(teacherId: number, classId: number): Observable<void> {
+    console.log(`🗑️ Eliminando asignación: teacherId=${teacherId}, classId=${classId}`);
+    const url = `${environment.apiUrl}/teachers/classes/teacher/${teacherId}/class/${classId}`;
+    return this.http.delete<void>(url).pipe(
+      tap(() => console.log(`✅ Asignación eliminada exitosamente`)),
+      catchError(error => {
+        console.error(`❌ Error eliminando asignación:`, error);
+        throw error;
+      })
+    );
+  }
+
   // ==========================================
   // CONSULTAS DE ASIGNACIONES
   // ==========================================
