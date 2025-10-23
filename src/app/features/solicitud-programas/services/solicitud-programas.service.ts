@@ -210,4 +210,32 @@ export class SolicitudProgramasService {
     console.log(`🔄 Mapeando día del backend: "${day}" → "${dayMap[day?.toUpperCase()] || day}"`);
     return dayMap[day?.toUpperCase()] || day;
   }
+
+  /**
+   * Marca una solicitud como aceptada (llevada a planificación)
+   */
+  markAsAccepted(requestId: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/academic-requests/${requestId}/accept`, {});
+  }
+
+  /**
+   * Marca una solicitud como combinada
+   */
+  markAsCombined(requestId: number): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/academic-requests/${requestId}/combine`, {});
+  }
+
+  /**
+   * Marca múltiples solicitudes como aceptadas
+   */
+  markMultipleAsAccepted(requestIds: number[]): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/academic-requests/accept-multiple`, { requestIds });
+  }
+
+  /**
+   * Marca múltiples solicitudes como combinadas
+   */
+  markMultipleAsCombined(requestIds: number[]): Observable<void> {
+    return this.http.patch<void>(`${this.baseUrl}/academic-requests/combine-multiple`, { requestIds });
+  }
 }
