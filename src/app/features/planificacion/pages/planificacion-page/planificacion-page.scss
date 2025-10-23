@@ -24,6 +24,22 @@
 }
 .titulo-pagina {
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.semester-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    background: var(--brand-azul-10, #f1f5fb);
+    color: var(--brand-azul, #234574);
+    border: 2px solid var(--brand-azul, #234574);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
 }
 .toolbar {
     display: flex;

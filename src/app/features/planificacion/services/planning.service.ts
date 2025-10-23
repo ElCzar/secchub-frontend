@@ -3,7 +3,7 @@ import { AlertPanelData } from '../../../core/services/alert-panel.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
-import * as XLSX from 'xlsx-js-style';
+import * as XLSX from 'xlsx';
 import { environment } from '../../../../environments/environment';
 import { PlanningRow, PlanningStatus } from '../models/planificacion.models';
 import { CourseService } from './course.service';
@@ -1073,6 +1073,7 @@ export class PlanningService {
       weeks: calculateWeeks(startDateFormatted, endDateFormatted),
       seats: classDTO.capacity || 0,
       status: this.mapBackendStatusToFrontend(classDTO.statusName),
+      classStatusId: classDTO.statusId || 14, // Estado de la clase (default: 14=Uploaded)
       teacher: undefined, // Se llenará con los datos de asignación
       notes: classDTO.observation ? [classDTO.observation] : [],
       schedules: this.convertClassSchedulesToScheduleRows(classDTO.schedules || [])
@@ -1115,7 +1116,7 @@ export class PlanningService {
       endDate: planningRow.endDate,
       observation: planningRow.notes?.join('; '),
       capacity: planningRow.seats,
-      // statusId se manejará separadamente según el esquema de la BD
+      statusId: planningRow.classStatusId || 14, // ID del estado de la clase (default: 14=Uploaded)
     };
 
     // Intento no bloqueante: si ya tenemos el mapping name->id en cache, adjuntar section numeric
@@ -1133,6 +1134,7 @@ export class PlanningService {
       startDateEmpty: !classDTO.startDate,
       endDateEmpty: !classDTO.endDate
     });
+    console.log('Estado de la clase (statusId):', classDTO.statusId);
     console.log('=== DATOS FINALES A ENVIAR AL BACKEND ===');
     console.log('JSON que se enviará:', JSON.stringify(classDTO, null, 2));
     

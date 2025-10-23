@@ -59,7 +59,8 @@ export interface PlanningRow {
   // by using the first element of `teachers` where a single teacher is expected.
   teachers?: TeacherRef[];
   teacher?: TeacherRef; // legacy single-teacher field (kept for compatibility)
-  status: PlanningStatus;   // ⏳/✅/❌
+  status: PlanningStatus;   // ⏳/✅/❌ (Estado del profesor)
+  classStatusId?: number;   // Estado de la clase (10=Completed, 11=Created, 12=Change, 13=Deleted, 14=Uploaded)
   notes: string[];          // observaciones acumuladas
 
   schedules: ScheduleRow[]; // horarios de la clase

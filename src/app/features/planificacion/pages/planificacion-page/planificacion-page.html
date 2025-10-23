@@ -14,7 +14,12 @@
   </aside>
 
   <main class="content">
-    <h1 class="titulo-pagina">Programación de Clases</h1>
+    <h1 class="titulo-pagina">
+      Programación de Clases
+      @if (currentSemester) {
+        <span class="semester-badge">{{ currentSemester.year }}-{{ currentSemester.period }}</span>
+      }
+    </h1>
     <div class="hr-line"></div>
 
     <!-- Filtros de búsqueda -->
