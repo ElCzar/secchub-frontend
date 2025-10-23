@@ -78,6 +78,17 @@ export interface CourseOption {
 })
 export class PlanningService {
   /**
+   * Obtiene la cantidad de clases sin salón asignado para el jefe de sección autenticado (JWT)
+   */
+  getMissingRoomsCountForSectionChief(): Observable<number> {
+    // Endpoint: /planning/classes/section-chief/without-room (JWT en header)
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/without-room`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+  /**
    * Obtiene la cantidad de clases sin docente asignado para el jefe de sección autenticado (JWT)
    */
   getMissingTeachersCountForSectionChief(): Observable<number> {

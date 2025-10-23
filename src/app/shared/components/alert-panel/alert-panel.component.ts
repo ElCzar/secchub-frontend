@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
       <ul class="alert-list">
         <li *ngIf="alerts.missingRooms > 0" class="alert-list-item alert-danger">
           <span class="alert-icon">❗</span>
-          {{ alerts.missingRooms }} Clases sin salón asignado
+          {{ alerts.missingRooms }} {{ alerts.missingRooms === 1 ? 'Clase' : 'Clases' }} sin salón asignado
         </li>
         <li *ngIf="alerts.missingTeachers > 0" class="alert-list-item alert-normal">
           <span class="alert-icon">🚩</span>
