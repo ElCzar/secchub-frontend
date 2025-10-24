@@ -97,7 +97,7 @@ export class AlertPanelService {
     });
   }
 
-  private updateAlerts() {
+  public updateAlerts() {
     this.fetchAlerts().subscribe({
       next: (data) => {
         console.log('[AlertPanelService] Emite alerts:', data);

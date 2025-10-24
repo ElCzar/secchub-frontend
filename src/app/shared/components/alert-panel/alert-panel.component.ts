@@ -1,3 +1,4 @@
+import { OnInit } from '@angular/core';
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
@@ -24,12 +25,7 @@ import { CommonModule } from '@angular/common';
           <li *ngIf="alert.type === 'dynamic'" class="alert-list-item alert-black" [ngClass]="{'alert-success': alert.data.type === 'accepted', 'alert-danger': alert.data.type === 'rejected'}">
             <span class="alert-icon">
               <ng-container *ngIf="alert.data.type === 'accepted'; else rejectedIcon">
-                <span class="dynamic-x-icon">
-                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="2" width="18" height="18" rx="6" fill="rgba(220, 38, 38, 0.18)"/>
-                    <path d="M7 7l8 8M15 7l-8 8" stroke="#c41d1d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
+                ✅
               </ng-container>
               <ng-template #rejectedIcon>
                 ❌
@@ -38,10 +34,10 @@ import { CommonModule } from '@angular/common';
             <span class="alert-text" [innerHTML]="alert.data.message"></span>
             <span class="alert-spacer"></span>
             <button class="btn btn--close-green" (click)="dismissDynamicAlert(alert.data.id)" title="Cerrar alerta">
-              <span class="close-green-box">
+              <span class="close-red-box">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="2" width="18" height="18" rx="6" fill="#d6f5e6"/>
-                  <path d="M7 11l3 3 5-5" stroke="#1a7f37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="2" y="2" width="18" height="18" rx="6" fill="rgba(220, 38, 38, 0.18)"/>
+                  <path d="M7 7l8 8M15 7l-8 8" stroke="#c41d1d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
             </button>
@@ -57,11 +53,12 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [
     `.alert-panel-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-    .dynamic-x-icon {
-      display: inline-flex;
+    .close-red-box {
+      display: flex;
       align-items: center;
       justify-content: center;
-      vertical-align: middle;
+      background: transparent;
+      border-radius: 6px;
       height: 22px;
       width: 22px;
     }
@@ -133,7 +130,11 @@ import { CommonModule } from '@angular/common';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AlertPanelComponent {
+export class AlertPanelComponent implements OnInit {
+  ngOnInit(): void {
+    // Forzar recarga instantánea de alertas estáticas al cargar el panel
+    this.alertPanelService.updateAlerts();
+  }
   alerts$: Observable<AlertPanelData | null>;
   dynamicAlerts$: Observable<DynamicTeacherResponseAlert[]>;
   visibleAlerts: any[] = [];
