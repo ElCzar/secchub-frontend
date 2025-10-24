@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { MonitorFormPageComponent } from './features/monitores/pages/monitor-form-page/monitor-form-page.component';
 import { ConfirmacionPageComponent } from './features/confirmacion-docentes/pages/confirmacion-page/confirmacion-page.component';
-import { ProgramasPageComponent } from './features/programas/pages/programas-page/programas-page.component';
+import { ProgramasPageComponent } from './features/formulario-programas/pages/programas-page/programas-page.component';
 import { LoginPageComponent } from './features/auth/pages/login-page/login-page.component';
 
 import { PlanificacionClasesPage } from './features/planificacion/pages/planificacion-page/planificacion-page';

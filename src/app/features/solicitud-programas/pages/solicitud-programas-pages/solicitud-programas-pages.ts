@@ -7,7 +7,7 @@ import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rap
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
 import { CombinePopupComponent } from '../../components/combine-popup/combine-popup.component';
 import { SchedulesTableComponent } from '../../../../shared/components/schedules-table/schedules-table.component';
-import { ScheduleRow } from '../../../programas/models/schedule.models';
+import { ScheduleRow } from '../../../formulario-programas/models/schedule.models';
 import { SolicitudProgramasService, SolicitudDto } from '../../services/solicitud-programas.service';
 import { PlanningService, ClassDTO } from '../../../planificacion/services/planning.service';
 import { HeaderComponent } from "../../../../layouts/header/header.component";
@@ -16,7 +16,7 @@ import { SectionInformationService } from '../../../../shared/services/section-i
 import { ParametricService } from '../../../../shared/services/parametric.service';
 import { ModalityDTO, ClassroomTypeDTO } from '../../../../shared/model/dto/parametric';
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
-import { AcademicRequestResponseDTO, RequestScheduleResponseDTO } from '../../../programas/models/academic-request.models';
+import { AcademicRequestResponseDTO, RequestScheduleResponseDTO } from '../../../formulario-programas/models/academic-request.models';
 
 type RowState = 'new' | 'existing' | 'deleted';
 
@@ -35,6 +35,9 @@ interface SolicitudRow {
   // Optional resolved identifiers filled during mapping
   courseId?: number;
   sectionId?: number;
+  // Nuevos campos de estado
+  accepted?: boolean;       // true si ya fue aceptada y llevada a planificación
+  combined?: boolean;       // true si fue combinada con otras
 }
 
 interface CombinedRequest {
@@ -222,6 +225,8 @@ export class SolicitudProgramasPages implements OnInit {
         comentarios: r.observation || '',
         selected: false,
         _state: 'existing' as RowState,
+        accepted: r.accepted || false,
+        combined: r.combined || false,
         schedules: r.schedules && r.schedules.length > 0 ? r.schedules.map((s: RequestScheduleResponseDTO) => {
           const normalizeTime = (t?: string) => {
             if (!t) return '';
@@ -400,10 +405,13 @@ export class SolicitudProgramasPages implements OnInit {
       schedules: payload.schedules || []
     };
 
-    // Mark source rows as deleted/merged
+    // Mark source rows as deleted/merged and combined
     for (const sid of payload.sourceIds) {
       const r = this.rows.find(x => x.id === sid);
-      if (r) r._state = 'deleted';
+      if (r) {
+        r._state = 'deleted';
+        r.combined = true; // Marcar como combinada localmente
+      }
     }
 
     this.combined.push(combined);
@@ -453,22 +461,50 @@ export class SolicitudProgramasPages implements OnInit {
       return;
     }
     
-    const payload = {
-      individual,
-      combined: this.combined
-    };
-
-    
-    // Primero aplicar las solicitudes en el backend
-    this.service.applyRequests(payload).subscribe({
-      next: () => {
-        // Create classes for processed requests
-        this.createClassesFromRequests(individual, this.combined);
-      },
-      error: () => {
-        alert('Error al aplicar solicitudes en el backend.');
-      }
+    // Extraer los IDs de las solicitudes individuales y combinadas
+    const individualIds = individual.map(r => Number(r.id)).filter(id => !isNaN(id));
+    const combinedIds: number[] = [];
+    this.combined.forEach(combo => {
+      combo.sourceIds.forEach(sid => {
+        const numId = Number(sid);
+        if (!isNaN(numId)) combinedIds.push(numId);
+      });
     });
+    
+    // Primero marcar las solicitudes como aceptadas/combinadas en el backend
+    const markRequests$ = [];
+    
+    if (individualIds.length > 0) {
+      markRequests$.push(this.service.markMultipleAsAccepted(individualIds));
+    }
+    
+    if (combinedIds.length > 0) {
+      markRequests$.push(this.service.markMultipleAsCombined(combinedIds));
+    }
+    
+    if (markRequests$.length > 0) {
+      forkJoin(markRequests$).subscribe({
+        next: () => {
+          console.log('✅ Solicitudes marcadas correctamente');
+          // Actualizar estado local
+          individual.forEach(row => row.accepted = true);
+          this.combined.forEach(combo => {
+            combo.sourceIds.forEach(sid => {
+              const r = this.rows.find(x => x.id === sid);
+              if (r) r.combined = true;
+            });
+          });
+          // Crear clases en planificación
+          this.createClassesFromRequests(individual, this.combined);
+        },
+        error: (err) => {
+          console.error('❌ Error marcando solicitudes:', err);
+          alert('Error al marcar solicitudes en el backend.');
+        }
+      });
+    } else {
+      this.createClassesFromRequests(individual, this.combined);
+    }
   }
 
   private createClassesFromRequests(individual: SolicitudRow[], combined: CombinedRequest[]): void {

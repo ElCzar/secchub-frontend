@@ -58,12 +58,22 @@
           </thead>
           <tbody>
             <ng-container *ngFor="let row of filteredRows; let i = index">
-              <tr [class.is-deleted]="row._state==='deleted'">
+              <tr [class.is-deleted]="row._state==='deleted'"
+                  [class.is-accepted]="row.accepted"
+                  [class.is-combined]="row.combined">
                 <td><input type="checkbox" [(ngModel)]="row.selected"></td>
                 <td>
                   <button type="button" class="btn-icon" (click)="removeRow(i)">−</button>
                 </td>
-                <td>{{ row.program }}</td>
+                <td>
+                  {{ row.program }}
+                  @if (row.accepted) {
+                    <span class="status-badge status-accepted">✓ Aceptada</span>
+                  }
+                  @if (row.combined) {
+                    <span class="status-badge status-combined">⚡ Combinada</span>
+                  }
+                </td>
                 <td>{{ row.materia }}</td>
                 <td>
                   <input type="number" [(ngModel)]="row.cupos" min="1" />

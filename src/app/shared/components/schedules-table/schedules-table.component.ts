@@ -2,7 +2,7 @@
 // Importaciones necesarias para el funcionamiento del componente y sus dependencias
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
-import { Modality, newSchedule, RoomType, ScheduleRow } from '../../../features/programas/models/schedule.models';
+import { Modality, newSchedule, RoomType, ScheduleRow } from '../../../features/formulario-programas/models/schedule.models';
 import { FormsModule } from '@angular/forms';
 import { ClassroomService, ClassroomTypeDTO, ModalityDTO } from '../../../features/planificacion/services/classroom.service';
 

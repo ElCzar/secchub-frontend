@@ -6,7 +6,7 @@ import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { AvailabilityRow, AvailabilityTableComponent, newAvailabilityRow } from '../../components/availability-table/availability-table.component';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { SuccessModal } from '../../../../shared/components/success-modal/success-modal';
-import { ProgramasService, CourseOption } from '../../../programas/services/programas.service';
+import { ProgramasService, CourseOption } from '../../../formulario-programas/services/programas.service';
 import { SectionsService, Section } from '../../../../shared/services/sections.service';
 import { StudentApplicationService } from '../../services/student-application.service';
 import { UserInformationService } from '../../../../shared/services/user-information.service';
