@@ -6,8 +6,11 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { Docente, convertTeacherDTOToDocente } from '../../models/docente.model';
 import { TeacherService } from '../../services/teacher.service';
 import { SelectedTeachersService } from '../../services/selected-teachers.service';
+import { TeacherDatesService } from '../../services/teacher-dates.service';
+import { TeacherDatesRequest, TeacherDatePopupData } from '../../models/teacher-dates.model';
 import { DocenteCard } from "../../components/docente-card/docente-card";
 import { TeacherSelectModal } from "../../components/teacher-select-modal/teacher-select-modal";
+import { TeacherDatesModalComponent } from "../../components/teacher-dates-modal/teacher-dates-modal.component";
 import { AccesosRapidosAdmi } from '../../../../shared/components/accesos-rapidos-admi/accesos-rapidos-admi';
 import { AccesosRapidosSeccion } from '../../../../shared/components/accesos-rapidos-seccion/accesos-rapidos-seccion';
 import { SidebarToggleButtonComponent } from '../../../../shared/components/sidebar-toggle-button/sidebar-toggle-button';
@@ -15,7 +18,7 @@ import { HeaderComponent } from "../../../../layouts/header/header.component";
 
 @Component({
   selector: 'app-docentes-page',
-  imports: [CommonModule, FormsModule, DocenteCard, TeacherSelectModal, AccesosRapidosAdmi, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule, DocenteCard, TeacherSelectModal, TeacherDatesModalComponent, AccesosRapidosAdmi, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent],
   templateUrl: './docentes-page.html',
   styleUrls: ['./docentes-page.scss']
 })
@@ -37,6 +40,11 @@ export class DocentesPage implements OnInit, OnDestroy {
   showModal = false;
   selectedDocenteInfo: Docente | null = null;
   
+  // Teacher dates modal state
+  showDatesModal = false;
+  datePopupData: TeacherDatePopupData | null = null;
+  selectedTeacherForDates: Docente | null = null;
+  
   // Información del contexto de clase recibida del router
   classKey: string = '';
   classInfo: any = null;
@@ -48,7 +56,8 @@ export class DocentesPage implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly teacherService: TeacherService,
-    private readonly selectedTeachersService: SelectedTeachersService
+    private readonly selectedTeachersService: SelectedTeachersService,
+    private readonly teacherDatesService: TeacherDatesService
   ) {
     // Obtener el estado del router si está disponible
     const navigation = this.router.getCurrentNavigation();
@@ -334,21 +343,90 @@ export class DocentesPage implements OnInit, OnDestroy {
   onDocenteSelected(docente: Docente) {
     console.log('👨‍🏫 Docente seleccionado:', docente);
     
-    // Guardar la selección en el servicio
-    this.selectedTeachersService.selectTeacher(this.classKey, docente);
-    
-    // Cerrar el modal
+    // Cerrar el modal de selección
     this.closeModal();
     
+    // Preparar datos para el modal de fechas
+    this.selectedTeacherForDates = docente;
+    this.datePopupData = {
+      teacherClassId: 0, // Se asignará cuando se cree la relación
+      teacherName: `${docente.name} ${docente.lastName || ''}`.trim(),
+      className: this.classInfo?.courseName || 'Clase',
+      semesterStartDate: this.getSemesterStartDate(), // Implementar método
+      semesterEndDate: this.getSemesterEndDate(),     // Implementar método
+      currentStartDate: undefined, // No hay fechas previas
+      currentEndDate: undefined
+    };
+    
+    // Mostrar modal de fechas
+    this.showDatesModal = true;
+  }
+
+  onTeacherDatesSelected(dates: TeacherDatesRequest) {
+    console.log('📅 Fechas seleccionadas:', dates);
+    
+    if (!this.selectedTeacherForDates) {
+      console.error('❌ No hay docente seleccionado');
+      return;
+    }
+
+    // Guardar la selección en el servicio con las fechas
+    const teacherWithDates = {
+      ...this.selectedTeacherForDates,
+      startDate: dates.startDate,
+      endDate: dates.endDate
+    };
+    
+    this.selectedTeachersService.selectTeacher(this.classKey, teacherWithDates);
+    
+    // Cerrar modal de fechas
+    this.closeDatesModal();
+    
     // Navegar de regreso a la página de planificación con el contexto
-    console.log('🔙 Navegando de regreso a planificación...');
+    console.log('🔙 Navegando de regreso a planificación con fechas...');
     this.router.navigate(['/planificacion'], { 
       state: { 
-        selectedTeacher: docente,
+        selectedTeacher: teacherWithDates,
         classKey: this.classKey,
         returnFromTeacherSelection: true
       } 
     });
+  }
+
+  closeDatesModal() {
+    this.showDatesModal = false;
+    this.datePopupData = null;
+    this.selectedTeacherForDates = null;
+  }
+
+  private getSemesterStartDate(): string {
+    // TODO: Obtener del servicio de semestres
+    // Por ahora retornar fecha del semestre actual
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre
+      return `${currentYear}-01-15`;
+    } else {
+      // Segundo semestre
+      return `${currentYear}-07-15`;
+    }
+  }
+
+  private getSemesterEndDate(): string {
+    // TODO: Obtener del servicio de semestres
+    // Por ahora retornar fecha del semestre actual
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre
+      return `${currentYear}-05-30`;
+    } else {
+      // Segundo semestre
+      return `${currentYear}-11-30`;
+    }
   }
   
   // Método para manejar eventos de teclado del modal

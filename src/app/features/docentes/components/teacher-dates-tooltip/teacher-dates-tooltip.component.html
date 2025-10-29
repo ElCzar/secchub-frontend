@@ -1,0 +1,44 @@
+<div 
+  *ngIf="isVisible && teacherClass" 
+  class="tooltip-container"
+  [style.left.px]="position.x"
+  [style.top.px]="position.y"
+>
+  <div class="tooltip-header">
+    <h4>{{ teacherName }}</h4>
+  </div>
+  
+  <div class="tooltip-body">
+    <div *ngIf="hasDateAssigned" class="dates-info">
+      <div class="date-item">
+        <span class="label">Inicio:</span>
+        <span class="value">{{ formatDate(teacherClass.startDate!) }}</span>
+      </div>
+      <div class="date-item">
+        <span class="label">Fin:</span>
+        <span class="value">{{ formatDate(teacherClass.endDate!) }}</span>
+      </div>
+    </div>
+    
+    <div *ngIf="!hasDateAssigned" class="no-dates-info">
+      <p class="warning">
+        <i class="warning-icon">⚠️</i>
+        No hay fechas asignadas
+      </p>
+    </div>
+  </div>
+  
+  <div class="tooltip-footer">
+    <button 
+      type="button" 
+      class="btn btn-edit" 
+      (click)="onEditDatesClick($event)"
+    >
+      <i class="edit-icon">📅</i>
+      {{ hasDateAssigned ? 'Editar fechas' : 'Asignar fechas' }}
+    </button>
+  </div>
+  
+  <!-- Arrow pointing to the teacher name -->
+  <div class="tooltip-arrow"></div>
+</div>

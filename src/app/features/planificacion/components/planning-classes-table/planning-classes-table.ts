@@ -8,6 +8,10 @@ import { SelectedTeachers } from '../../services/selected-teachers';
 import { ObservacionesModal } from '../observaciones-modal/observaciones-modal';
 import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
+import { TeacherDatesService } from '../../../docentes/services/teacher-dates.service';
+import { TeacherDatesTooltipComponent } from '../../../docentes/components/teacher-dates-tooltip/teacher-dates-tooltip.component';
+import { TeacherDatesModalComponent } from '../../../docentes/components/teacher-dates-modal/teacher-dates-modal.component';
+import { TeacherClassWithDates, TeacherDatePopupData, TeacherDatesRequest } from '../../../docentes/models/teacher-dates.model';
 import { firstValueFrom } from 'rxjs';
 
 // Interfaz para las opciones de curso en el autocompletado
@@ -19,7 +23,7 @@ export interface CourseOption {
 @Component({
   selector: 'app-planning-classes-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal],
+  imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal, TeacherDatesTooltipComponent, TeacherDatesModalComponent],
   templateUrl: './planning-classes-table.html',
   styleUrls: ['./planning-classes-table.scss'],
   providers: [DatePipe]
@@ -38,7 +42,8 @@ export class PlanningClassesTable {
     private readonly selectedTeachersService: SelectedTeachers,
     private readonly planningService: PlanningService,
     private readonly teacherAssignmentService: TeacherAssignmentService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly teacherDatesService: TeacherDatesService
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
     
@@ -160,6 +165,16 @@ export class PlanningClassesTable {
   showObservationsModal = false;
   currentObservations: string[] = [];
   currentRowIndex = -1;
+
+  // Propiedades para el tooltip de fechas de docentes
+  showTeacherTooltip = false;
+  tooltipTeacherData: TeacherClassWithDates | null = null;
+  tooltipPosition = { x: 0, y: 0 };
+  private tooltipTimeout: any = null;
+
+  // Propiedades para el modal de fechas de docentes
+  showDatesModal = false;
+  datePopupData: TeacherDatePopupData | null = null;
 
   private ensureEditableRow() {
     // Si no hay filas, solicitar al padre que agregue una
@@ -1665,5 +1680,215 @@ export class PlanningClassesTable {
       hasConflicts: conflicts.length > 0,
       conflicts
     };
+  }
+
+  // Métodos para el tooltip de fechas de docentes
+  async onTeacherMouseEnter(event: MouseEvent, teacherId: number) {
+    // Cancelar cualquier timeout pendiente
+    if (this.tooltipTimeout) {
+      clearTimeout(this.tooltipTimeout);
+      this.tooltipTimeout = null;
+    }
+
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    this.tooltipPosition = {
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10
+    };
+    
+    // Buscar la fila que contiene este docente para obtener el classId (backendId)
+    const row = this.findRowByTeacherId(teacherId);
+    
+    if (!row || !row.backendId) {
+      console.warn('⚠️ No se encontró la clase para el docente o la clase no tiene backendId');
+      // Mostrar tooltip básico sin datos reales
+      const teacherData: TeacherClassWithDates = {
+        id: 0,
+        semesterId: 0,
+        teacherId: teacherId,
+        classId: 0,
+        workHours: 0,
+        statusId: 0,
+        teacherName: this.getTeacherNameById(teacherId),
+        teacherLastName: '',
+        startDate: undefined,
+        endDate: undefined
+      };
+      
+      this.tooltipTeacherData = teacherData;
+      this.showTeacherTooltip = true;
+      return;
+    }
+    
+    try {
+      // Obtener los datos reales del teacher_class desde el backend
+      const teacherClass = await firstValueFrom(
+        this.teacherDatesService.getTeacherClassByTeacherAndClass(teacherId, row.backendId)
+      );
+      
+      this.tooltipTeacherData = teacherClass;
+      this.showTeacherTooltip = true;
+    } catch (error) {
+      console.error('Error loading teacher class data:', error);
+      
+      // Fallback: mostrar tooltip básico
+      const teacherData: TeacherClassWithDates = {
+        id: 0,
+        semesterId: 0,
+        teacherId: teacherId,
+        classId: row.backendId,
+        workHours: 0,
+        statusId: 0,
+        teacherName: this.getTeacherNameById(teacherId),
+        teacherLastName: '',
+        startDate: undefined,
+        endDate: undefined
+      };
+      
+      this.tooltipTeacherData = teacherData;
+      this.showTeacherTooltip = true;
+    }
+  }
+
+  onTeacherMouseLeave() {
+    // Agregar delay para permitir interacción con el tooltip
+    this.tooltipTimeout = setTimeout(() => {
+      this.showTeacherTooltip = false;
+      this.tooltipTeacherData = null;
+    }, 300); // 300ms de delay
+  }
+
+  // Método para cuando el mouse entra al tooltip (cancela el cierre)
+  onTooltipMouseEnter() {
+    if (this.tooltipTimeout) {
+      clearTimeout(this.tooltipTimeout);
+      this.tooltipTimeout = null;
+    }
+  }
+
+  // Método para cuando el mouse sale del tooltip
+  onTooltipMouseLeave() {
+    this.showTeacherTooltip = false;
+    this.tooltipTeacherData = null;
+  }
+
+  // Método para cuando se hace clic en "Asignar fechas" del tooltip
+  onEditTeacherDates() {
+    console.log('📅 Editando fechas de docente desde tooltip');
+    
+    if (!this.tooltipTeacherData) {
+      console.error('❌ No hay datos del docente en el tooltip');
+      return;
+    }
+
+    // Ocultar el tooltip
+    this.showTeacherTooltip = false;
+    
+    // Crear los datos para el modal de fechas
+    const teacherName = this.tooltipTeacherData.teacherName || 'Docente desconocido';
+    const className = 'Clase'; // Podrías obtener esto del contexto
+    
+    this.datePopupData = {
+      teacherClassId: this.tooltipTeacherData.id,
+      teacherName: teacherName,
+      className: className,
+      currentStartDate: this.tooltipTeacherData.startDate,
+      currentEndDate: this.tooltipTeacherData.endDate,
+      semesterStartDate: this.getSemesterStartDate(),
+      semesterEndDate: this.getSemesterEndDate()
+    };
+
+    // Mostrar el modal de fechas
+    this.showDatesModal = true;
+    
+    // Limpiar el tooltip
+    this.tooltipTeacherData = null;
+  }
+
+  // Método para manejar cuando se seleccionan fechas en el modal
+  onTeacherDatesSelected(dates: TeacherDatesRequest) {
+    console.log('� Fechas seleccionadas:', dates);
+    
+    if (!this.datePopupData) {
+      console.error('❌ No hay datos del popup');
+      return;
+    }
+
+    // Actualizar las fechas mediante el servicio si tenemos teacherClassId válido
+    if (this.datePopupData.teacherClassId > 0) {
+      this.teacherDatesService.updateTeachingDates(this.datePopupData.teacherClassId, dates)
+        .subscribe({
+          next: (updatedTeacherClass) => {
+            console.log('✅ Fechas actualizadas:', updatedTeacherClass);
+            this.closeDatesModal();
+          },
+          error: (error) => {
+            console.error('❌ Error al actualizar fechas:', error);
+            this.closeDatesModal();
+          }
+        });
+    } else {
+      console.warn('⚠️ No se puede actualizar: teacherClassId no válido');
+      this.closeDatesModal();
+    }
+  }
+
+  // Método para cerrar el modal de fechas
+  closeDatesModal() {
+    this.showDatesModal = false;
+    this.datePopupData = null;
+  }
+
+  private getTeacherNameById(teacherId: number): string {
+    // Buscar el nombre del docente en todas las filas
+    for (const row of this.rows) {
+      if (row.teachers) {
+        const teacher = row.teachers.find(t => t.id === teacherId);
+        if (teacher) {
+          return teacher.name;
+        }
+      }
+    }
+    return 'Docente desconocido';
+  }
+
+  private findRowByTeacherId(teacherId: number): PlanningRow | null {
+    // Buscar la fila que contiene el docente
+    for (const row of this.rows) {
+      if (row.teachers && row.teachers.some(t => t.id === teacherId)) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  private getSemesterStartDate(): string {
+    // TODO: Obtener del servicio de semestres
+    // Por ahora retornar fecha del semestre actual
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre
+      return `${currentYear}-01-15`;
+    } else {
+      // Segundo semestre
+      return `${currentYear}-08-15`;
+    }
+  }
+
+  private getSemesterEndDate(): string {
+    // TODO: Obtener del servicio de semestres
+    // Por ahora retornar fecha del semestre actual
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre
+      return `${currentYear}-05-30`;
+    } else {
+      // Segundo semestre
+      return `${currentYear}-11-30`;
+    }
   }
 }

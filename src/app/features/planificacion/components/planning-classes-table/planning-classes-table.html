@@ -177,7 +177,9 @@
                               'symbol-confirmed': teacher.status === 'CONFIRMADO',
                               'symbol-rejected': teacher.status === 'RECHAZADO'
                             }"></span>
-                      <span class="teacher-name">{{ teacher.name }}</span>
+                      <span class="teacher-name" 
+                            (mouseenter)="onTeacherMouseEnter($event, teacher.id)"
+                            (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
                       <button type="button" 
                               class="btn-remove-teacher" 
                               (click)="removeTeacherFromClass(row, ti)"
@@ -221,7 +223,9 @@
                             'symbol-confirmed': teacher.status === 'CONFIRMADO',
                             'symbol-rejected': teacher.status === 'RECHAZADO'
                           }"></span>
-                    <span class="teacher-name">{{ teacher.name }}</span>
+                    <span class="teacher-name"
+                          (mouseenter)="onTeacherMouseEnter($event, teacher.id)"
+                          (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
                   </div>
                 </div>
               </ng-container>
@@ -279,3 +283,22 @@
   (save)="onSaveObservations($event)"
   (close)="onCloseObservationsModal()">
 </app-observaciones-modal>
+
+<!-- Tooltip de fechas de docente -->
+<app-teacher-dates-tooltip
+  *ngIf="showTeacherTooltip && tooltipTeacherData"
+  [teacherClass]="tooltipTeacherData"
+  [isVisible]="showTeacherTooltip"
+  [position]="tooltipPosition"
+  (mouseenter)="onTooltipMouseEnter()"
+  (mouseleave)="onTooltipMouseLeave()"
+  (editDatesClicked)="onEditTeacherDates()">
+</app-teacher-dates-tooltip>
+
+<!-- Modal de selección de fechas para el profesor -->
+<app-teacher-dates-modal
+  [isVisible]="showDatesModal"
+  [data]="datePopupData"
+  (datesSelected)="onTeacherDatesSelected($event)"
+  (modalClosed)="closeDatesModal()">
+</app-teacher-dates-modal>
