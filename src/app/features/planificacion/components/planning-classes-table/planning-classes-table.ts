@@ -1726,6 +1726,11 @@ export class PlanningClassesTable {
         this.teacherDatesService.getTeacherClassByTeacherAndClass(teacherId, row.backendId)
       );
       
+      // Asegurar que el nombre del docente esté disponible
+      if (!teacherClass.teacherName || teacherClass.teacherName.trim() === '') {
+        teacherClass.teacherName = this.getTeacherNameById(teacherId);
+      }
+      
       this.tooltipTeacherData = teacherClass;
       this.showTeacherTooltip = true;
     } catch (error) {
@@ -1784,9 +1789,21 @@ export class PlanningClassesTable {
     // Ocultar el tooltip
     this.showTeacherTooltip = false;
     
-    // Crear los datos para el modal de fechas
-    const teacherName = this.tooltipTeacherData.teacherName || 'Docente desconocido';
-    const className = 'Clase'; // Podrías obtener esto del contexto
+    // Obtener el nombre del docente (usar el del backend o fallback al local)
+    let teacherName = '';
+    if (this.tooltipTeacherData.teacherName && this.tooltipTeacherData.teacherName.trim() !== '') {
+      // Si hay nombre del backend, usarlo (puede incluir apellido)
+      teacherName = this.tooltipTeacherData.teacherLastName 
+        ? `${this.tooltipTeacherData.teacherName} ${this.tooltipTeacherData.teacherLastName}`.trim()
+        : this.tooltipTeacherData.teacherName;
+    } else {
+      // Fallback al nombre local (que ya incluye apellido)
+      teacherName = this.getTeacherNameById(this.tooltipTeacherData.teacherId);
+    }
+    
+    // Obtener el nombre de la clase de la fila correspondiente
+    const row = this.findRowByTeacherId(this.tooltipTeacherData.teacherId);
+    const className = row ? `${row.courseName} - Sección ${row.section}` : 'Clase';
     
     this.datePopupData = {
       teacherClassId: this.tooltipTeacherData.id,
@@ -1845,7 +1862,11 @@ export class PlanningClassesTable {
       if (row.teachers) {
         const teacher = row.teachers.find(t => t.id === teacherId);
         if (teacher) {
-          return teacher.name;
+          // Construir nombre completo
+          const fullName = teacher.lastName 
+            ? `${teacher.name} ${teacher.lastName}`.trim()
+            : teacher.name;
+          return fullName;
         }
       }
     }
@@ -1869,11 +1890,11 @@ export class PlanningClassesTable {
     const currentMonth = new Date().getMonth();
     
     if (currentMonth < 6) {
-      // Primer semestre
-      return `${currentYear}-01-15`;
+      // Primer semestre - inicia en enero
+      return `${currentYear}-01-14`;
     } else {
-      // Segundo semestre
-      return `${currentYear}-08-15`;
+      // Segundo semestre - inicia en agosto  
+      return `${currentYear}-08-14`;
     }
   }
 
@@ -1884,11 +1905,11 @@ export class PlanningClassesTable {
     const currentMonth = new Date().getMonth();
     
     if (currentMonth < 6) {
-      // Primer semestre
-      return `${currentYear}-05-30`;
+      // Primer semestre - termina en mayo
+      return `${currentYear}-05-31`;
     } else {
-      // Segundo semestre
-      return `${currentYear}-11-30`;
+      // Segundo semestre - termina en noviembre
+      return `${currentYear}-12-01`;
     }
   }
 }
