@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,6 +12,8 @@ import { TeacherDatesService } from '../../../docentes/services/teacher-dates.se
 import { TeacherDatesTooltipComponent } from '../../../docentes/components/teacher-dates-tooltip/teacher-dates-tooltip.component';
 import { TeacherDatesModalComponent } from '../../../docentes/components/teacher-dates-modal/teacher-dates-modal.component';
 import { TeacherClassWithDates, TeacherDatePopupData, TeacherDatesRequest } from '../../../docentes/models/teacher-dates.model';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 import { firstValueFrom } from 'rxjs';
 
 // Interfaz para las opciones de curso en el autocompletado
@@ -29,7 +31,7 @@ export interface CourseOption {
   providers: [DatePipe]
 })
 
-export class PlanningClassesTable {
+export class PlanningClassesTable implements OnInit {
   @Input() rows: PlanningRow[] = [];
   @Output() patchRow = new EventEmitter<{ index: number; data: Partial<PlanningRow> }>();
   @Output() addRow = new EventEmitter<void>();
@@ -43,7 +45,8 @@ export class PlanningClassesTable {
     private readonly planningService: PlanningService,
     private readonly teacherAssignmentService: TeacherAssignmentService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly teacherDatesService: TeacherDatesService
+    private readonly teacherDatesService: TeacherDatesService,
+    private readonly semesterInformationService: SemesterInformationService
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
     
@@ -175,6 +178,27 @@ export class PlanningClassesTable {
   // Propiedades para el modal de fechas de docentes
   showDatesModal = false;
   datePopupData: TeacherDatePopupData | null = null;
+  
+  // Información del semestre actual
+  currentSemester: SemesterResponseDTO | null = null;
+
+  ngOnInit() {
+    this.loadCurrentSemester();
+  }
+
+  private loadCurrentSemester() {
+    this.semesterInformationService.getCurrentSemester().subscribe({
+      next: (semester) => {
+        this.currentSemester = semester;
+        console.log('Semestre actual cargado:', semester);
+      },
+      error: (error) => {
+        console.error('Error cargando semestre actual:', error);
+        // Fallback a null, los métodos getSemesterStartDate/EndDate manejarán esto
+        this.currentSemester = null;
+      }
+    });
+  }
 
   private ensureEditableRow() {
     // Si no hay filas, solicitar al padre que agregue una
@@ -244,24 +268,31 @@ export class PlanningClassesTable {
   // Función para enviar correo - navega a la ruta de envío de correos
   sendEmail(index: number) {
     const row = this.rows[index];
-    console.log('Enviar correo para la clase:', row);
+    console.log('📧 Enviando correo para la clase:', row);
+    console.log('  - courseName:', row.courseName);
+    console.log('  - classId:', row.classId);
+    console.log('  - teacher:', row.teacher);
+    
+    const classInfo = {
+      courseName: row.courseName,
+      section: row.section,
+      classId: row.classId,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      status: row.status,
+      teacher: row.teacher,
+      schedules: row.schedules
+    };
+    
+    console.log('📧 Class info to pass:', classInfo);
     
     // Navegar a la ruta de envío de correos para docentes
     // Pasar información de la clase como estado para que pueda ser utilizada en el componente de destino
     this.router.navigate(['/envio-correo/docentes'], {
-      state: {
-        classInfo: {
-          courseName: row.courseName,
-          section: row.section,
-          classId: row.classId,
-          startDate: row.startDate,
-          endDate: row.endDate,
-          status: row.status,
-          teacher: row.teacher,
-          schedules: row.schedules
-        }
-      }
+      state: { classInfo }
     });
+    
+    console.log('📧 Navigation executed with state:', { classInfo });
   }
 
   // Métodos para el modal de observaciones
@@ -1884,8 +1915,12 @@ export class PlanningClassesTable {
   }
 
   private getSemesterStartDate(): string {
-    // TODO: Obtener del servicio de semestres
-    // Por ahora retornar fecha del semestre actual
+    if (this.currentSemester && this.currentSemester.startDate) {
+      return this.currentSemester.startDate;
+    }
+    
+    // Fallback si no se ha cargado el semestre actual
+    console.warn('Semestre actual no disponible, usando fechas de fallback');
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
     
@@ -1899,8 +1934,12 @@ export class PlanningClassesTable {
   }
 
   private getSemesterEndDate(): string {
-    // TODO: Obtener del servicio de semestres
-    // Por ahora retornar fecha del semestre actual
+    if (this.currentSemester && this.currentSemester.endDate) {
+      return this.currentSemester.endDate;
+    }
+    
+    // Fallback si no se ha cargado el semestre actual
+    console.warn('Semestre actual no disponible, usando fechas de fallback');
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
     
