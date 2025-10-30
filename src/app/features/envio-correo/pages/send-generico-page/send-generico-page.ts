@@ -206,7 +206,7 @@ export class SendGenericoPage implements OnInit, OnDestroy {
   }
 
   send() {
-    if (this.isFormValid() && !this.isSendingEmail) {
+    if (this.isReadyToSend() && !this.isSendingEmail) {
       this.isSendingEmail = true;
       
       this.emailService.sendEmail(this.emailSendRequest).subscribe({
@@ -224,13 +224,13 @@ export class SendGenericoPage implements OnInit, OnDestroy {
           alert('Error al enviar el correo. Por favor intente nuevamente.');
         }
       });
-    } else if (!this.isFormValid()) {
-      alert('Por favor complete todos los campos obligatorios.');
+    } else if (!this.isReadyToSend()) {
+      alert('Por favor ingrese al menos un destinatario válido, asunto y mensaje para enviar el correo.');
     }
   }
 
   saveDraft() {
-    if (this.isFormValid()) {
+    if (this.isValidForSave()) {
       const emailTemplateRequestDTO = {
         name: this.templateName,
         subject: this.emailSendRequest.subject,
@@ -257,11 +257,27 @@ export class SendGenericoPage implements OnInit, OnDestroy {
         });
       }
     } else {
-      alert('Por favor complete todos los campos obligatorios antes de guardar.');
+      alert('Para guardar la plantilla debe ingresar al menos un asunto y un mensaje.');
     }
   }
 
-  private isFormValid(): boolean {
+  /**
+   * Validation used when saving a template.
+   * For templates of type 'programas' and 'docentes' we allow saving without recipients
+   * as long as subject and body are present. For other templates require recipients too.
+   */
+  isValidForSave(): boolean {
+    const hasSubject = !!this.emailSendRequest.subject && this.emailSendRequest.subject.trim() !== '';
+    const hasBody = !!this.emailSendRequest.body && this.emailSendRequest.body.trim() !== '';
+
+    // Allow saving as long as subject and body are present. Recipients are optional for templates.
+    return hasSubject && hasBody;
+  }
+
+  /**
+   * Validation used when actually sending an email: requires a valid recipient, subject and body.
+   */
+  isReadyToSend(): boolean {
     return !!(
       this.emailSendRequest.to &&
       this.emailSendRequest.subject &&

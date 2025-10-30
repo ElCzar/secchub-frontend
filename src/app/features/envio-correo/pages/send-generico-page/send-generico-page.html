@@ -28,7 +28,6 @@
         name="emailTo"
         [(ngModel)]="emailSendRequest.to" 
         placeholder="correo@javeriana.edu.co" 
-        required
         email
         #emailTo="ngModel"
       />
@@ -80,9 +79,9 @@
         ></textarea>
         <div class="buttons-container">
           @if (isAdmin()) {
-            <button class="btn btn--secondary" type="button" (click)="saveDraft()" [disabled]="emailForm.invalid || isSendingEmail">Guardar mensaje</button>
+            <button class="btn btn--secondary" type="button" (click)="saveDraft()" [disabled]="!isValidForSave() || isSendingEmail">Guardar mensaje</button>
           }
-          <button class="btn btn--primary" type="button" (click)="send()" [disabled]="emailForm.invalid || isSendingEmail">
+          <button class="btn btn--primary" type="button" (click)="send()" [disabled]="!isReadyToSend() || isSendingEmail">
             @if (isSendingEmail) {
               <span>Enviando...</span>
             } @else {
