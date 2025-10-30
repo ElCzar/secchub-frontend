@@ -6,6 +6,7 @@ import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { AvailabilityRow, AvailabilityTableComponent, newAvailabilityRow } from '../../components/availability-table/availability-table.component';
 import { ConfirmSendPopupComponent } from '../../../../shared/components/confirm-send-popup/confirm-send-popup.component';
 import { SuccessModal } from '../../../../shared/components/success-modal/success-modal';
+import { ErrorModal } from '../../../../shared/components/error-modal/error-modal';
 import { ProgramasService, CourseOption } from '../../../formulario-programas/services/programas.service';
 import { SectionsService, Section } from '../../../../shared/services/sections.service';
 import { StudentApplicationService } from '../../services/student-application.service';
@@ -17,7 +18,7 @@ import { ParametricService } from '../../../../shared/services/parametric.servic
   selector: 'app-monitor-form-page',
   standalone: true,
   // Si aún NO vas a usar <app-availability-table>, puedes quitarlo de imports
-  imports: [CommonModule, FormsModule, HeaderComponent, AvailabilityTableComponent, ConfirmSendPopupComponent, SuccessModal],
+  imports: [CommonModule, FormsModule, HeaderComponent, AvailabilityTableComponent, ConfirmSendPopupComponent, SuccessModal, ErrorModal],
   templateUrl: './monitor-form-page.component.html',
   styleUrls: ['./monitor-form-page.component.scss'],
 })
@@ -53,6 +54,8 @@ export class MonitorFormPageComponent implements OnInit {
   isSubmitting = false;
   /** Controla la visibilidad del modal de éxito */
   showSuccessModal = false;
+  showErrorModal = false;
+  errorModalMessage = '';
   private _lastFormEvent: Event | null = null;
 
   /** Propiedades para visualización (no editables) */
@@ -289,10 +292,17 @@ export class MonitorFormPageComponent implements OnInit {
         // Desactivar estado de carga
         this.isSubmitting = false;
         
-        // Mostrar mensaje de error al usuario
-        this.formError = 'Error enviando la solicitud. Por favor, intente nuevamente.';
+        // Si el backend envía un mensaje específico (p. ej. duplicado), mostrarlo en popup
+        const backendMessage = error?.error?.message || error?.message || 'Error enviando la solicitud. Por favor, intente nuevamente.';
+        this.errorModalMessage = backendMessage;
+        this.showErrorModal = true;
+        this.formError = null;
       }
     });
+  }
+
+  onErrorModalClose(): void {
+    this.showErrorModal = false;
   }
 
   /** Cerrar modal de éxito */

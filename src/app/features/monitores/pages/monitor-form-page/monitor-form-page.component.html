@@ -189,4 +189,13 @@
       message="Su solicitud para monitor ha sido enviada correctamente. Recibirá una notificación por correo electrónico cuando sea procesada."
       (closed)="onSuccessModalClose()">
     </app-success-modal>
+
+    <!-- Modal de error -->
+    <app-error-modal
+      [visible]="showErrorModal"
+      title="Error al enviar"
+      [message]="errorModalMessage"
+      okText="Aceptar"
+      (closed)="onErrorModalClose()">
+    </app-error-modal>
 </div>
