@@ -9,6 +9,8 @@ import { ScheduleRow } from '../../models/schedule.models';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ProgramaContextDto } from '../../models/context.models';
 import { Observable } from 'rxjs';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 import { AcademicRequestBatchDTO, AcademicRequestRequestDTO, RequestScheduleRequestDTO, AcademicRequestResponseDTO } from '../../models/academic-request.models';
 
 
@@ -37,8 +39,13 @@ export class ProgramasPageComponent implements OnInit {
   showConfirm = false;
   loadingPrevious = false;
   showDuplicateModal = false;
+  // Current semester info (used to default dates on new/duplicated requests)
+  currentSemester: SemesterResponseDTO | null = null;
 
-  constructor(private readonly programas: ProgramasService) {}
+  constructor(
+    private readonly programas: ProgramasService,
+    private readonly semesterService: SemesterInformationService
+  ) {}
 
   ngOnInit(): void {
     console.log('🚀 ProgramasPageComponent: Iniciando componente...');
@@ -55,9 +62,23 @@ export class ProgramasPageComponent implements OnInit {
       }
     });
     
-    // Siempre iniciar con una fila vacía
-    this.ensureAtLeastOneRow();
+    // Cargar semestre actual y luego iniciar con una fila vacía
+    this.loadCurrentSemesterAndInitRows();
     console.log('✅ ProgramasPageComponent: Componente inicializado');
+  }
+
+  private loadCurrentSemesterAndInitRows(): void {
+    this.semesterService.getCurrentSemester().subscribe({
+      next: (sem) => {
+        this.currentSemester = sem;
+        this.ensureAtLeastOneRow();
+      },
+      error: (err) => {
+        console.warn('No se pudo cargar semestre actual, usando fallback:', err);
+        this.currentSemester = null;
+        this.ensureAtLeastOneRow();
+      }
+    });
   }
 
   /**
@@ -255,6 +276,8 @@ export class ProgramasPageComponent implements OnInit {
     // Mapear las solicitudes del semestre seleccionado
     const mapped: ClaseRow[] = requests.map(req => {
       const course = this.programas.getCourseById(String(req.courseId));
+      const defaultStart = this.getSemesterStartDate();
+      const defaultEnd = this.getSemesterEndDate();
       
       return {
         courseId: String(req.courseId ?? ''),
@@ -262,9 +285,10 @@ export class ProgramasPageComponent implements OnInit {
         section: course?.sectionId ? String(course.sectionId) : '',
         roomType: '',
         seats: req.capacity,
-        startDate: '', // Limpiar fechas para que el usuario las ingrese para el semestre actual
-        endDate: '',   // Limpiar fechas para que el usuario las ingrese para el semestre actual
-        weeks: 0,      // Se recalculará cuando se ingresen las nuevas fechas
+        // Default to current semester dates but keep editable
+        startDate: defaultStart,
+        endDate: defaultEnd,
+        weeks: this.calculateWeeks(defaultStart, defaultEnd),
         _state: 'new' as RowState, // Marcar como 'new' ya que son solicitudes duplicadas
         schedules: (req.schedules || []).map(s => ({
           day: this.normalizeDay(s.day),
@@ -333,6 +357,36 @@ export class ProgramasPageComponent implements OnInit {
     return map[key] ?? '';
   }
 
+  private getSemesterStartDate(): string {
+    if (this.currentSemester && this.currentSemester.startDate) {
+      return this.currentSemester.startDate;
+    }
+    // Fallback: first day of current year semester heuristic
+    const now = new Date();
+    const year = now.getFullYear();
+    // Assume first semester starts Jan 1, second starts Aug 1. Choose based on month
+    const month = now.getMonth() + 1;
+    if (month <= 6) {
+      return `${year}-01-01`;
+    }
+    return `${year}-08-01`;
+  }
+
+  private getSemesterEndDate(): string {
+    if (this.currentSemester && this.currentSemester.endDate) {
+      return this.currentSemester.endDate;
+    }
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    if (month <= 6) {
+      // first semester ends end of May
+      return `${year}-05-31`;
+    }
+    // second semester ends end of November
+    return `${year}-11-30`;
+  }
+
   /**
    * Calcula la cantidad de semanas entre dos fechas.
    * @param startDate Fecha de inicio en formato YYYY-MM-DD
@@ -385,14 +439,17 @@ export class ProgramasPageComponent implements OnInit {
   }
 
   private emptyRow(): ClaseRow {
+  const defaultStart = this.getSemesterStartDate();
+  const defaultEnd = this.getSemesterEndDate();
   return {
     courseId: '',
     courseName: '',
     section: '',
     seats: 0,
-    startDate: '',
-    endDate: '',
-    weeks: 0,
+    // Default semester dates (editable by user afterwards)
+    startDate: defaultStart,
+    endDate: defaultEnd,
+    weeks: this.calculateWeeks(defaultStart, defaultEnd),
     roomType: '',   // si aún existe en tu modelo original, si no elimínalo
     _state: 'new',
     schedules: [],
