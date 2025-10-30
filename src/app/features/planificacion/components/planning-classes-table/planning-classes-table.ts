@@ -461,14 +461,54 @@ export class PlanningClassesTable implements OnInit {
 
   selectTeacher(index: number) {
     console.log('Seleccionar docente para la fila', index);
+    const row = this.rows[index];
     
-    // Crear un key único para esta clase específica
+    // Verificar si la fila está en modo de edición, tiene datos que requieren guardado 
+    // Y NO tiene docentes asignados aún (primera selección)
+    if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
+      console.log('📝 Guardando automáticamente la clase antes de seleccionar primer docente...');
+      
+      // Mostrar mensaje al usuario solo para la primera selección de docente
+      const shouldProceed = confirm(
+        'Para seleccionar un docente, primero necesitamos guardar los datos de la clase que estás creando. ¿Quieres continuar?'
+      );
+      
+      if (!shouldProceed) {
+        console.log('❌ Usuario canceló la navegación');
+        return;
+      }
+      
+      // Guardar la clase antes de navegar
+      this.saveClass(index);
+      
+      // Esperar un momento para que se complete el guardado antes de navegar
+      setTimeout(() => {
+        this.navigateToTeacherSelection(index);
+      }, 500);
+    } else {
+      // Si no hay cambios pendientes o ya tiene docentes, navegar directamente
+      this.navigateToTeacherSelection(index);
+    }
+  }
+
+  private shouldSaveRowBeforeNavigation(row: any): boolean {
+    // Verificar si la fila tiene datos mínimos que justifican el guardado
+    const hasBasicData = row.courseName && row.courseName.trim() !== '';
+    const hasSection = row.section && row.section.trim() !== '';
+    const hasCredits = row.credits && row.credits > 0;
+    
+    return hasBasicData || hasSection || hasCredits;
+  }
+
+  private navigateToTeacherSelection(index: number) {
     const row = this.rows[index];
     const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
 
     // Crear un snapshot de la fila para poder restaurarla si se pierde durante la navegación
     const rowSnapshot = JSON.parse(JSON.stringify(row));
 
+    console.log('🔄 Navegando a selección de docentes...');
+    
     // Navegar a la pantalla de selección de docentes con el contexto de la clase
     this.router.navigate(['/seleccionar-docente'], {
       state: {
@@ -487,10 +527,42 @@ export class PlanningClassesTable implements OnInit {
 
   selectAdditionalTeacher(index: number) {
     console.log('Seleccionar docente adicional para la fila', index);
+    const row = this.rows[index];
+    
+    // Para docentes adicionales, solo mostrar aviso si está en edición Y no tiene ningún docente
+    // (caso poco común, pero mantiene consistencia)
+    if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
+      console.log('📝 Guardando automáticamente la clase antes de seleccionar docente adicional...');
+      
+      // Mostrar mensaje al usuario solo si no tiene docentes
+      const shouldProceed = confirm(
+        'Para seleccionar un docente adicional, primero necesitamos guardar los datos de la clase que estás editando. ¿Quieres continuar?'
+      );
+      
+      if (!shouldProceed) {
+        console.log('❌ Usuario canceló la navegación');
+        return;
+      }
+      
+      // Guardar la clase antes de navegar
+      this.saveClass(index);
+      
+      // Esperar un momento para que se complete el guardado antes de navegar
+      setTimeout(() => {
+        this.navigateToAdditionalTeacherSelection(index);
+      }, 500);
+    } else {
+      // Si ya tiene docentes o no hay cambios pendientes, navegar directamente
+      this.navigateToAdditionalTeacherSelection(index);
+    }
+  }
 
+  private navigateToAdditionalTeacherSelection(index: number) {
     const row = this.rows[index];
     const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
     const rowSnapshot = JSON.parse(JSON.stringify(row));
+
+    console.log('🔄 Navegando a selección de docente adicional...');
 
     this.router.navigate(['/seleccionar-docente'], {
       state: {
