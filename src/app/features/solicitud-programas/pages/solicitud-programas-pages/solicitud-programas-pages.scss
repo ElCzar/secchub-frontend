@@ -248,6 +248,27 @@ app-sidebar-toggle-button {
 .btn-icon { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background:var(--brand-azul); color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer }
 .btn-icon:hover{ opacity:.9 }
 
+/* Select checkbox larger styling for better visibility */
+.select-checkbox {
+  /* Increase visual size while preserving layout */
+  width: 18px;
+  height: 18px;
+  -webkit-transform: scale(1.4);
+  transform: scale(1.4);
+  transform-origin: center;
+  margin: 0 6px;
+  vertical-align: middle;
+  /* Use accent-color where supported to match theme */
+  accent-color: var(--brand-azul, #2c5697);
+}
+
+/* Ensure the header cell doesn't shift when checkbox is scaled */
+.tabla thead th:first-child,
+.tabla tbody td:first-child {
+  width: 56px; /* enough space for larger checkbox */
+  text-align: center;
+}
+
 /* Small icon buttons with neutral background used in combinations table */
 .btn-icon--small {
   width: 36px;
