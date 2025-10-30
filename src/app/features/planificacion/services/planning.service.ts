@@ -1624,8 +1624,8 @@ export class PlanningService {
     return this.http.post<any>(`${assignmentUrl}`, requestBody).pipe(
       switchMap(() => {
         // Después de crear la asignación, obtener información del docente desde el servicio de administración
-        const teacherUrl = `${environment.apiUrl}/v1/teachers/${teacherId}`;
-        return this.http.get<any>(teacherUrl).pipe(
+  const teacherUrl = `${environment.apiUrl}/teachers/${teacherId}`;
+  return this.http.get<any>(teacherUrl).pipe(
           map(teacherInfo => ({
             id: teacherId,
             name: teacherInfo.name || 'Docente',

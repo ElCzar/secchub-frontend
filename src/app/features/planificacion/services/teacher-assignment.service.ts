@@ -48,7 +48,7 @@ export interface ClassDTO {
   providedIn: 'root'
 })
 export class TeacherAssignmentService {
-  private readonly baseUrl = `${environment.apiUrl}/api/teacher-assignments`;
+  public readonly baseUrl = `${environment.apiUrl}/api/teacher-assignments`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -147,7 +147,7 @@ export class TeacherAssignmentService {
    * Obtener clases asignadas a un profesor
    */
   getClassesAssignedToTeacher(teacherId: number): Observable<ClassDTO[]> {
-    return this.http.get<ClassDTO[]>(`${this.baseUrl}/teacher/${teacherId}/classes`);
+  return this.http.get<ClassDTO[]>(`${environment.apiUrl}/v1/teachers/${teacherId}/classes`);
   }
 
   /**

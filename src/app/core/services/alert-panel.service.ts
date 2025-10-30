@@ -32,15 +32,15 @@ export class AlertPanelService {
   public alerts$: Observable<AlertPanelData | null> = this.alertsSubject.asObservable();
 
   constructor(private planningService: PlanningService) {
-    // Polling de respuestas docentes cada 1s
-    interval(1000).subscribe(() => {
+    // Polling de respuestas docentes cada 30s
+    interval(30000).subscribe(() => {
       console.log('[AlertPanelService] Polling: fetchTeacherResponses');
       this.fetchTeacherResponses();
     });
     console.log('[AlertPanelService] Init: fetchTeacherResponses');
     this.fetchTeacherResponses();
-    // Polling de alertas generales cada 1s
-    interval(1000).subscribe(() => {
+    // Polling de alertas generales cada 30s
+    interval(30000).subscribe(() => {
       console.log('[AlertPanelService] Polling: fetchAlerts');
       this.updateAlerts();
     });

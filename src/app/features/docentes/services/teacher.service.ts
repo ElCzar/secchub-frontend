@@ -44,7 +44,7 @@ export interface TeacherClass {
   providedIn: 'root'
 })
 export class TeacherService {
-  private baseUrl = `${environment.apiUrl}/teacher-assignments`;
+  private baseUrl = `${environment.apiUrl}/teachers/classes`;
 
   constructor(private http: HttpClient) {}
 
@@ -52,24 +52,20 @@ export class TeacherService {
    * Obtener todos los docentes con su información completa
    */
   getAllTeachers(): Observable<TeacherDTO[]> {
-    // Primero intentar el nuevo endpoint con información completa
-    return this.http.get<TeacherDTO[]>(`${this.baseUrl}/teachers`).pipe(
-      catchError(() => {
-        console.warn('🔄 /teachers no disponible, usando /planning/teachers/available como fallback');
-  return this.http.get<any[]>(`${environment.apiUrl}/planning/teachers/available?requiredHours=0`).pipe(
-          map(list => (list || []).map(item => ({
-            id: Number(item.id),
-            name: item.name || item.firstName || '',
-            lastName: item.lastName || item.last || '',
-            email: item.email || undefined,
-            maxHours: Number(item.maxHours || 0),
-            assignedHours: Number(item.assignedHours || 0),
-            availableHours: Number(item.availableHours || (item.maxHours ? (item.maxHours - (item.assignedHours || 0)) : 0)),
-            extraHours: Number(item.extraHours || 0),
-            contractType: item.contractType || undefined,
-            assignments: item.assignments || []
-          } as TeacherDTO))))
-      })
+    // Restaurar el endpoint y mapeo original para asegurar compatibilidad
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/teachers/available?requiredHours=0`).pipe(
+      map(list => (list || []).map(item => ({
+        id: Number(item.id),
+        name: item.name || item.firstName || item.fullName || 'Sin nombre',
+        lastName: item.lastName || item.last || '',
+        email: item.email || undefined,
+        maxHours: Number(item.maxHours || 0),
+        assignedHours: Number(item.assignedHours || 0),
+        availableHours: Number(item.availableHours || (item.maxHours ? (item.maxHours - (item.assignedHours || 0)) : 0)),
+        extraHours: Number(item.extraHours || 0),
+        contractType: item.contractType || undefined,
+        assignments: item.assignments || []
+      } as TeacherDTO)))
     );
   }
 
