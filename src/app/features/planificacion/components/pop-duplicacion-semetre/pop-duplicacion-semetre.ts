@@ -10,6 +10,63 @@ import { PlanningService, ClassDTO } from '../../services/planning.service';
   styleUrl: './pop-duplicacion-semetre.scss'
 })
 export class PopDuplicacionSemetre implements OnInit {
+  // IDs de clases seleccionadas para duplicar (todas, normales y anuales)
+  selectedClassIds: number[] = [];
+
+  /**
+   * Maneja el cambio de selección de cualquier clase
+   */
+  onToggleClass(classId: number, checked: boolean) {
+    if (checked) {
+      if (!this.selectedClassIds.includes(classId)) {
+        this.selectedClassIds.push(classId);
+      }
+    } else {
+      this.selectedClassIds = this.selectedClassIds.filter(id => id !== classId);
+    }
+  }
+  /**
+   * Método público para aplicar la duplicación filtrada desde el template
+   */
+  onApplySemester() {
+    if (!this.previewData) return;
+    // Obtener el ID del semestre origen
+    const semesterId = this.previewData.semesterId;
+    // Obtener los IDs de clases seleccionadas
+    const classIds = this.selectedClassIds;
+    const payload = {
+      semesterId,
+      classIds
+    };
+    console.log('Payload para duplicación:', payload);
+    this.planningService.applySelectedSemesterClasses(payload).subscribe({
+      next: (response) => {
+        console.log('Duplicación exitosa. Clases duplicadas:', classIds);
+        alert(`✅ Se duplicaron ${response.classesApplied ?? classIds.length} clases seleccionadas al semestre actual.`);
+        this.closeModal.emit();
+      },
+      error: (err) => {
+        // Manejo de error
+      }
+    });
+  }
+  /**
+   * IDs de materias anuales seleccionadas para duplicar
+   */
+  selectedAnnualClassIds: number[] = [];
+
+  /**
+   * Maneja el cambio de selección de materia anual
+   */
+  onToggleAnnualClass(classId: number, checked: boolean) {
+    if (checked) {
+      if (!this.selectedAnnualClassIds.includes(classId)) {
+        this.selectedAnnualClassIds.push(classId);
+      }
+    } else {
+      this.selectedAnnualClassIds = this.selectedAnnualClassIds.filter(id => id !== classId);
+    }
+  }
   annualCount: number = 0;
   
   // Semestre seleccionado
@@ -167,19 +224,24 @@ export class PopDuplicacionSemetre implements OnInit {
         this.annualClassIds = [];
         this.showAnnualWarning = false;
         if (response.classes && response.classes.length > 0) {
-          // Para cada clase, obtener el curso y revisar isValid
-          const courseChecks = await Promise.all(
+          // Inicializar arrays
+          this.annualClassIds = [];
+          this.selectedClassIds = [];
+          await Promise.all(
             response.classes.map(async (cls) => {
               try {
                 const course = await this.planningService.getCourseById(cls.courseId).toPromise();
                 if (course && course.isValid === false) {
                   this.annualClassIds.push(cls.id!);
-                  return true;
+                  // Anual: NO seleccionada por defecto
+                } else {
+                  // Normal: seleccionada por defecto
+                  this.selectedClassIds.push(cls.id!);
                 }
               } catch (err) {
-                // Si no se puede obtener el curso, no marcar como anual
+                // Si no se puede obtener el curso, marcar como normal y seleccionada
+                this.selectedClassIds.push(cls.id!);
               }
-              return false;
             })
           );
           this.showAnnualWarning = this.annualClassIds.length > 0;

@@ -78,6 +78,13 @@ export interface CourseOption {
 })
 export class PlanningService {
   /**
+   * Aplica solo las clases seleccionadas de un semestre anterior al semestre actual
+   * @param payload { semesterId: number, classIds: number[] }
+   */
+  applySelectedSemesterClasses(payload: { semesterId: number, classIds: number[] }): Observable<{message: string, classesApplied: number}> {
+    return this.http.post<{message: string, classesApplied: number}>(`${this.baseUrl}/semesters/apply-selected`, payload);
+  }
+  /**
    * Obtiene la cantidad de clases sin salón asignado para el jefe de sección autenticado (JWT)
    */
   getMissingRoomsCountForSectionChief(): Observable<number> {

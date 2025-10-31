@@ -65,9 +65,18 @@
         </div>
         <div class="preview-classes" *ngIf="previewData.classes.length > 0">
           <div class="class-item" *ngFor="let class of previewData.classes" [ngClass]="{'annual-class': annualClassIds.includes(class.id || -1)}">
+            <div class="class-select-label" style="position: absolute; top: 8px; right: 16px;">
+              <label style="display: flex; align-items: center;">
+                <input type="checkbox"
+                  [checked]="selectedClassIds.includes(class.id || -1)"
+                  (change)="onToggleClass(class.id || -1, $event.target.checked)" />
+                <span style="margin-left:8px; font-weight:normal;">Seleccionar</span>
+              </label>
+            </div>
             <ng-container *ngIf="annualClassIds.includes(class.id || -1)">
-              <div class="annual-class-label">
-                <span [innerHTML]="annualCount === 1 ? 'Materia anual, <b>no se recomienda duplicarla.</b>' : `Materias anuales, <b>no se recomienda duplicarlas.</b>`"></span>
+              <div class="annual-warning-label" style="color:#d32f2f; font-weight:bold; margin-bottom:6px; display:flex; align-items:center;">
+                <span style="font-size:18px; margin-right:6px;">⚠️</span>
+                Materia anual, no se recomienda duplicarla.
               </div>
             </ng-container>
             <div class="class-header">
@@ -120,14 +129,6 @@
           (click)="onShowPreview()">
           Vista Previa
         </button>
-        
-        <button 
-          type="button" 
-          class="btn btn--primary" 
-          [disabled]="!selectedSemester || loading"
-          (click)="onApply()">
-          Aplicar Directamente
-        </button>
       </div>
       
       <!-- Botones para vista previa -->
@@ -144,7 +145,7 @@
           type="button" 
           class="btn btn--primary" 
           [disabled]="loading || (previewMessage && previewMessage.includes('No hay'))"
-          (click)="onApply()">
+          (click)="onApplySemester()">
           Aplicar Planificación
         </button>
       </div>
