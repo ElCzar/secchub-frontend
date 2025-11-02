@@ -463,6 +463,13 @@ export class PlanningClassesTable implements OnInit {
     console.log('Seleccionar docente para la fila', index);
     const row = this.rows[index];
     
+    // Validar campos obligatorios antes de proceder
+    const validation = this.validateRequiredFieldsForTeacherSelection(row);
+    if (!validation.isValid) {
+      alert(`⚠️ Antes de seleccionar un docente, debes completar los siguientes campos obligatorios:\n\n${validation.missingFields.join('\n')}`);
+      return;
+    }
+    
     // Verificar si la fila está en modo de edición, tiene datos que requieren guardado 
     // Y NO tiene docentes asignados aún (primera selección)
     if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
@@ -470,7 +477,7 @@ export class PlanningClassesTable implements OnInit {
       
       // Mostrar mensaje al usuario solo para la primera selección de docente
       const shouldProceed = confirm(
-        'Para seleccionar un docente, primero necesitamos guardar los datos de la clase que estás creando. ¿Quieres continuar?'
+        '✅ Todos los campos obligatorios están completos.\n\nPara seleccionar un docente, primero guardaremos los datos de la clase. ¿Deseas continuar?'
       );
       
       if (!shouldProceed) {
@@ -498,6 +505,34 @@ export class PlanningClassesTable implements OnInit {
     const hasCredits = row.credits && row.credits > 0;
     
     return hasBasicData || hasSection || hasCredits;
+  }
+
+  /**
+   * Valida que todos los campos obligatorios estén completos antes de seleccionar docente
+   * Retorna un objeto con isValid y la lista de campos faltantes
+   */
+  private validateRequiredFieldsForTeacherSelection(row: PlanningRow): { isValid: boolean; missingFields: string[] } {
+    const missingFields: string[] = [];
+    
+    // Campo: ID Materia (obligatorio)
+    if (!row.courseId || row.courseId.trim() === '') {
+      missingFields.push('• ID Materia');
+    }
+    
+    // Campo: Nombre de Materia (obligatorio)
+    if (!row.courseName || row.courseName.trim() === '') {
+      missingFields.push('• Nombre de Materia');
+    }
+    
+    // Campo: Cupos (obligatorio y debe ser mayor a 0)
+    if (!row.seats || row.seats <= 0) {
+      missingFields.push('• Cupos (debe ser mayor a 0)');
+    }
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
   }
 
   private navigateToTeacherSelection(index: number) {
@@ -529,6 +564,13 @@ export class PlanningClassesTable implements OnInit {
     console.log('Seleccionar docente adicional para la fila', index);
     const row = this.rows[index];
     
+    // Validar campos obligatorios antes de proceder
+    const validation = this.validateRequiredFieldsForTeacherSelection(row);
+    if (!validation.isValid) {
+      alert(`⚠️ Antes de seleccionar un docente adicional, debes completar los siguientes campos obligatorios:\n\n${validation.missingFields.join('\n')}`);
+      return;
+    }
+    
     // Para docentes adicionales, solo mostrar aviso si está en edición Y no tiene ningún docente
     // (caso poco común, pero mantiene consistencia)
     if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
@@ -536,7 +578,7 @@ export class PlanningClassesTable implements OnInit {
       
       // Mostrar mensaje al usuario solo si no tiene docentes
       const shouldProceed = confirm(
-        'Para seleccionar un docente adicional, primero necesitamos guardar los datos de la clase que estás editando. ¿Quieres continuar?'
+        '✅ Todos los campos obligatorios están completos.\n\nPara seleccionar un docente adicional, primero guardaremos los datos de la clase. ¿Deseas continuar?'
       );
       
       if (!shouldProceed) {
