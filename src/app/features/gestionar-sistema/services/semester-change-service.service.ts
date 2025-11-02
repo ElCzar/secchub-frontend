@@ -29,12 +29,19 @@ export class SemesterChangeService {
    * @returns Semester request data
    */
   createRequestDTO(formData: any): SemesterRequestDTO {
-    return {
+    const dto: SemesterRequestDTO = {
       period: formData.period || 1,
       year: formData.year || new Date().getFullYear(),
       startDate: formData.startDate || '',
       endDate: formData.endDate || ''
     };
+    
+    // Solo incluir startSpecialWeek si tiene valor
+    if (formData.startSpecialWeek) {
+      dto.startSpecialWeek = formData.startSpecialWeek;
+    }
+    
+    return dto;
   }
 
   /**

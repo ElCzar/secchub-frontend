@@ -285,6 +285,23 @@
   }
 }
 
+/* Form help text and optional label */
+.form-help-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.optional-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #9ca3af;
+  font-style: italic;
+  margin-left: 4px;
+}
+
 /* Responsive adjustments for new semester form */
 @media (max-width: 768px) {
   .section-header {

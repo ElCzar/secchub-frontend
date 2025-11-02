@@ -696,15 +696,30 @@ export class PlanningClassesTable implements OnInit {
         
         // Convertir a días y luego a semanas (redondeando hacia arriba)
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-        const weeks = Math.ceil(daysDifference / 7);
-        // Restar una semana al resultado según petición, sin permitir valor negativo
-        row.weeks = Math.max(0, weeks - 1);
+        let weeks = Math.ceil(daysDifference / 7);
+        
+        // Verificar si hay una semana especial (receso/semana santa) dentro del rango
+        if (this.currentSemester?.startSpecialWeek) {
+          const specialWeekStart = new Date(this.currentSemester.startSpecialWeek);
+          
+          // Solo restar 1 semana si la semana especial está dentro del rango de la clase
+          if (specialWeekStart >= startDate && specialWeekStart <= endDate) {
+            console.log(`⚠️ Semana especial detectada (${this.currentSemester.startSpecialWeek}) dentro del rango de la clase. Restando 1 semana.`);
+            weeks = Math.max(0, weeks - 1);
+          } else {
+            console.log(`ℹ️ Semana especial (${this.currentSemester.startSpecialWeek}) está fuera del rango de la clase. No se resta semana.`);
+          }
+        } else {
+          console.log('ℹ️ No hay semana especial configurada en el semestre actual.');
+        }
+        
+        row.weeks = Math.max(0, weeks);
       } else if (endDate < startDate) {
         // Si la fecha final es anterior a la inicial, mostrar error
         console.warn('La fecha final debe ser posterior a la fecha inicial');
         row.weeks = 0;
       } else {
-        // Si las fechas son iguales: equivalente a 0 semanas después de restar 1
+        // Si las fechas son iguales: 0 semanas
         row.weeks = 0;
       }
     } else {
@@ -722,9 +737,19 @@ export class PlanningClassesTable implements OnInit {
       if (endDate > startDate) {
         const timeDifference = endDate.getTime() - startDate.getTime();
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-        const weeks = Math.ceil(daysDifference / 7);
-        // Restar una semana y no devolver valores negativos
-        return Math.max(0, weeks - 1);
+        let weeks = Math.ceil(daysDifference / 7);
+        
+        // Verificar si hay una semana especial (receso/semana santa) dentro del rango
+        if (this.currentSemester?.startSpecialWeek) {
+          const specialWeekStart = new Date(this.currentSemester.startSpecialWeek);
+          
+          // Solo restar 1 semana si la semana especial está dentro del rango de la clase
+          if (specialWeekStart >= startDate && specialWeekStart <= endDate) {
+            weeks = Math.max(0, weeks - 1);
+          }
+        }
+        
+        return Math.max(0, weeks);
       }
     }
     return row.weeks || 0;

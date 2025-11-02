@@ -7,5 +7,6 @@ export interface SemesterResponseDTO {
   year: number;
   startDate: string;
   endDate: string;
+  startSpecialWeek?: string; // Fecha de inicio de semana especial (receso/semana santa)
   isCurrent: boolean;
 }
