@@ -12,11 +12,25 @@ import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { PlanningService } from '../../features/planificacion/services/planning.service';
 
+export interface ScheduleConflict {
+  type: 'teacher' | 'classroom';
+  resourceId: number;
+  resourceName: string;
+  conflictingClasses: {
+    classId: number;
+    className: string;
+    day: string;
+    startTime: string;
+    endTime: string;
+  }[];
+}
+
 export interface AlertPanelData {
   missingTeachers: number;
   missingRooms: number;
   pendingConfirmations: number;
   scheduleConflicts: number;
+  scheduleConflictDetails?: ScheduleConflict[];
   daysLeft: number;
   endDate?: string;
 }
@@ -134,12 +148,27 @@ export class AlertPanelService {
       switchMap((missingTeachers: number) =>
         this.planningService.getMissingRoomsCountForSectionChief().pipe(
           switchMap((missingRooms: number) =>
-            this.planningService.getDashboardAlerts().pipe(
-              map((alerts: AlertPanelData) => ({
-                ...alerts,
-                missingTeachers,
-                missingRooms
-              }))
+            this.planningService.getScheduleConflicts().pipe(
+              switchMap((conflicts: any) =>
+                this.planningService.getDashboardAlerts().pipe(
+                  map((alerts: AlertPanelData) => ({
+                    ...alerts,
+                    missingTeachers,
+                    missingRooms,
+                    scheduleConflictDetails: conflicts
+                  }))
+                )
+              ),
+              catchError(() => 
+                // Si falla la obtención de conflictos, continuar sin ellos
+                this.planningService.getDashboardAlerts().pipe(
+                  map((alerts: AlertPanelData) => ({
+                    ...alerts,
+                    missingTeachers,
+                    missingRooms
+                  }))
+                )
+              )
             )
           )
         )

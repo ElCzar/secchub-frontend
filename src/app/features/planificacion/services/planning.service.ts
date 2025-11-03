@@ -106,6 +106,17 @@ export class PlanningService {
       map((classes: any[]) => classes.length)
     );
   }
+
+  /**
+   * Obtiene los conflictos de planificación (docentes y salones con clases simultáneas)
+   * para el jefe de sección autenticado (JWT)
+   */
+  getScheduleConflicts(): Observable<any> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/conflicts`, { headers });
+  }
+
   private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(

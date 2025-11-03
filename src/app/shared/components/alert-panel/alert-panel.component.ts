@@ -66,14 +66,23 @@ import { CommonModule } from '@angular/common';
     .alert-list { list-style: none; padding: 0; margin: 0 0 1rem 0; }
     .alert-list-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       font-size: 1rem;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0;
+      padding-bottom: 0.85rem;
+      padding-top: 0.85rem;
       color: #222;
       position: relative;
-      background: none !important;
-      border-radius: 0;
+      background: none;
+      border-bottom: 1px solid #e5e5e5;
       min-height: 28px;
+    }
+    .alert-list-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .alert-list-item:first-child {
+      padding-top: 0;
     }
     .alert-icon {
       font-size: 1.2rem;
@@ -83,12 +92,13 @@ import { CommonModule } from '@angular/common';
     .alert-text {
       margin-left: 0.1rem;
       display: inline-block;
+      flex: 1;
+      line-height: 1.5;
     }
     .alert-black { color: #222 !important; background: none !important; }
     .alert-success, .alert-danger, .alert-warning, .alert-info, .alert-date, .alert-normal {
       color: #222;
       background: none !important;
-      border-radius: 0;
     }
     .alert-spacer { flex: 1; }
     .btn--close-green { background: none; border: none; margin-left: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; padding: 0; }
@@ -182,9 +192,57 @@ export class AlertPanelComponent implements OnInit {
       if (alerts.missingTeachers > 0) {
         staticAlerts.push({ type: 'static', icon: '🚩', text: `${alerts.missingTeachers} ${alerts.missingTeachers === 1 ? 'Clase' : 'Clases'} sin docente asignado (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-normal alert-black' });
       }
-      if (alerts.scheduleConflicts > 0) {
+      
+      // Agregar alertas detalladas de conflictos de planificación
+      if (alerts.scheduleConflictDetails && alerts.scheduleConflictDetails.length > 0) {
+        alerts.scheduleConflictDetails.forEach((conflict: any) => {
+          if (conflict.type === 'teacher') {
+            // Conflicto de docente
+            const numClases = conflict.conflictingClasses.length;
+            const firstClass = conflict.conflictingClasses[0];
+            const daySpanish = this.translateDay(firstClass.day);
+            
+            // Calcular el intervalo de conflicto (intersección de horarios)
+            const conflictInterval = this.calculateConflictInterval(conflict.conflictingClasses);
+            
+            // Construir lista de clases con sus horarios individuales
+            const classList = conflict.conflictingClasses
+              .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})`)
+              .join('');
+            
+            staticAlerts.push({ 
+              type: 'static', 
+              icon: '👨‍🏫', 
+              text: `Docente <b>${conflict.resourceName}</b> tiene ${numClases} clases simultáneas el ${daySpanish} de ${conflictInterval.start} a ${conflictInterval.end} (<span class='ver-detalles'>ver detalles</span>)${classList}`, 
+              class: 'alert-warning alert-black' 
+            });
+          } else if (conflict.type === 'classroom') {
+            // Conflicto de salón
+            const numClases = conflict.conflictingClasses.length;
+            const firstClass = conflict.conflictingClasses[0];
+            const daySpanish = this.translateDay(firstClass.day);
+            
+            // Calcular el intervalo de conflicto (intersección de horarios)
+            const conflictInterval = this.calculateConflictInterval(conflict.conflictingClasses);
+            
+            // Construir lista de clases con sus horarios individuales
+            const classList = conflict.conflictingClasses
+              .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})`)
+              .join('');
+            
+            staticAlerts.push({ 
+              type: 'static', 
+              icon: '🏫', 
+              text: `Salón <b>${conflict.resourceName}</b> tiene ${numClases} clases simultáneas el ${daySpanish} de ${conflictInterval.start} a ${conflictInterval.end} (<span class='ver-detalles'>ver detalles</span>)${classList}`, 
+              class: 'alert-warning alert-black' 
+            });
+          }
+        });
+      } else if (alerts.scheduleConflicts > 0) {
+        // Fallback: si no hay detalles pero sí hay conflictos, mostrar alerta genérica
         staticAlerts.push({ type: 'static', icon: '⚠️', text: `Conflicto de horario en ${alerts.scheduleConflicts} clase(s)`, class: 'alert-warning alert-black' });
       }
+      
       if (alerts.pendingConfirmations > 0) {
         staticAlerts.push({ type: 'static', icon: '🕑', text: `${alerts.pendingConfirmations} ${alerts.pendingConfirmations === 1 ? 'Docente' : 'Docentes'} sin confirmar disponibilidad (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-info alert-black' });
       }
@@ -229,6 +287,47 @@ export class AlertPanelComponent implements OnInit {
 
   verDetalles() {
     this.router.navigate(['/planificacion']);
+  }
+
+  translateDay(day: string): string {
+    const daysMap: { [key: string]: string } = {
+      'Monday': 'lunes',
+      'Tuesday': 'martes',
+      'Wednesday': 'miércoles',
+      'Thursday': 'jueves',
+      'Friday': 'viernes',
+      'Saturday': 'sábado',
+      'Sunday': 'domingo'
+    };
+    return daysMap[day] || day;
+  }
+
+  formatTime(time: string): string {
+    // Convierte "10:00:00" a "10:00"
+    if (!time) return '';
+    return time.substring(0, 5);
+  }
+
+  calculateConflictInterval(classes: any[]): { start: string; end: string } {
+    // Calcula la intersección de horarios para encontrar el intervalo exacto del conflicto
+    // El conflicto empieza en el máximo de los startTime y termina en el mínimo de los endTime
+    
+    let maxStart = classes[0].startTime;
+    let minEnd = classes[0].endTime;
+    
+    classes.forEach((c: any) => {
+      if (c.startTime > maxStart) {
+        maxStart = c.startTime;
+      }
+      if (c.endTime < minEnd) {
+        minEnd = c.endTime;
+      }
+    });
+    
+    return {
+      start: this.formatTime(maxStart),
+      end: this.formatTime(minEnd)
+    };
   }
 
   formatFechaCierre(fecha: string): string {
