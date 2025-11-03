@@ -64,56 +64,66 @@ export class TeacherSelectModal {
     this.modalClosed.emit();
   }
 
-  async selectDocente() {
+  selectDocente() {
     if (!this.docente) return;
-    let maxHours = 40;
-    if (typeof this.docente.maxHours === 'number' && this.docente.maxHours > 0) {
-      maxHours = this.docente.maxHours;
-    }
-    // employment_type_id puede venir como contractType o similar, ajusta según tu modelo
-    const employmentTypeId = (this.docente as any).employment_type_id || (this.docente as any).employmentTypeId || 1;
-    const assignedHours = await this.teacherSelectModalUtil.getAssignedHoursForTeacher(
-      this.docente.id!, employmentTypeId
-    );
+    const teacherId = this.docente.id;
     const toAssign = typeof this.workHoursToAssign === 'number' ? this.workHoursToAssign : 0;
-    const currentSum = assignedHours + toAssign;
-
-    // Logging después de inicialización
-    console.log('[LOG][SELECCIÓN DOCENTE] maxHours recibido:', maxHours);
-    console.log('[LOG][SELECCIÓN DOCENTE] assignedHours:', assignedHours);
-    console.log('[LOG][SELECCIÓN DOCENTE] workHoursToAssign:', toAssign);
-    console.log('[LOG][SELECCIÓN DOCENTE] sumatoria (assigned + toAssign):', currentSum);
-    if (currentSum > maxHours) {
-      const excedente = currentSum - maxHours;
-      console.log('[LOG][SELECCIÓN DOCENTE] EXCESO DE HORAS:', excedente);
-      // Mostrar modal de advertencia de horas extra
-      this.extraWarningData = {
-        maxHours,
-        assignedHours,
-        currentSum,
-        excessHours: excedente
-      };
-      this.showExtraWarningModal = true;
-      return;
-    }
-    // Si no excede, continuar normalmente
-    this.proceedWithSelection();
+    
+    this.http.get<any>(`http://localhost:8080/planning/teachers/${teacherId}/max-hours`).subscribe({
+      next: (data) => {
+        const {
+          maxHours,
+          assignedHours,
+          employmentTypeId,
+          exceedsMaxHours,
+          name
+        } = data;
+        const sumaTotal = assignedHours + toAssign;
+        
+        // Si es profesor de cátedra (employmentTypeId === 2), flujo normal
+        if (employmentTypeId === 2) {
+          this.proceedWithSelection();
+          return;
+        }
+        
+        // Caso: No excede maxHours y es tipo planta
+        if (exceedsMaxHours === 0 && employmentTypeId === 1 && sumaTotal <= maxHours) {
+          this.proceedWithSelection();
+        } else {
+          // Modal de advertencia
+          let horasPlanta = 0;
+          let horasCatedra = 0;
+          
+          if (exceedsMaxHours === 0 && employmentTypeId === 1 && sumaTotal > maxHours) {
+            horasPlanta = Math.max(0, maxHours - assignedHours);
+            horasCatedra = toAssign - horasPlanta;
+          } else if (exceedsMaxHours === 1 && employmentTypeId === 1) {
+            horasPlanta = 0;
+            horasCatedra = toAssign;
+          }
+          
+          this.extraWarningData = {
+            maxHours,
+            assignedHours,
+            toAssign,
+            name,
+            horasPlanta,
+            horasCatedra,
+            excessHours: sumaTotal - maxHours
+          };
+          this.showExtraWarningModal = true;
+        }
+      },
+      error: (err) => {
+        console.error('Error consultando max-hours:', err);
+      }
+    });
   }
   // Acciones del modal de advertencia de horas extra
   onExtraWarningAccept() {
-    // LOG de aceptación de horas extra
-    if (this.docente) {
-      const maxHours = typeof this.docente.maxHours === 'number' ? this.docente.maxHours : 40;
-      const assignedHours = typeof this.docente.assignedHours === 'number' ? this.docente.assignedHours : 0;
-      const toAssign = typeof this.workHoursToAssign === 'number' ? this.workHoursToAssign : 0;
-      const currentSum = assignedHours + toAssign;
-      if (currentSum > maxHours) {
-        const fullTimeExtraHours = currentSum - maxHours;
-        console.log('[LOG][ACEPTAR HORAS EXTRA] full_time_extra_hours que se enviaría:', fullTimeExtraHours);
-      }
-    }
     this.acceptExtra = true;
     this.showExtraWarningModal = false;
+    
     // Mostrar pantalla de confirmación directamente
     if (this.docente) {
       this.showConfirmationModal = true;
@@ -122,9 +132,10 @@ export class TeacherSelectModal {
   }
 
   onExtraWarningCancel() {
-    this.showExtraWarningModal = false;
-    this.acceptExtra = false;
-    // No asignar, solo cerrar el modal de advertencia
+  this.showExtraWarningModal = false;
+  this.acceptExtra = false;
+  this.closeModal();
+  // Cierra también el modal principal de asignar
   }
 
   private checkTeacherWorkloadAndProceed() {
@@ -164,16 +175,19 @@ export class TeacherSelectModal {
   }
 
   onHourWarningCancelled() {
-    this.showHourWarningModal = false;
-    // No hacer nada, mantener el modal principal abierto
+  this.showHourWarningModal = false;
+  this.closeModal();
+  // Cierra también el modal principal de asignar
   }
 
   onConfirmationClosed() {
-    this.showConfirmationModal = false;
+  this.showConfirmationModal = false;
+  this.closeModal();
   }
 
   onCancelSelection() {
-    this.showConfirmationModal = false;
+  this.showConfirmationModal = false;
+  this.closeModal();
   }
 
   onAddAnotherTeacher() {
@@ -187,43 +201,42 @@ export class TeacherSelectModal {
     this.showConfirmationModal = false;
     // Aquí se realiza la asignación final
     if (this.docente && this.classInfo?.semesterId && this.classInfo?.id) {
-      const payload = {
-        teacherId: this.docente.id,
-        semesterId: this.classInfo.semesterId,
-        teacherClassId: null,
-        classId: this.classInfo.id,
-        assigningWorkHours: this.workHoursToAssign,
-        acceptExtra: this.acceptExtra
-      };
       const token = localStorage.getItem('accessToken');
-      this.http.post<any>(
-        `${this.teacherAssignmentService.baseUrl.replace('/api/teacher-assignments','')}/teachers/classes/assign`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-      ).subscribe({
-        next: () => {
-          // Guardar selección y navegar
-          const docentesToSave = teachers || this.selectedDocentes;
-          if (docentesToSave.length > 0) {
-            const key = this.classKey || `temp-class-${Date.now()}`;
-            const classInfoWithIndex = {
-              ...this.classInfo,
-              rowIndex: this.classInfo?.rowIndex
-            };
-            this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
-            this.router.navigate(['/planificacion']);
-          }
-          this.closeModal();
-        },
-        error: () => {
-          // Manejar error si es necesario
-          this.closeModal();
+      
+      // Guardar selección y navegar (SIN hacer POST aquí, se hará en planificacion-page)
+      const docentesToSave = teachers || this.selectedDocentes;
+      
+      if (docentesToSave.length > 0) {
+        // Agregar datos de horas extra al primer docente si hay advertencia
+        if (docentesToSave[0] && this.extraWarningData) {
+          (docentesToSave[0] as any).extraHoursData = {
+            horasPlanta: this.extraWarningData.horasPlanta,
+            horasCatedra: this.extraWarningData.horasCatedra
+          };
         }
-      });
+        
+        const key = this.classKey || `temp-class-${Date.now()}`;
+        const classInfoWithIndex = {
+          ...this.classInfo,
+          rowIndex: this.classInfo?.rowIndex
+        };
+        this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
+        this.router.navigate(['/planificacion']);
+      }
+      this.closeModal();
     } else {
       // Guardamos los docentes seleccionados en el servicio y navegamos
       const docentesToSave = teachers || this.selectedDocentes;
+      
       if (docentesToSave.length > 0) {
+        // Agregar datos de horas extra al primer docente si hay advertencia
+        if (docentesToSave[0] && this.extraWarningData) {
+          (docentesToSave[0] as any).extraHoursData = {
+            horasPlanta: this.extraWarningData.horasPlanta,
+            horasCatedra: this.extraWarningData.horasCatedra
+          };
+        }
+        
         const key = this.classKey || `temp-class-${Date.now()}`;
         const classInfoWithIndex = {
           ...this.classInfo,

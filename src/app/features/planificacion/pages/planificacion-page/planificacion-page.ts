@@ -1439,9 +1439,24 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       return;
     }
 
-  // Calcular horas de trabajo basadas en los schedules de la clase
-  const workHours = this.computeWorkHoursFromSchedules(classRow);
-  console.log(`📋 Asignando docente ${selectedTeacher.id} a clase ${classRow.backendId} con ${workHours} horas (calculadas desde schedules)`);
+  // Obtener datos de horas extra si existen (de la advertencia del modal)
+    const extraHoursData = (selectedTeacher as any).extraHoursData;
+    
+    let workHours: number;
+    let fullTimeExtraHours: number;
+    let adjunctExtraHours: number;
+    
+    if (extraHoursData) {
+      // Si hay advertencia de horas extra, usar esos valores
+      workHours = extraHoursData.horasPlanta;
+      fullTimeExtraHours = extraHoursData.horasCatedra;
+      adjunctExtraHours = 0; // Siempre 0
+    } else {
+      // Si NO hay advertencia, calcular horas normalmente desde schedules
+      workHours = this.computeWorkHoursFromSchedules(classRow);
+      fullTimeExtraHours = 0;
+      adjunctExtraHours = 0;
+    }
     
     // Hacer la asignación en el backend
     this.subscription.add(
@@ -1449,11 +1464,11 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         classRow.backendId,
         selectedTeacher.id,
         workHours,
-        `Asignado desde planificación - ${new Date().toLocaleString()}`
+        `Asignado desde planificación - ${new Date().toLocaleString()}`,
+        fullTimeExtraHours,
+        adjunctExtraHours
       ).subscribe({
         next: (response) => {
-          console.log('✅ Docente asignado exitosamente:', response);
-          
           // Actualizar la fila local con la información del docente
           const assignedHours = (response as any).totalHours ?? response.assignedHours;
           const availableHours = (response as any).availableHours ?? (response.maxHours - assignedHours);
