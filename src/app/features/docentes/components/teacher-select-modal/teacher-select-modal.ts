@@ -80,38 +80,77 @@ export class TeacherSelectModal {
         } = data;
         const sumaTotal = assignedHours + toAssign;
         
-        // Si es profesor de cátedra (employmentTypeId === 2), flujo normal
-        if (employmentTypeId === 2) {
-          this.proceedWithSelection();
-          return;
-        }
-        
-        // Caso: No excede maxHours y es tipo planta
-        if (exceedsMaxHours === 0 && employmentTypeId === 1 && sumaTotal <= maxHours) {
-          this.proceedWithSelection();
-        } else {
-          // Modal de advertencia
-          let horasPlanta = 0;
-          let horasCatedra = 0;
-          
-          if (exceedsMaxHours === 0 && employmentTypeId === 1 && sumaTotal > maxHours) {
-            horasPlanta = Math.max(0, maxHours - assignedHours);
-            horasCatedra = toAssign - horasPlanta;
-          } else if (exceedsMaxHours === 1 && employmentTypeId === 1) {
-            horasPlanta = 0;
-            horasCatedra = toAssign;
+        // PROFESORES DE PLANTA (employmentTypeId === 1)
+        if (employmentTypeId === 1) {
+          // Caso 2.1: No excede y la suma total no supera el límite
+          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
+            this.proceedWithSelection();
+          } else {
+            // Modal de advertencia para planta
+            let horasPlanta = 0;
+            let horasCatedra = 0;
+            
+            // Caso 2.2: No excede aún, pero la suma total superaría el límite
+            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
+              horasPlanta = Math.max(0, maxHours - assignedHours);
+              horasCatedra = toAssign - horasPlanta;
+            } 
+            // Caso 2.3: Ya excede el límite de horas
+            else if (exceedsMaxHours === 1) {
+              horasPlanta = 0;
+              horasCatedra = toAssign;
+            }
+            
+            this.extraWarningData = {
+              maxHours,
+              assignedHours,
+              toAssign,
+              name,
+              horasPlanta,
+              horasCatedra,
+              horasAdjuntNormales: 0,
+              horasAdjuntExtra: 0,
+              excessHours: sumaTotal - maxHours,
+              employmentTypeId
+            };
+            this.showExtraWarningModal = true;
           }
-          
-          this.extraWarningData = {
-            maxHours,
-            assignedHours,
-            toAssign,
-            name,
-            horasPlanta,
-            horasCatedra,
-            excessHours: sumaTotal - maxHours
-          };
-          this.showExtraWarningModal = true;
+        } 
+        // PROFESORES DE CÁTEDRA (employmentTypeId === 2)
+        else if (employmentTypeId === 2) {
+          // Caso 2.1: No excede y la suma total no supera el límite
+          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
+            this.proceedWithSelection();
+          } else {
+            // Modal de advertencia para cátedra
+            let horasAdjuntNormales = 0;
+            let horasAdjuntExtra = 0;
+            
+            // Caso 2.2: No excede aún, pero la suma total superaría el límite
+            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
+              horasAdjuntNormales = Math.max(0, maxHours - assignedHours);
+              horasAdjuntExtra = toAssign - horasAdjuntNormales;
+            } 
+            // Caso 2.3: Ya excede el límite de horas
+            else if (exceedsMaxHours === 1) {
+              horasAdjuntNormales = 0;
+              horasAdjuntExtra = toAssign;
+            }
+            
+            this.extraWarningData = {
+              maxHours,
+              assignedHours,
+              toAssign,
+              name,
+              horasPlanta: 0,
+              horasCatedra: 0,
+              horasAdjuntNormales,
+              horasAdjuntExtra,
+              excessHours: sumaTotal - maxHours,
+              employmentTypeId
+            };
+            this.showExtraWarningModal = true;
+          }
         }
       },
       error: (err) => {
@@ -211,7 +250,10 @@ export class TeacherSelectModal {
         if (docentesToSave[0] && this.extraWarningData) {
           (docentesToSave[0] as any).extraHoursData = {
             horasPlanta: this.extraWarningData.horasPlanta,
-            horasCatedra: this.extraWarningData.horasCatedra
+            horasCatedra: this.extraWarningData.horasCatedra,
+            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
+            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
+            employmentTypeId: this.extraWarningData.employmentTypeId
           };
         }
         
@@ -233,7 +275,10 @@ export class TeacherSelectModal {
         if (docentesToSave[0] && this.extraWarningData) {
           (docentesToSave[0] as any).extraHoursData = {
             horasPlanta: this.extraWarningData.horasPlanta,
-            horasCatedra: this.extraWarningData.horasCatedra
+            horasCatedra: this.extraWarningData.horasCatedra,
+            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
+            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
+            employmentTypeId: this.extraWarningData.employmentTypeId
           };
         }
         

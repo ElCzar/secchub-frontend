@@ -1447,10 +1447,23 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     let adjunctExtraHours: number;
     
     if (extraHoursData) {
-      // Si hay advertencia de horas extra, usar esos valores
-      workHours = extraHoursData.horasPlanta;
-      fullTimeExtraHours = extraHoursData.horasCatedra;
-      adjunctExtraHours = 0; // Siempre 0
+      // Si hay advertencia de horas extra, usar esos valores según el tipo de profesor
+      if (extraHoursData.employmentTypeId === 1) {
+        // Profesor de PLANTA
+        workHours = extraHoursData.horasPlanta;
+        fullTimeExtraHours = extraHoursData.horasCatedra;
+        adjunctExtraHours = 0;
+      } else if (extraHoursData.employmentTypeId === 2) {
+        // Profesor de CÁTEDRA
+        workHours = extraHoursData.horasAdjuntNormales;
+        fullTimeExtraHours = 0;
+        adjunctExtraHours = extraHoursData.horasAdjuntExtra;
+      } else {
+        // Fallback por si acaso
+        workHours = this.computeWorkHoursFromSchedules(classRow);
+        fullTimeExtraHours = 0;
+        adjunctExtraHours = 0;
+      }
     } else {
       // Si NO hay advertencia, calcular horas normalmente desde schedules
       workHours = this.computeWorkHoursFromSchedules(classRow);

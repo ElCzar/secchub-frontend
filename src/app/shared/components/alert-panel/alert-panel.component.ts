@@ -1,4 +1,4 @@
-import { OnInit } from '@angular/core';
+import { OnInit, Input } from '@angular/core';
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
@@ -44,15 +44,10 @@ import { CommonModule } from '@angular/common';
           </li>
         </ng-container>
       </ul>
-
-      <div class="alert-panel-actions" style="margin-top: 1.5rem;">
-  <button class="btn btn--secondary btn--small" *ngIf="showVerMas && !verMasActivo" (click)="verMasAlertas()">Ver más</button>
-  <button class="btn btn--secondary btn--small" *ngIf="showVerMas && verMasActivo" (click)="verMenosAlertas()">Ver menos</button>
-      </div>
     </div>
   `,
   styles: [
-    `.alert-panel-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    `.alert-panel-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; margin-bottom: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
     .close-red-box {
       display: flex;
       align-items: center;
@@ -141,18 +136,17 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AlertPanelComponent implements OnInit {
+  @Input() isAdmin: boolean = false; // Si es true, muestra solo alertas estáticas globales
+  
   ngOnInit(): void {
     // Forzar recarga instantánea de alertas estáticas al cargar el panel
-    this.alertPanelService.updateAlerts();
+    this.alertPanelService.updateAlerts(this.isAdmin);
   }
   alerts$: Observable<AlertPanelData | null>;
   dynamicAlerts$: Observable<DynamicTeacherResponseAlert[]>;
   visibleAlerts: any[] = [];
   allAlerts: any[] = [];
-  showVerMas = false;
-  verMasActivo = false;
   fechaCierre: string = '';
-  private maxVisible = 5;
 
   constructor(private alertPanelService: AlertPanelService, private router: Router) {
     this.alerts$ = this.alertPanelService.alerts$;
@@ -180,17 +174,50 @@ export class AlertPanelComponent implements OnInit {
   updateAlerts(alerts: AlertPanelData | null, dynamicAlerts: DynamicTeacherResponseAlert[]) {
     // Construye lista de alertas estáticas
     const staticAlerts: any[] = [];
+    const priorityAlerts: any[] = []; // Alertas que van al inicio
+    
     if (alerts) {
       if ((alerts as any).endDate) {
         this.fechaCierre = this.formatFechaCierre((alerts as any).endDate);
       } else {
         this.fechaCierre = '';
       }
-      if (alerts.missingRooms > 0) {
-        staticAlerts.push({ type: 'static', icon: '❗', text: `${alerts.missingRooms} ${alerts.missingRooms === 1 ? 'Clase' : 'Clases'} sin salón asignado (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-danger alert-black' });
+      
+      // ALERTAS PRIORITARIAS (siempre al inicio)
+      
+      // 1. Estado de planificaciones (solo para admin) - SIEMPRE PRIMERA
+      if (this.isAdmin && alerts.planningStatus) {
+        const statusText = `Planificaciones activas: <strong>${alerts.planningStatus.closedCount}</strong> de <strong>${alerts.planningStatus.totalSections}</strong> secciones finalizadas`;
+        priorityAlerts.push({ type: 'static', icon: '✅', text: statusText, class: 'alert-success alert-black' });
       }
+      
+      // 2. Fecha límite - SIEMPRE SEGUNDA
+      priorityAlerts.push({ type: 'static', icon: '📅', text: `Fecha límite de cierre de planificación: <strong>&nbsp;${this.fechaCierre} </strong> &nbsp; (Faltan ${alerts.daysLeft} días)`, class: 'alert-date alert-black' });
+      
+      // RESTO DE ALERTAS
+      
+      // Clases sin salón asignado
+      if (alerts.missingRooms > 0) {
+        let roomText = `${alerts.missingRooms} ${alerts.missingRooms === 1 ? 'Clase sin salón asignado' : 'Clases sin salones asignados'} (<span class='ver-detalles'>ver detalles</span>)`;
+        if (alerts.classesWithoutRoom && alerts.classesWithoutRoom.length > 0) {
+          const classList = alerts.classesWithoutRoom
+            .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.courseName} (${c.sectionName})`)
+            .join('');
+          roomText += classList;
+        }
+        staticAlerts.push({ type: 'static', icon: '❗', text: roomText, class: 'alert-danger alert-black' });
+      }
+      
+      // Clases sin docente asignado
       if (alerts.missingTeachers > 0) {
-        staticAlerts.push({ type: 'static', icon: '🚩', text: `${alerts.missingTeachers} ${alerts.missingTeachers === 1 ? 'Clase' : 'Clases'} sin docente asignado (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-normal alert-black' });
+        let teacherText = `${alerts.missingTeachers} ${alerts.missingTeachers === 1 ? 'Clase sin docente asignado' : 'Clases sin docentes asignados'} (<span class='ver-detalles'>ver detalles</span>)`;
+        if (alerts.classesWithoutTeacher && alerts.classesWithoutTeacher.length > 0) {
+          const classList = alerts.classesWithoutTeacher
+            .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.courseName} (${c.sectionName})`)
+            .join('');
+          teacherText += classList;
+        }
+        staticAlerts.push({ type: 'static', icon: '🚩', text: teacherText, class: 'alert-normal alert-black' });
       }
       
       // Agregar alertas detalladas de conflictos de planificación
@@ -205,9 +232,12 @@ export class AlertPanelComponent implements OnInit {
             // Calcular el intervalo de conflicto (intersección de horarios)
             const conflictInterval = this.calculateConflictInterval(conflict.conflictingClasses);
             
-            // Construir lista de clases con sus horarios individuales
+            // Construir lista de clases con sus horarios individuales y nombre de sección
             const classList = conflict.conflictingClasses
-              .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})`)
+              .map((c: any) => {
+                const sectionInfo = c.sectionName ? ` - ${c.sectionName}` : '';
+                return `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})${sectionInfo}`;
+              })
               .join('');
             
             staticAlerts.push({ 
@@ -225,9 +255,12 @@ export class AlertPanelComponent implements OnInit {
             // Calcular el intervalo de conflicto (intersección de horarios)
             const conflictInterval = this.calculateConflictInterval(conflict.conflictingClasses);
             
-            // Construir lista de clases con sus horarios individuales
+            // Construir lista de clases con sus horarios individuales y nombre de sección
             const classList = conflict.conflictingClasses
-              .map((c: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})`)
+              .map((c: any) => {
+                const sectionInfo = c.sectionName ? ` - ${c.sectionName}` : '';
+                return `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${c.className} (${this.formatTime(c.startTime)} a ${this.formatTime(c.endTime)})${sectionInfo}`;
+              })
               .join('');
             
             staticAlerts.push({ 
@@ -243,46 +276,40 @@ export class AlertPanelComponent implements OnInit {
         staticAlerts.push({ type: 'static', icon: '⚠️', text: `Conflicto de horario en ${alerts.scheduleConflicts} clase(s)`, class: 'alert-warning alert-black' });
       }
       
+      // Docentes sin confirmar disponibilidad
       if (alerts.pendingConfirmations > 0) {
-        staticAlerts.push({ type: 'static', icon: '🕑', text: `${alerts.pendingConfirmations} ${alerts.pendingConfirmations === 1 ? 'Docente' : 'Docentes'} sin confirmar disponibilidad (<span class='ver-detalles'>ver detalles</span>)`, class: 'alert-info alert-black' });
+        let pendingText = `${alerts.pendingConfirmations} ${alerts.pendingConfirmations === 1 ? 'Docente sin' : 'Docentes sin'} confirmar disponibilidad (<span class='ver-detalles'>ver detalles</span>)`;
+        if (alerts.pendingConfirmationDetails && alerts.pendingConfirmationDetails.length > 0) {
+          const pendingList = alerts.pendingConfirmationDetails
+            .map((p: any) => `<br>&nbsp;&nbsp;&nbsp;&nbsp;- ${p.teacherName}: ${p.className} (${p.sectionName})`)
+            .join('');
+          pendingText += pendingList;
+        }
+        staticAlerts.push({ type: 'static', icon: '🕑', text: pendingText, class: 'alert-info alert-black' });
       }
-      staticAlerts.push({ type: 'static', icon: '📅', text: `Fecha límite de cierre de planificación: <strong>&nbsp;${this.fechaCierre} </strong> &nbsp; (Faltan ${alerts.daysLeft} días)`, class: 'alert-date alert-black' });
     }
-    // Dinámicas
-    const dynamicAlertObjs = (dynamicAlerts || []).map(a => ({ type: 'dynamic', data: a }));
-    this.allAlerts = [...staticAlerts, ...dynamicAlertObjs];
-    if (this.verMasActivo) {
-      this.visibleAlerts = this.allAlerts;
+    
+    // Combinar alertas: prioritarias primero, luego las demás
+    const allStaticAlerts = [...priorityAlerts, ...staticAlerts];
+    
+    // Si es administrador, solo mostrar alertas estáticas (sin alertas dinámicas)
+    if (this.isAdmin) {
+      this.allAlerts = allStaticAlerts;
     } else {
-      this.visibleAlerts = this.allAlerts.slice(0, this.maxVisible);
+      // Si es jefe de sección, mostrar alertas estáticas + dinámicas
+      const dynamicAlertObjs = (dynamicAlerts || []).map(a => ({ type: 'dynamic', data: a }));
+      this.allAlerts = [...allStaticAlerts, ...dynamicAlertObjs];
     }
-    this.showVerMas = this.allAlerts.length > this.maxVisible;
-  }
-
-  verMasAlertas() {
-  this.visibleAlerts = this.allAlerts;
-  this.verMasActivo = true;
+    
+    // Mostrar todas las alertas directamente
+    this.visibleAlerts = this.allAlerts;
   }
 
   dismissDynamicAlert(id: string) {
     this.alertPanelService.dismissDynamicAlert(id);
     // Actualiza la lista visible después de cerrar
     this.allAlerts = this.allAlerts.filter(a => !(a.type === 'dynamic' && a.data.id === id));
-    if (this.verMasActivo) {
-      this.visibleAlerts = this.allAlerts;
-    } else {
-      this.visibleAlerts = this.allAlerts.slice(0, this.maxVisible);
-    }
-    if (this.allAlerts.length > this.maxVisible) {
-      this.showVerMas = true;
-    } else {
-      this.showVerMas = false;
-    }
-  }
-
-  verMenosAlertas() {
-    this.visibleAlerts = this.allAlerts.slice(0, this.maxVisible);
-    this.verMasActivo = false;
+    this.visibleAlerts = this.allAlerts;
   }
 
   verDetalles() {

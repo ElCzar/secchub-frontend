@@ -1,9 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { DashboardResponse, SystemStatusSummary, SectionsSummary } from '../models/dashboard.models';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
+  private readonly http = inject(HttpClient);
 
   getDashboard(): Observable<DashboardResponse> {
     const mockData: DashboardResponse = {
@@ -17,8 +21,23 @@ export class DashboardService {
     return of(this.getMockSystemStatus());
   }
 
+  /**
+   * Obtiene el resumen de todas las secciones desde el backend
+   */
   getSectionsSummary(): Observable<SectionsSummary> {
-    return of(this.getMockSectionsSummary());
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    
+    return this.http.get<any[]>(`${environment.apiUrl}/sections/summary`, { headers }).pipe(
+      map((sections: any[]) => ({
+        rows: sections.map(s => ({
+          sectionCode: s.name || s.sectionCode || 'N/A',
+          status: s.planningClosed ? 'CLOSED' : 'EDITING',
+          assignedClasses: s.assignedClasses || 0,
+          unconfirmedTeachers: s.unconfirmedTeachers || 0
+        }))
+      }))
+    );
   }
 
   private getMockSystemStatus(): SystemStatusSummary {

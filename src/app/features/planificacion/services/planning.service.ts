@@ -117,6 +117,94 @@ export class PlanningService {
     return this.http.get<any>(`${environment.apiUrl}/planning/conflicts`, { headers });
   }
 
+  /**
+   * Obtiene la cantidad de clases sin salón asignado para el administrador (todas las secciones)
+   */
+  getMissingRoomsCountForAdmin(): Observable<number> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-room`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+
+  /**
+   * Obtiene la cantidad de clases sin docente asignado para el administrador (todas las secciones)
+   */
+  getMissingTeachersCountForAdmin(): Observable<number> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+
+  /**
+   * Obtiene los conflictos de planificación para el administrador (todas las secciones)
+   */
+  getScheduleConflictsForAdmin(): Observable<any> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/admin/conflicts`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de clases sin salón para el administrador
+   */
+  getClassesWithoutRoomForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-room`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de clases sin docente para el administrador
+   */
+  getClassesWithoutTeacherForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de docentes sin confirmar disponibilidad para el administrador
+   */
+  getPendingConfirmationsForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/pending-confirmations`, { headers });
+  }
+
+  /**
+   * Obtiene las alertas del dashboard para el administrador (todas las secciones)
+   */
+  getDashboardAlertsForAdmin(): Observable<AlertPanelData> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/admin/dashboard/alerts`, { headers }).pipe(
+      map((response: any) => ({
+        missingTeachers: response.missingTeachers || 0,
+        missingRooms: response.missingRooms || 0,
+        pendingConfirmations: response.pendingConfirmations || 0,
+        scheduleConflicts: response.scheduleConflicts || 0,
+        daysLeft: response.daysLeft || 0,
+        endDate: response.endDate
+      }))
+    );
+  }
+
+  /**
+   * Obtiene el estado de planificaciones (abierta/cerradas) para el administrador
+   */
+  getPlanningStatusStats(): Observable<{ openCount: number; totalSections: number; closedCount: number }> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<{ openCount: number; totalSections: number; closedCount: number }>(
+      `${environment.apiUrl}/sections/planning-status-stats`, 
+      { headers }
+    );
+  }
+
   private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(

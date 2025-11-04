@@ -31,7 +31,7 @@
           ⚠️ <b>{{ extraWarningData?.name }}</b> excede su límite de horas
         </span>
   <div style="margin-bottom:-6px; font-size:1em;">
-          El docente es profesor de planta, su límite de horas es <span style="color:#d9534f; font-weight:bold;">{{ extraWarningData?.maxHours }}</span>
+          El docente es profesor de <b>{{ extraWarningData?.employmentTypeId === 1 ? 'planta' : 'cátedra' }}</b>, su límite de horas es <span style="color:#d9534f; font-weight:bold;">{{ extraWarningData?.maxHours }}</span>
         </div>
         <br>
         <div style="margin-top:12px;"></div>
@@ -41,9 +41,17 @@
           <span style="color: #d9534f; font-weight: bold;">Exceso: {{ extraWarningData?.excessHours }} horas</span>
         </div>
         <div style="margin-top:10px;"></div>
-        <div>
+        
+        <!-- Para profesores de PLANTA -->
+        <div *ngIf="extraWarningData?.employmentTypeId === 1">
           <b>Horas que se pagarán como planta:</b> {{ extraWarningData?.horasPlanta }}<br>
           <b>Horas que se pagarán como cátedra:</b> {{ extraWarningData?.horasCatedra }}
+        </div>
+        
+        <!-- Para profesores de CÁTEDRA -->
+        <div *ngIf="extraWarningData?.employmentTypeId === 2">
+          <b>Horas que se pagarán como cátedra:</b> {{ extraWarningData?.horasAdjuntNormales }}<br>
+          <b>Horas que se pagarán como extra de cátedra:</b> {{ extraWarningData?.horasAdjuntExtra }}
         </div>
       </div>
       <div style="text-align:center; margin: 32px 0 24px 0; font-size: 1.1em; font-weight: 500;">

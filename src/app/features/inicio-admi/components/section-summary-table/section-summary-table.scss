@@ -1,14 +1,18 @@
 .table-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   background: #fff;
-  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .table-card__title {
-  color: var(--brand-rojo);
-  font-size: var(--fs-h1);
-  margin-bottom: 8px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #c41d1d;
+  margin-bottom: 1rem;
 }
 
 .tabla-wrap { overflow-x: auto; }
@@ -16,20 +20,27 @@
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--fs-base);
+  font-size: 1rem;
 }
 
 .tabla th, .tabla td {
-  border-bottom: 1px solid var(--border);
-  padding: 10px 8px;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 0.85rem 0.5rem;
   text-align: left;
   white-space: nowrap;
+  color: #222;
 }
 
 .badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 2px 10px; border-radius: 999px; border: 1px solid transparent;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 2px 10px; 
+  border-radius: 999px; 
+  border: 1px solid transparent;
   font-weight: 600;
+  font-size: 1rem;
+  color: #222;
 }
 .badge--ok   { color: #16a34a; background: #ecfdf5; border-color: #86efac; }
 .badge--warn { color: #a16207; background: #fffbeb; border-color: #fde68a; }
@@ -45,13 +56,14 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  color: #222;
 }
 
 .btn--primary {

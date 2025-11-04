@@ -22,7 +22,23 @@ export interface ScheduleConflict {
     day: string;
     startTime: string;
     endTime: string;
+    section?: number;
+    sectionName?: string;
   }[];
+}
+
+export interface ClassWithoutResource {
+  id: number;
+  courseName: string;
+  section: number;
+  sectionName?: string;
+}
+
+export interface PendingConfirmation {
+  teacherName: string;
+  className: string;
+  section: number;
+  sectionName?: string;
 }
 
 export interface AlertPanelData {
@@ -31,8 +47,15 @@ export interface AlertPanelData {
   pendingConfirmations: number;
   scheduleConflicts: number;
   scheduleConflictDetails?: ScheduleConflict[];
+  classesWithoutTeacher?: ClassWithoutResource[];
+  classesWithoutRoom?: ClassWithoutResource[];
+  pendingConfirmationDetails?: PendingConfirmation[];
   daysLeft: number;
   endDate?: string;
+  planningStatus?: {
+    closedCount: number;
+    totalSections: number;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,21 +67,20 @@ export class AlertPanelService {
 
   private alertsSubject = new BehaviorSubject<AlertPanelData | null>(null);
   public alerts$: Observable<AlertPanelData | null> = this.alertsSubject.asObservable();
+  
+  // Guardar el estado de isAdmin para el polling
+  private isAdminMode: boolean = false;
 
   constructor(private planningService: PlanningService) {
     // Polling de respuestas docentes cada 30s
     interval(30000).subscribe(() => {
-      console.log('[AlertPanelService] Polling: fetchTeacherResponses');
       this.fetchTeacherResponses();
     });
-    console.log('[AlertPanelService] Init: fetchTeacherResponses');
     this.fetchTeacherResponses();
     // Polling de alertas generales cada 30s
     interval(30000).subscribe(() => {
-      console.log('[AlertPanelService] Polling: fetchAlerts');
-      this.updateAlerts();
+      this.updateAlerts(this.isAdminMode);
     });
-    this.updateAlerts();
   }
 
   // Obtiene y actualiza las alertas dinámicas de respuestas docentes
@@ -111,10 +133,11 @@ export class AlertPanelService {
     });
   }
 
-  public updateAlerts() {
-    this.fetchAlerts().subscribe({
+  public updateAlerts(isAdmin: boolean = false) {
+    // Guardar el modo actual para el polling
+    this.isAdminMode = isAdmin;
+    this.fetchAlerts(isAdmin).subscribe({
       next: (data) => {
-        console.log('[AlertPanelService] Emite alerts:', data);
         this.alertsSubject.next(data);
       },
       error: (err) => {
@@ -142,37 +165,111 @@ export class AlertPanelService {
     );
   }
 
-  private fetchAlerts(): Observable<AlertPanelData> {
-    // Consultar cantidad de clases sin docente y sin salón para la sección del jefe autenticado
-    return this.planningService.getMissingTeachersCountForSectionChief().pipe(
-      switchMap((missingTeachers: number) =>
-        this.planningService.getMissingRoomsCountForSectionChief().pipe(
-          switchMap((missingRooms: number) =>
-            this.planningService.getScheduleConflicts().pipe(
-              switchMap((conflicts: any) =>
-                this.planningService.getDashboardAlerts().pipe(
-                  map((alerts: AlertPanelData) => ({
-                    ...alerts,
-                    missingTeachers,
-                    missingRooms,
-                    scheduleConflictDetails: conflicts
-                  }))
-                )
-              ),
-              catchError(() => 
-                // Si falla la obtención de conflictos, continuar sin ellos
-                this.planningService.getDashboardAlerts().pipe(
-                  map((alerts: AlertPanelData) => ({
-                    ...alerts,
-                    missingTeachers,
-                    missingRooms
-                  }))
-                )
-              )
-            )
-          )
-        )
-      )
+  private fetchAlerts(isAdmin: boolean = false): Observable<AlertPanelData> {
+    // Si es administrador, usar endpoints globales; si no, usar endpoints de sección
+    const missingTeachers$ = isAdmin 
+      ? this.planningService.getMissingTeachersCountForAdmin()
+      : this.planningService.getMissingTeachersCountForSectionChief();
+    
+    const missingRooms$ = isAdmin
+      ? this.planningService.getMissingRoomsCountForAdmin()
+      : this.planningService.getMissingRoomsCountForSectionChief();
+    
+    const conflicts$ = isAdmin
+      ? this.planningService.getScheduleConflictsForAdmin()
+      : this.planningService.getScheduleConflicts();
+    
+    const dashboardAlerts$ = isAdmin
+      ? this.planningService.getDashboardAlertsForAdmin()
+      : this.planningService.getDashboardAlerts();
+
+    // Si es admin, obtener listas detalladas
+    const classesWithoutTeacher$ = isAdmin
+      ? this.planningService.getClassesWithoutTeacherForAdmin()
+      : of([]);
+    
+    const classesWithoutRoom$ = isAdmin
+      ? this.planningService.getClassesWithoutRoomForAdmin()
+      : of([]);
+    
+    const pendingConfirmations$ = isAdmin
+      ? this.planningService.getPendingConfirmationsForAdmin()
+      : of([]);
+    
+    const planningStatus$ = isAdmin
+      ? this.planningService.getPlanningStatusStats()
+      : of(null);
+    
+    return forkJoin({
+      missingTeachers: missingTeachers$,
+      missingRooms: missingRooms$,
+      conflicts: conflicts$.pipe(catchError(() => of([]))),
+      dashboardAlerts: dashboardAlerts$,
+      classesWithoutTeacher: classesWithoutTeacher$,
+      classesWithoutRoom: classesWithoutRoom$,
+      pendingConfirmations: pendingConfirmations$,
+      planningStatus: planningStatus$
+    }).pipe(
+      switchMap(results => {
+        // Enriquecer con nombres de sección si es admin
+        if (!isAdmin) {
+          return of({
+            ...results.dashboardAlerts,
+            missingTeachers: results.missingTeachers,
+            missingRooms: results.missingRooms,
+            scheduleConflictDetails: results.conflicts
+          });
+        }
+
+        // El backend ya devuelve sectionName, solo necesitamos usar ese campo directamente
+        
+        // Enriquecer clases sin docente
+        const enrichedWithoutTeacher = results.classesWithoutTeacher.map((c: any) => ({
+          id: c.id,
+          courseName: c.courseName || 'Sin nombre',
+          section: c.section,
+          sectionName: c.sectionName ? `Sección ${c.sectionName}` : `Sección ${c.section}`
+        }));
+
+        // Enriquecer clases sin salón
+        const enrichedWithoutRoom = results.classesWithoutRoom.map((c: any) => ({
+          id: c.id,
+          courseName: c.courseName || 'Sin nombre',
+          section: c.section,
+          sectionName: c.sectionName ? `Sección ${c.sectionName}` : `Sección ${c.section}`
+        }));
+
+        // Enriquecer confirmaciones pendientes
+        const enrichedPendingConfirmations = results.pendingConfirmations.map((p: any) => ({
+          teacherName: p.teacherName || 'Docente',
+          className: p.className || 'Clase',
+          section: p.section,
+          sectionName: p.sectionName ? `Sección ${p.sectionName}` : `Sección ${p.section}`
+        }));
+
+        // Enriquecer conflictos
+        const enrichedConflicts = results.conflicts.map((conflict: any) => ({
+          ...conflict,
+          conflictingClasses: conflict.conflictingClasses?.map((c: any) => ({
+            ...c,
+            sectionName: c.sectionName ? `Sección ${c.sectionName}` : `Sección ${c.section}`
+          }))
+        }));
+
+        return of({
+          ...results.dashboardAlerts,
+          missingTeachers: results.missingTeachers,
+          missingRooms: results.missingRooms,
+          scheduleConflictDetails: enrichedConflicts,
+          classesWithoutTeacher: enrichedWithoutTeacher,
+          classesWithoutRoom: enrichedWithoutRoom,
+          pendingConfirmationDetails: enrichedPendingConfirmations,
+          planningStatus: results.planningStatus ? {
+            closedCount: results.planningStatus.closedCount,
+            totalSections: results.planningStatus.totalSections
+          } : undefined
+        });
+      })
     );
   }
 }
