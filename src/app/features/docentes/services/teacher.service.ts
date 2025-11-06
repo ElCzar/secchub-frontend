@@ -44,9 +44,9 @@ export interface TeacherClass {
   providedIn: 'root'
 })
 export class TeacherService {
-  private baseUrl = `${environment.apiUrl}/teachers/classes`;
+  private readonly baseUrl = `${environment.apiUrl}/teacher-assignments`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   /**
    * Obtener todos los docentes con su información completa

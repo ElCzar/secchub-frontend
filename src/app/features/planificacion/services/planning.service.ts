@@ -732,17 +732,6 @@ export class PlanningService {
     );
   }
 
-  /**
-   * Detectar conflictos de horarios en un aula específica
-   */
-  detectScheduleConflicts(classroomId: number, day: string): Observable<ClassScheduleDTO[]> {
-    const params = new HttpParams()
-      .set('classroomId', classroomId.toString())
-      .set('day', day);
-    
-    return this.http.get<ClassScheduleDTO[]>(`${this.baseUrl}/schedules/conflicts`, { params });
-  }
-
   // ==========================================
   // GESTIÓN DE PROFESORES
   // ==========================================
@@ -832,17 +821,6 @@ export class PlanningService {
       .set('targetSemesterId', targetSemesterId.toString());
     
     return this.http.post<ClassDTO[]>(`${this.baseUrl}/duplicate`, null, { params });
-  }
-
-  // ==========================================
-  // REPORTES Y ESTADÍSTICAS
-  // ==========================================
-
-  /**
-   * Obtener estadísticas de utilización de aulas por semestre
-   */
-  getUtilizationStatistics(semesterId: number): Observable<{ [key: string]: any }> {
-    return this.http.get<{ [key: string]: any }>(`${this.baseUrl}/statistics/utilization/${semesterId}`);
   }
 
   // ==========================================
