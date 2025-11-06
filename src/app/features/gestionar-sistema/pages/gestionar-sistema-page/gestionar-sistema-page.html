@@ -176,15 +176,6 @@
 
     <div class="toolbar">
       <button class="btn btn--primary" type="button" (click)="addNewCourse()">+ Nueva Materia</button>
-      <button 
-        type="button" 
-        class="btn btn--primary"
-        (click)="savePlanningInfo()"
-        [class.btn--disabled]="!isPlanningFormValid()"
-        [disabled]="!isPlanningFormValid()"
-      >
-        Guardar cambios
-      </button>
     </div>
 
     <!-- Componente de tabla de materias -->
