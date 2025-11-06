@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { AlertPanelData } from '../../../core/services/alert-panel.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { environment } from '../../../../environments/environment';
@@ -75,10 +77,138 @@ export interface CourseOption {
   providedIn: 'root'
 })
 export class PlanningService {
+  /**
+   * Aplica solo las clases seleccionadas de un semestre anterior al semestre actual
+   * @param payload { semesterId: number, classIds: number[] }
+   */
+  applySelectedSemesterClasses(payload: { semesterId: number, classIds: number[] }): Observable<{message: string, classesApplied: number}> {
+    return this.http.post<{message: string, classesApplied: number}>(`${this.baseUrl}/semesters/apply-selected`, payload);
+  }
+  /**
+   * Obtiene la cantidad de clases sin salón asignado para el jefe de sección autenticado (JWT)
+   */
+  getMissingRoomsCountForSectionChief(): Observable<number> {
+    // Endpoint: /planning/classes/section-chief/without-room (JWT en header)
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/without-room`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+  /**
+   * Obtiene la cantidad de clases sin docente asignado para el jefe de sección autenticado (JWT)
+   */
+  getMissingTeachersCountForSectionChief(): Observable<number> {
+    // Endpoint: /planning/classes/section-chief/without-teacher (JWT en header)
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/classes/section-chief/without-teacher`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+
+  /**
+   * Obtiene los conflictos de planificación (docentes y salones con clases simultáneas)
+   * para el jefe de sección autenticado (JWT)
+   */
+  getScheduleConflicts(): Observable<any> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/conflicts`, { headers });
+  }
+
+  /**
+   * Obtiene la cantidad de clases sin salón asignado para el administrador (todas las secciones)
+   */
+  getMissingRoomsCountForAdmin(): Observable<number> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-room`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+
+  /**
+   * Obtiene la cantidad de clases sin docente asignado para el administrador (todas las secciones)
+   */
+  getMissingTeachersCountForAdmin(): Observable<number> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers }).pipe(
+      map((classes: any[]) => classes.length)
+    );
+  }
+
+  /**
+   * Obtiene los conflictos de planificación para el administrador (todas las secciones)
+   */
+  getScheduleConflictsForAdmin(): Observable<any> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/admin/conflicts`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de clases sin salón para el administrador
+   */
+  getClassesWithoutRoomForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-room`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de clases sin docente para el administrador
+   */
+  getClassesWithoutTeacherForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers });
+  }
+
+  /**
+   * Obtiene la lista completa de docentes sin confirmar disponibilidad para el administrador
+   */
+  getPendingConfirmationsForAdmin(): Observable<any[]> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/pending-confirmations`, { headers });
+  }
+
+  /**
+   * Obtiene las alertas del dashboard para el administrador (todas las secciones)
+   */
+  getDashboardAlertsForAdmin(): Observable<AlertPanelData> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<any>(`${environment.apiUrl}/planning/admin/dashboard/alerts`, { headers }).pipe(
+      map((response: any) => ({
+        missingTeachers: response.missingTeachers || 0,
+        missingRooms: response.missingRooms || 0,
+        pendingConfirmations: response.pendingConfirmations || 0,
+        scheduleConflicts: response.scheduleConflicts || 0,
+        daysLeft: response.daysLeft || 0,
+        endDate: response.endDate
+      }))
+    );
+  }
+
+  /**
+   * Obtiene el estado de planificaciones (abierta/cerradas) para el administrador
+   */
+  getPlanningStatusStats(): Observable<{ openCount: number; totalSections: number; closedCount: number }> {
+    const token = localStorage.getItem('accessToken');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    return this.http.get<{ openCount: number; totalSections: number; closedCount: number }>(
+      `${environment.apiUrl}/sections/planning-status-stats`, 
+      { headers }
+    );
+  }
+
   private readonly baseUrl = `${environment.apiUrl}/planning`;
 
   constructor(
-    private readonly http: HttpClient,
+  public readonly http: HttpClient,
     private readonly courseService: CourseService,
     private readonly classroomService: ClassroomService,
     private readonly semesterService: SemesterInformationService
@@ -623,6 +753,17 @@ export class PlanningService {
   getAvailableTeachers(requiredHours: number): Observable<TeacherDTO[]> {
     const params = new HttpParams().set('requiredHours', requiredHours.toString());
     return this.http.get<TeacherDTO[]>(`${this.baseUrl}/teachers/available`, { params });
+  }
+
+  /**
+   * Obtiene el límite máximo de horas de un profesor por su ID usando el endpoint /planning/teachers/{teacherId}/max-hours
+   */
+  getTeacherMaxHours(teacherId: number): Observable<number> {
+    return this.http.get<{ teacherId: number, name: string, maxHours: number }>(
+      `${this.baseUrl}/teachers/${teacherId}/max-hours`
+    ).pipe(
+      map(response => response.maxHours)
+    );
   }
 
   // ==========================================
@@ -1511,7 +1652,14 @@ export class PlanningService {
   /**
    * Asignar un docente a una clase
    */
-  assignTeacherToClass(classId: number, teacherId: number, workHours: number, observation?: string): Observable<TeacherDTO> {
+  assignTeacherToClass(
+    classId: number, 
+    teacherId: number, 
+    workHours: number, 
+    observation?: string,
+    fullTimeExtraHours?: number,
+    adjunctExtraHours?: number
+  ): Observable<TeacherDTO> {
     // Usar el endpoint real del módulo de integración en lugar del mock
     const assignmentUrl = `${environment.apiUrl}/teachers/classes`;
     
@@ -1519,17 +1667,16 @@ export class PlanningService {
       teacherId: teacherId,
       classId: classId,
       workHours: workHours,
+      fullTimeExtraHours: fullTimeExtraHours ?? 0,
+      adjunctExtraHours: adjunctExtraHours ?? 0,
       observation: observation || `Asignado desde planificación - ${new Date().toLocaleString()}`
     };
-
-    console.log(`🎯 Asignando docente ${teacherId} a clase ${classId} con ${workHours} horas usando endpoint real`);
-    console.log('Request body:', requestBody);
     
     return this.http.post<any>(`${assignmentUrl}`, requestBody).pipe(
       switchMap(() => {
         // Después de crear la asignación, obtener información del docente desde el servicio de administración
-        const teacherUrl = `${environment.apiUrl}/v1/teachers/${teacherId}`;
-        return this.http.get<any>(teacherUrl).pipe(
+  const teacherUrl = `${environment.apiUrl}/teachers/${teacherId}`;
+  return this.http.get<any>(teacherUrl).pipe(
           map(teacherInfo => ({
             id: teacherId,
             name: teacherInfo.name || 'Docente',
@@ -1665,5 +1812,78 @@ export class PlanningService {
       9: 'RECHAZADO'
     };
     return statusMap[statusId] || 'PENDIENTE';
+  }
+
+  /**
+   * Devuelve los datos agregados para el panel de alertas del jefe de sección (sin HU15)
+   */
+  getDashboardAlerts(): Observable<AlertPanelData> {
+    return this.getAllClassesWithSchedules().pipe(
+      switchMap((classes: any[]) => {
+        const missingTeachers = classes.filter((cls: any) => !cls.teacherAssigned || cls.teacherAssigned.length === 0).length;
+        const missingRooms = classes.filter((cls: any) => !cls.schedules || cls.schedules.length === 0 || cls.schedules.some((sch: any) => !sch.classroomId)).length;
+
+        // Para cada clase, obtener los docentes asignados y buscar statusId 4
+        const teacherStatusRequests = classes.map((cls: any) =>
+          this.http.get<any[]>(`${environment.apiUrl}/teachers/classes/class/${cls.id}`).pipe(
+            map((teacherClassList: any[]) => ({
+              classId: cls.id,
+              pendingCount: teacherClassList.filter(tc => tc.statusId === 4).length
+            })),
+            catchError(() => of({ classId: cls.id, pendingCount: 0 }))
+          )
+        );
+
+        return forkJoin(teacherStatusRequests).pipe(
+          switchMap((statusResults: any[]) => {
+            // Contar la cantidad total de docentes pendientes (statusId 4)
+            const pendingConfirmations = statusResults.reduce((acc, r) => acc + r.pendingCount, 0);
+
+            const scheduleConflicts = classes.filter((cls: any) => {
+              if (!cls.schedules || cls.schedules.length < 2) return false;
+              const seen = new Set();
+              return cls.schedules.some((sch: any) => {
+                const key = `${sch.day}-${sch.startTime}-${sch.endTime}`;
+                if (seen.has(key)) return true;
+                seen.add(key);
+                return false;
+              });
+            }).length;
+            return this.getCurrentSemesterIdObservable().pipe(
+              switchMap(semesterId => {
+                if (!semesterId) return of({
+                  missingTeachers,
+                  missingRooms,
+                  pendingConfirmations,
+                  scheduleConflicts,
+                  daysLeft: 0,
+                  endDate: undefined
+                });
+                return this.semesterService.getCurrentSemester().pipe(
+                  map((sem: any) => {
+                    let daysLeft = 0;
+                    let endDate = undefined;
+                    if (sem && sem.endDate) {
+                      const end = new Date(sem.endDate);
+                      const now = new Date();
+                      daysLeft = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+                      endDate = sem.endDate;
+                    }
+                    return {
+                      missingTeachers,
+                      missingRooms,
+                      pendingConfirmations,
+                      scheduleConflicts,
+                      daysLeft,
+                      endDate
+                    };
+                  })
+                );
+              })
+            );
+          })
+        );
+      })
+    );
   }
 }

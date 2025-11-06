@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AlertPanelComponent } from '../../../../shared/components/alert-panel/alert-panel.component';
 import { Component, inject, OnInit } from '@angular/core';
 import { SectionDashboardService } from '../../services/section-dashboard.service';
 import { TaskStatusCard } from '../../components/task-status-card/task-status-card';
@@ -13,7 +14,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-inicio-seccion-page',
-  imports: [CommonModule, TaskStatusCard, ProgressSummaryTable, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent, PopUpCerrarPlanificacion],
+  imports: [CommonModule, AccesosRapidosSeccion, SidebarToggleButtonComponent, HeaderComponent, PopUpCerrarPlanificacion, AlertPanelComponent],
   templateUrl: './inicio-seccion-page.html',
   styleUrls: ['./inicio-seccion-page.scss']
 })

@@ -1,3 +1,25 @@
+.annual-class-label {
+  font-size: var(--fs-base);
+  color: #e74c3c;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 4px 0 0 0;
+}
+.annual-class {
+  border: 2px solid #e74c3c !important;
+  background: #fff0f0 !important;
+  box-shadow: 0 0 0 2px #e74c3c33;
+}
+.annual-warning-inline {
+  font-size: var(--fs-base);
+  color: #e74c3c;
+  background: #fff0f0;
+  border: 1px solid #e74c3c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+}
 /* =========================================================
    POPUP DUPLICACIÓN SEMESTRES
    Estilos para el modal de duplicación de semestres anteriores
@@ -206,6 +228,7 @@
 
 /* Elemento de clase individual */
 .class-item {
+  position: relative;
   background: #f8fafc;
   border: 1px solid var(--border);
   border-radius: 8px;

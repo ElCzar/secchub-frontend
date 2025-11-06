@@ -15,17 +15,17 @@
 
     <main class="content">
       
+      <!-- Panel de alertas real -->
+      <app-alert-panel [isAdmin]="true"></app-alert-panel>
+
+      <!-- Tabla de resumen por sección -->
+      <ng-container *ngIf="sectionsSummary">
+        <app-section-summary-table [data]="sectionsSummary"></app-section-summary-table>
+      </ng-container>
 
       <!-- Tarjeta superior -->
       <ng-container *ngIf="systemStatus">
         <app-system-status-card [data]="systemStatus"></app-system-status-card>
-      </ng-container>
-
-     
-
-      <!-- Tabla por sección -->
-      <ng-container *ngIf="sectionsSummary">
-        <app-section-summary-table [data]="sectionsSummary"></app-section-summary-table>
       </ng-container>
     </main>
   </div>

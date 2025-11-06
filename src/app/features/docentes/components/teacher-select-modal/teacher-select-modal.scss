@@ -1,4 +1,5 @@
 /* Modal overlay */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -10,6 +11,11 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
+
+/* Modal de advertencia de horas extra debe estar delante */
+.modal-overlay.extra-warning {
+  z-index: 1200;
 }
 
 /* Modal content */
@@ -114,6 +120,7 @@
 .actions-section {
   display: flex;
   justify-content: center;
+  gap: 1.5rem;
   margin-bottom: 30px;
 }
 

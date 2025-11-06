@@ -1,4 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TeacherAssignmentService } from '../../../planificacion/services/teacher-assignment.service';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +8,7 @@ import { Docente } from '../../models/docente.model';
 import { ConfirmationTeachers } from '../confirmation-teachers/confirmation-teachers';
 import { HourLimitWarning } from '../hour-limit-warning/hour-limit-warning';
 import { SelectedTeachers } from '../../../planificacion/services/selected-teachers';
+import { TeacherSelectModalUtil } from './teacher-select-modal.util';
 
 @Component({
   selector: 'app-teacher-select-modal',
@@ -28,7 +31,18 @@ export class TeacherSelectModal {
   selectedDocentes: Docente[] = [];
   workHoursToAssign: number = 4; // Horas por defecto para una clase
 
-  constructor(private readonly router: Router, private readonly selectedTeachersService: SelectedTeachers) {}
+  // Estado para advertencia de horas extra
+  showExtraWarningModal: boolean = false;
+  extraWarningData: any = null;
+  acceptExtra: boolean = false;
+
+  constructor(
+    private readonly router: Router,
+    private readonly selectedTeachersService: SelectedTeachers,
+    private readonly teacherAssignmentService: TeacherAssignmentService,
+    private readonly http: HttpClient,
+    private readonly teacherSelectModalUtil: TeacherSelectModalUtil
+  ) {}
 
   get hasClasses(): boolean {
     return !!(this.docente?.classes && this.docente.classes.length > 0);
@@ -51,10 +65,116 @@ export class TeacherSelectModal {
   }
 
   selectDocente() {
+    if (!this.docente) return;
+    const teacherId = this.docente.id;
+    const toAssign = typeof this.workHoursToAssign === 'number' ? this.workHoursToAssign : 0;
+    
+    this.http.get<any>(`http://localhost:8080/planning/teachers/${teacherId}/max-hours`).subscribe({
+      next: (data) => {
+        const {
+          maxHours,
+          assignedHours,
+          employmentTypeId,
+          exceedsMaxHours,
+          name
+        } = data;
+        const sumaTotal = assignedHours + toAssign;
+        
+        // PROFESORES DE PLANTA (employmentTypeId === 1)
+        if (employmentTypeId === 1) {
+          // Caso 2.1: No excede y la suma total no supera el límite
+          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
+            this.proceedWithSelection();
+          } else {
+            // Modal de advertencia para planta
+            let horasPlanta = 0;
+            let horasCatedra = 0;
+            
+            // Caso 2.2: No excede aún, pero la suma total superaría el límite
+            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
+              horasPlanta = Math.max(0, maxHours - assignedHours);
+              horasCatedra = toAssign - horasPlanta;
+            } 
+            // Caso 2.3: Ya excede el límite de horas
+            else if (exceedsMaxHours === 1) {
+              horasPlanta = 0;
+              horasCatedra = toAssign;
+            }
+            
+            this.extraWarningData = {
+              maxHours,
+              assignedHours,
+              toAssign,
+              name,
+              horasPlanta,
+              horasCatedra,
+              horasAdjuntNormales: 0,
+              horasAdjuntExtra: 0,
+              excessHours: sumaTotal - maxHours,
+              employmentTypeId
+            };
+            this.showExtraWarningModal = true;
+          }
+        } 
+        // PROFESORES DE CÁTEDRA (employmentTypeId === 2)
+        else if (employmentTypeId === 2) {
+          // Caso 2.1: No excede y la suma total no supera el límite
+          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
+            this.proceedWithSelection();
+          } else {
+            // Modal de advertencia para cátedra
+            let horasAdjuntNormales = 0;
+            let horasAdjuntExtra = 0;
+            
+            // Caso 2.2: No excede aún, pero la suma total superaría el límite
+            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
+              horasAdjuntNormales = Math.max(0, maxHours - assignedHours);
+              horasAdjuntExtra = toAssign - horasAdjuntNormales;
+            } 
+            // Caso 2.3: Ya excede el límite de horas
+            else if (exceedsMaxHours === 1) {
+              horasAdjuntNormales = 0;
+              horasAdjuntExtra = toAssign;
+            }
+            
+            this.extraWarningData = {
+              maxHours,
+              assignedHours,
+              toAssign,
+              name,
+              horasPlanta: 0,
+              horasCatedra: 0,
+              horasAdjuntNormales,
+              horasAdjuntExtra,
+              excessHours: sumaTotal - maxHours,
+              employmentTypeId
+            };
+            this.showExtraWarningModal = true;
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error consultando max-hours:', err);
+      }
+    });
+  }
+  // Acciones del modal de advertencia de horas extra
+  onExtraWarningAccept() {
+    this.acceptExtra = true;
+    this.showExtraWarningModal = false;
+    
+    // Mostrar pantalla de confirmación directamente
     if (this.docente) {
-      // Verificar las horas del docente antes de proceder
-      this.checkTeacherWorkloadAndProceed();
+      this.showConfirmationModal = true;
+      this.selectedDocentes = [this.docente];
     }
+  }
+
+  onExtraWarningCancel() {
+  this.showExtraWarningModal = false;
+  this.acceptExtra = false;
+  this.closeModal();
+  // Cierra también el modal principal de asignar
   }
 
   private checkTeacherWorkloadAndProceed() {
@@ -94,16 +214,19 @@ export class TeacherSelectModal {
   }
 
   onHourWarningCancelled() {
-    this.showHourWarningModal = false;
-    // No hacer nada, mantener el modal principal abierto
+  this.showHourWarningModal = false;
+  this.closeModal();
+  // Cierra también el modal principal de asignar
   }
 
   onConfirmationClosed() {
-    this.showConfirmationModal = false;
+  this.showConfirmationModal = false;
+  this.closeModal();
   }
 
   onCancelSelection() {
-    this.showConfirmationModal = false;
+  this.showConfirmationModal = false;
+  this.closeModal();
   }
 
   onAddAnotherTeacher() {
@@ -115,29 +238,60 @@ export class TeacherSelectModal {
 
   onContinueToPlanning(teachers?: Docente[]) {
     this.showConfirmationModal = false;
-    
-    // Usar los docentes del parámetro o los del estado interno
-    const docentesToSave = teachers || this.selectedDocentes;
-    
-    // Guardamos los docentes seleccionados en el servicio
-    if (docentesToSave.length > 0) {
-      // Usar el classKey proporcionado o crear uno temporal
-      const key = this.classKey || `temp-class-${Date.now()}`;
-      console.log('Guardando docentes:', docentesToSave, 'con key:', key);
+    // Aquí se realiza la asignación final
+    if (this.docente && this.classInfo?.semesterId && this.classInfo?.id) {
+      const token = localStorage.getItem('accessToken');
       
-      // Incluir el rowIndex en la información de clase
-      const classInfoWithIndex = {
-        ...this.classInfo,
-        rowIndex: this.classInfo?.rowIndex
-      };
+      // Guardar selección y navegar (SIN hacer POST aquí, se hará en planificacion-page)
+      const docentesToSave = teachers || this.selectedDocentes;
       
-      this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
+      if (docentesToSave.length > 0) {
+        // Agregar datos de horas extra al primer docente si hay advertencia
+        if (docentesToSave[0] && this.extraWarningData) {
+          (docentesToSave[0] as any).extraHoursData = {
+            horasPlanta: this.extraWarningData.horasPlanta,
+            horasCatedra: this.extraWarningData.horasCatedra,
+            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
+            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
+            employmentTypeId: this.extraWarningData.employmentTypeId
+          };
+        }
+        
+        const key = this.classKey || `temp-class-${Date.now()}`;
+        const classInfoWithIndex = {
+          ...this.classInfo,
+          rowIndex: this.classInfo?.rowIndex
+        };
+        this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
+        this.router.navigate(['/planificacion']);
+      }
+      this.closeModal();
+    } else {
+      // Guardamos los docentes seleccionados en el servicio y navegamos
+      const docentesToSave = teachers || this.selectedDocentes;
       
-      // Navegamos a la página de planificación
-      this.router.navigate(['/planificacion']);
+      if (docentesToSave.length > 0) {
+        // Agregar datos de horas extra al primer docente si hay advertencia
+        if (docentesToSave[0] && this.extraWarningData) {
+          (docentesToSave[0] as any).extraHoursData = {
+            horasPlanta: this.extraWarningData.horasPlanta,
+            horasCatedra: this.extraWarningData.horasCatedra,
+            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
+            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
+            employmentTypeId: this.extraWarningData.employmentTypeId
+          };
+        }
+        
+        const key = this.classKey || `temp-class-${Date.now()}`;
+        const classInfoWithIndex = {
+          ...this.classInfo,
+          rowIndex: this.classInfo?.rowIndex
+        };
+        this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
+        this.router.navigate(['/planificacion']);
+      }
+      this.closeModal();
     }
-    
-    this.closeModal();
   }
 
   agregarObservacion() {

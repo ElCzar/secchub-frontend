@@ -1,5 +1,6 @@
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { SectionRow, SectionsSummary } from '../../models/dashboard.models';
 
 @Component({
@@ -9,15 +10,17 @@ import { SectionRow, SectionsSummary } from '../../models/dashboard.models';
   styleUrls: ['./section-summary-table.scss']
 })
 export class SectionSummaryTable {
+  private router = inject(Router);
   @Input() data!: SectionsSummary;
 
   onView(row: SectionRow) {
-    // Navegación según tu app (puedes inyectar Router si prefieres):
-    window.location.href = `/sections/${row.sectionCode}`;
+    // Navegar a la pantalla de planificación del jefe de sección
+    this.router.navigate(['/inicio-seccion']);
   }
 
   onEnter(row: SectionRow) {
-    window.location.href = `/sections/${row.sectionCode}/edit`;
+    // Navegar a la pantalla de planificación del jefe de sección
+    this.router.navigate(['/inicio-seccion']);
   }
 
 }

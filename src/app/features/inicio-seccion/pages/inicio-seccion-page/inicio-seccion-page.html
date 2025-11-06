@@ -15,16 +15,9 @@
     <div class="hr-line"></div>
 
     <main class="content">
-      <!-- Resumen de alertas y tareas pendientes -->
-      <ng-container *ngIf="taskStatus$ | async as taskStatus">
-        <app-task-status-card [data]="taskStatus"></app-task-status-card>
-      </ng-container>
 
-      
-      <!-- Resumen de progreso -->
-      <ng-container *ngIf="progressStatus$ | async as progress">
-        <app-progress-summary-table [data]="progress"></app-progress-summary-table>
-      </ng-container>
+      <!-- Panel de alertas en tiempo real -->
+      <app-alert-panel></app-alert-panel>
 
       <!-- Botón de cerrar planificación -->
       <div class="page-actions">

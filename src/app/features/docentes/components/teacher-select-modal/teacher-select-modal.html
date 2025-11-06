@@ -1,3 +1,69 @@
+<!-- Confirmation Modal -->
+<app-confirmation-teachers
+  [showModal]="showConfirmationModal"
+  [selectedDocentes]="selectedDocentes"
+  (modalClosed)="onConfirmationClosed()"
+  (cancelSelection)="onCancelSelection()"
+  (addAnotherTeacher)="onAddAnotherTeacher()"
+  (continueToPlanning)="onContinueToPlanning($event)">
+</app-confirmation-teachers>
+
+<!-- Hour Warning Modal -->
+<app-hour-limit-warning
+  [showModal]="showHourWarningModal"
+  [docente]="docente"
+  [workHoursToAssign]="workHoursToAssign"
+  (modalClosed)="onHourWarningClosed()"
+  (confirmAssignment)="onHourWarningConfirmed()"
+  (cancelAssignment)="onHourWarningCancelled()">
+</app-hour-limit-warning>
+
+<!-- Extra Hours Warning Modal (debe ir al final para sobrescribir el resto) -->
+<div class="modal-overlay extra-warning" *ngIf="showExtraWarningModal" (click)="onExtraWarningCancel()" (keydown.escape)="onExtraWarningCancel()">
+  <div class="modal-content" style="max-width: 520px; min-width: 400px; max-height: 520px; padding: 18px 18px; margin: 0 auto;" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Advertencia de horas extra</h2>
+      <button class="modal-close" (click)="onExtraWarningCancel()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 18px;">
+        <span style="font-size:1.1em; font-weight:bold; display:inline-block; margin-bottom:8px;">
+          ⚠️ <b>{{ extraWarningData?.name }}</b> excede su límite de horas
+        </span>
+  <div style="margin-bottom:-6px; font-size:1em;">
+          El docente es profesor de <b>{{ extraWarningData?.employmentTypeId === 1 ? 'planta' : 'cátedra' }}</b>, su límite de horas es <span style="color:#d9534f; font-weight:bold;">{{ extraWarningData?.maxHours }}</span>
+        </div>
+        <br>
+        <div style="margin-top:12px;"></div>
+        <div>
+          Horas asignadas actualmente: <b>{{ extraWarningData?.assignedHours }}</b><br>
+          Horas de la clase seleccionada: <b>{{ extraWarningData?.toAssign }}</b><br>
+          <span style="color: #d9534f; font-weight: bold;">Exceso: {{ extraWarningData?.excessHours }} horas</span>
+        </div>
+        <div style="margin-top:10px;"></div>
+        
+        <!-- Para profesores de PLANTA -->
+        <div *ngIf="extraWarningData?.employmentTypeId === 1">
+          <b>Horas que se pagarán como planta:</b> {{ extraWarningData?.horasPlanta }}<br>
+          <b>Horas que se pagarán como cátedra:</b> {{ extraWarningData?.horasCatedra }}
+        </div>
+        
+        <!-- Para profesores de CÁTEDRA -->
+        <div *ngIf="extraWarningData?.employmentTypeId === 2">
+          <b>Horas que se pagarán como cátedra:</b> {{ extraWarningData?.horasAdjuntNormales }}<br>
+          <b>Horas que se pagarán como extra de cátedra:</b> {{ extraWarningData?.horasAdjuntExtra }}
+        </div>
+      </div>
+      <div style="text-align:center; margin: 32px 0 24px 0; font-size: 1.1em; font-weight: 500;">
+        ¿Desea continuar?
+      </div>
+  <div class="actions-section" style="margin-bottom: 0px;">
+        <button type="button" class="btn btn--primary" (click)="onExtraWarningAccept()">Aceptar</button>
+        <button type="button" class="btn btn--secondary" (click)="onExtraWarningCancel()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
     <div class="modal-header">
