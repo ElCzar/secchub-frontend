@@ -14,6 +14,7 @@ import { HeaderComponent } from "../../../../layouts/header/header.component";
 import { CourseInformationService } from '../../../../shared/services/course-information.service';
 import { SectionInformationService } from '../../../../shared/services/section-information.service';
 import { ParametricService } from '../../../../shared/services/parametric.service';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
 import { ModalityDTO, ClassroomTypeDTO } from '../../../../shared/model/dto/parametric';
 import { SectionResponseDTO } from '../../../../shared/model/dto/admin/SectionResponseDTO.model';
 import { AcademicRequestResponseDTO, RequestScheduleResponseDTO } from '../../../formulario-programas/models/academic-request.models';
@@ -91,6 +92,9 @@ export class SolicitudProgramasPages implements OnInit {
   // Section cache for mapping section IDs to section details
   private readonly sectionsMap = new Map<number, SectionResponseDTO>();
   
+  // User cache for mapping user IDs to full name
+  private readonly usersMap = new Map<number, string>();
+  
   // Parametric data caches
   private readonly modalitiesMap = new Map<number, ModalityDTO>();
   private readonly classroomTypesMap = new Map<number, ClassroomTypeDTO>();
@@ -103,7 +107,8 @@ export class SolicitudProgramasPages implements OnInit {
     private readonly planningService: PlanningService,
     private readonly courseInformationService: CourseInformationService,
     private readonly sectionInformationService: SectionInformationService,
-    private readonly parametricService: ParametricService
+    private readonly parametricService: ParametricService,
+    private readonly userInformationService: UserInformationService
   ) {}
 
   ngOnInit(): void {
@@ -145,23 +150,57 @@ export class SolicitudProgramasPages implements OnInit {
         .map(r => r.courseId)
         .filter(id => !!id && !this.coursesMap.has(id as number)) as number[]));
 
+      const handleAfterCourseFetch = () => {
+        // Determine which user IDs are missing from the local cache
+        const missingUserIds = Array.from(new Set(list
+          .map(r => r.userId)
+          .filter(id => !!id && !this.usersMap.has(id as number)) as number[]));
+
+        if (missingUserIds.length > 0) {
+          const userFetches = missingUserIds.map(id => this.userInformationService.getUserInformationById(id));
+          forkJoin(userFetches).subscribe({
+            next: (users) => {
+              users.forEach((u, idx) => {
+                const id = missingUserIds[idx];
+                if (u && (u as any).id != null) {
+                  const name = `${(u as any).name || ''}`.trim();
+                  const lastName = `${(u as any).lastName || ''}`.trim();
+                  const full = `${name} ${lastName}`.trim();
+                  this.usersMap.set(id, full || `Usuario ${id}`);
+                } else {
+                  this.usersMap.set(id, `Usuario ${id}`);
+                }
+              });
+              this.mapRequestsToRows(list);
+            },
+            error: () => {
+              // Still map with whatever cache we have
+              this.mapRequestsToRows(list);
+            }
+          });
+        } else {
+          this.mapRequestsToRows(list);
+        }
+      };
+
       if (missingCourseIds.length > 0) {
-        // Fetch missing courses in parallel, then map rows
+        // Fetch missing courses in parallel, then fetch missing users and map rows
         const fetches = missingCourseIds.map(id => this.courseInformationService.findCourseById(id));
         forkJoin(fetches).subscribe({
           next: (courses) => {
             courses.forEach(c => {
               if (c && c.id != null) this.coursesMap.set(c.id, c);
             });
-            this.mapRequestsToRows(list);
+            handleAfterCourseFetch();
           },
           error: () => {
-            // If a fetch fails, still try to map with whatever cache we have
-            this.mapRequestsToRows(list);
+            // If a fetch fails, still try to map with whatever cache we have and then fetch users
+            handleAfterCourseFetch();
           }
         });
       } else {
-        this.mapRequestsToRows(list);
+        // No missing courses -> go fetch users (if any) then map
+        handleAfterCourseFetch();
       }
     });
   }
@@ -216,7 +255,8 @@ export class SolicitudProgramasPages implements OnInit {
 
       const mappedRow: SolicitudRow = {
         id: r.id,
-        program: sectionName || r.programName || `Usuario ${r.userId}`,
+        // Prefer showing the user's full name (if we resolved it), otherwise fall back to section/program or generic label
+        program: (r.userId ? this.usersMap.get(r.userId as number) : undefined) || sectionName || r.programName || `Usuario ${r.userId}`,
         materia: r.courseName || `Curso ${r.courseId}`,
         cupos: r.capacity,
         startDate: r.startDate,

@@ -107,6 +107,26 @@
                   required
                 />
               </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-special-week">
+                  Semana Especial (Receso/Semana Santa):
+                  <span class="optional-label">(Opcional)</span>
+                </label>
+                <input 
+                  id="new-special-week"
+                  type="date" 
+                  [(ngModel)]="newSemester.startSpecialWeek"
+                  class="form-input"
+                  [min]="newSemester.startDate"
+                  [max]="newSemester.endDate"
+                  placeholder="Primer día de la semana especial"
+                  title="Si hay una semana de receso o semana santa dentro del semestre, indique el primer día. Se restará automáticamente 1 semana del cálculo de semanas totales."
+                />
+                <small class="form-help-text">
+                  Si el semestre incluye una semana de receso o semana santa, indique el primer día. Se restará automáticamente del cálculo de semanas.
+                </small>
+              </div>
             </div>
             
             <div class="form-actions">

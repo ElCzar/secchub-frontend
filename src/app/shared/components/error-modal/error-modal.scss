@@ -1,0 +1,35 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+}
+.modal {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.modal-title {
+  margin: 0 0 8px 0;
+  color: #b00020; /* rojo suave para error */
+}
+.modal-body {
+  margin-bottom: 16px;
+}
+.modal-actions {
+  text-align: right;
+}
+.btn-ok {
+  background: #b00020;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}

@@ -64,7 +64,8 @@ export class GestionarSistemaPage implements OnInit, OnDestroy {
     period: 1,
     year: new Date().getFullYear(),
     startDate: '',
-    endDate: ''
+    endDate: '',
+    startSpecialWeek: '' // Fecha de inicio de semana especial
   };
 
   // Success modal
@@ -313,7 +314,8 @@ export class GestionarSistemaPage implements OnInit, OnDestroy {
       period: 1,
       year: new Date().getFullYear(),
       startDate: '',
-      endDate: ''
+      endDate: '',
+      startSpecialWeek: ''
     };
   }
 

@@ -54,6 +54,12 @@
     font-weight: 700;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
+    
+    .required {
+      color: #dc2626;
+      font-weight: bold;
+      margin-left: 2px;
+    }
   }
 
   tbody td {

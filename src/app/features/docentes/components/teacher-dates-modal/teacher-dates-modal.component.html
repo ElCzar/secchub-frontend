@@ -1,0 +1,74 @@
+<div *ngIf="isVisible" class="modal-overlay" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>Configurar Fechas de Dictado</h3>
+      <button type="button" class="close-button" (click)="onCancel()">
+        <span>&times;</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="teacher-info" *ngIf="data">
+        <h4>{{ data.teacherName }}</h4>
+        <p class="class-name">{{ data.className }}</p>
+      </div>
+
+      <div class="form-group">
+        <label for="startDate">Fecha de Inicio:</label>
+        <input
+          type="date"
+          id="startDate"
+          [(ngModel)]="startDate"
+          (change)="onStartDateChange()"
+          [min]="data?.semesterStartDate"
+          [max]="data?.semesterEndDate"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">Fecha de Fin:</label>
+        <input
+          type="date"
+          id="endDate"
+          [(ngModel)]="endDate"
+          (change)="onEndDateChange()"
+          [min]="data?.semesterStartDate"
+          [max]="data?.semesterEndDate"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="semester-info" *ngIf="data">
+        <p class="text-muted">
+          <small>
+            Período del semestre: 
+            {{ formatDate(data.semesterStartDate) }} - 
+            {{ formatDate(data.semesterEndDate) }}
+          </small>
+        </p>
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        <i class="error-icon">⚠️</i>
+        {{ error }}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        (click)="onConfirm()"
+        [disabled]="!startDate || !endDate || !!error"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

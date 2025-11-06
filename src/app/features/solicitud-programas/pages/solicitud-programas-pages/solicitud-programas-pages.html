@@ -45,8 +45,8 @@
       <section class="tabla-placeholder">
         <table class="tabla">
           <thead>
-            <tr>
-              <th><input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()"></th>
+              <tr>
+              <th><input type="checkbox" class="select-checkbox" [checked]="allSelected" (change)="toggleSelectAll()"></th>
               <th>Acciones</th>
               <th>Programa</th>
               <th>Materia</th>
@@ -61,9 +61,18 @@
               <tr [class.is-deleted]="row._state==='deleted'"
                   [class.is-accepted]="row.accepted"
                   [class.is-combined]="row.combined">
-                <td><input type="checkbox" [(ngModel)]="row.selected"></td>
+                <td><input type="checkbox" class="select-checkbox" [(ngModel)]="row.selected"></td>
                 <td>
-                  <button type="button" class="btn-icon" (click)="removeRow(i)">−</button>
+                  <button type="button" class="btn-icon" aria-label="Eliminar solicitud" title="Eliminar" (click)="removeRow(i)">
+                    <!-- trash icon -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                      <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
                 </td>
                 <td>
                   {{ row.program }}

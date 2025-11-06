@@ -107,3 +107,11 @@
   (modalClosed)="closeModal()"
   (docenteSelected)="onDocenteSelected($event)">
 </app-teacher-select-modal>
+
+<!-- Modal de selección de fechas para el profesor -->
+<app-teacher-dates-modal
+  [isVisible]="showDatesModal"
+  [data]="datePopupData"
+  (datesSelected)="onTeacherDatesSelected($event)"
+  (modalClosed)="closeDatesModal()">
+</app-teacher-dates-modal>

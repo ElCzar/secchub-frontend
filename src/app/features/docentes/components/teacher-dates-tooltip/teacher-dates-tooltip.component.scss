@@ -1,0 +1,161 @@
+.tooltip-container {
+  position: fixed;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  max-width: 280px;
+  min-width: 220px;
+  font-size: 0.9rem;
+  color: #333;
+  transform: translateX(-50%) translateY(-100%);
+  margin-top: -10px; // Space for arrow
+}
+
+.tooltip-header {
+  padding: 0.75rem 1rem 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    text-align: center;
+  }
+}
+
+.tooltip-body {
+  padding: 1rem;
+}
+
+.dates-info {
+  .date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #6c757d;
+    }
+
+    .value {
+      font-weight: 600;
+      color: #495057;
+    }
+  }
+}
+
+.no-dates-info {
+  text-align: center;
+
+  .warning {
+    margin: 0;
+    color: #856404;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+
+    .warning-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+.tooltip-footer {
+  padding: 0.5rem 1rem 0.75rem;
+  text-align: center;
+
+  .btn-edit {
+    background: none;
+    border: 1px solid #007bff;
+    color: #007bff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+
+    &:hover {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .edit-icon {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.tooltip-arrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid white;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: -7px;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid #e0e0e0;
+  }
+}
+
+// Animation for smooth appearance
+.tooltip-container {
+  animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-100%);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .tooltip-container {
+    max-width: 250px;
+    min-width: 200px;
+    font-size: 0.85rem;
+  }
+
+  .tooltip-header h4 {
+    font-size: 0.9rem;
+  }
+
+  .tooltip-footer .btn-edit {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.7rem;
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,12 @@ import { SelectedTeachers } from '../../services/selected-teachers';
 import { ObservacionesModal } from '../observaciones-modal/observaciones-modal';
 import { PlanningService } from '../../services/planning.service';
 import { TeacherAssignmentService } from '../../services/teacher-assignment.service';
+import { TeacherDatesService } from '../../../docentes/services/teacher-dates.service';
+import { TeacherDatesTooltipComponent } from '../../../docentes/components/teacher-dates-tooltip/teacher-dates-tooltip.component';
+import { TeacherDatesModalComponent } from '../../../docentes/components/teacher-dates-modal/teacher-dates-modal.component';
+import { TeacherClassWithDates, TeacherDatePopupData, TeacherDatesRequest } from '../../../docentes/models/teacher-dates.model';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
 import { firstValueFrom } from 'rxjs';
 
 // Interfaz para las opciones de curso en el autocompletado
@@ -19,13 +25,13 @@ export interface CourseOption {
 @Component({
   selector: 'app-planning-classes-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal],
+  imports: [CommonModule, FormsModule, SchedulesTableRoom, ObservacionesModal, TeacherDatesTooltipComponent, TeacherDatesModalComponent],
   templateUrl: './planning-classes-table.html',
   styleUrls: ['./planning-classes-table.scss'],
   providers: [DatePipe]
 })
 
-export class PlanningClassesTable {
+export class PlanningClassesTable implements OnInit {
   @Input() rows: PlanningRow[] = [];
   @Output() patchRow = new EventEmitter<{ index: number; data: Partial<PlanningRow> }>();
   @Output() addRow = new EventEmitter<void>();
@@ -38,7 +44,9 @@ export class PlanningClassesTable {
     private readonly selectedTeachersService: SelectedTeachers,
     private readonly planningService: PlanningService,
     private readonly teacherAssignmentService: TeacherAssignmentService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly teacherDatesService: TeacherDatesService,
+    private readonly semesterInformationService: SemesterInformationService
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
     
@@ -161,6 +169,37 @@ export class PlanningClassesTable {
   currentObservations: string[] = [];
   currentRowIndex = -1;
 
+  // Propiedades para el tooltip de fechas de docentes
+  showTeacherTooltip = false;
+  tooltipTeacherData: TeacherClassWithDates | null = null;
+  tooltipPosition = { x: 0, y: 0 };
+  private tooltipTimeout: any = null;
+
+  // Propiedades para el modal de fechas de docentes
+  showDatesModal = false;
+  datePopupData: TeacherDatePopupData | null = null;
+  
+  // Información del semestre actual
+  currentSemester: SemesterResponseDTO | null = null;
+
+  ngOnInit() {
+    this.loadCurrentSemester();
+  }
+
+  private loadCurrentSemester() {
+    this.semesterInformationService.getCurrentSemester().subscribe({
+      next: (semester) => {
+        this.currentSemester = semester;
+        console.log('Semestre actual cargado:', semester);
+      },
+      error: (error) => {
+        console.error('Error cargando semestre actual:', error);
+        // Fallback a null, los métodos getSemesterStartDate/EndDate manejarán esto
+        this.currentSemester = null;
+      }
+    });
+  }
+
   private ensureEditableRow() {
     // Si no hay filas, solicitar al padre que agregue una
     if (this.rows.length === 0) {
@@ -229,24 +268,31 @@ export class PlanningClassesTable {
   // Función para enviar correo - navega a la ruta de envío de correos
   sendEmail(index: number) {
     const row = this.rows[index];
-    console.log('Enviar correo para la clase:', row);
+    console.log('📧 Enviando correo para la clase:', row);
+    console.log('  - courseName:', row.courseName);
+    console.log('  - classId:', row.classId);
+    console.log('  - teacher:', row.teacher);
+    
+    const classInfo = {
+      courseName: row.courseName,
+      section: row.section,
+      classId: row.classId,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      status: row.status,
+      teacher: row.teacher,
+      schedules: row.schedules
+    };
+    
+    console.log('📧 Class info to pass:', classInfo);
     
     // Navegar a la ruta de envío de correos para docentes
     // Pasar información de la clase como estado para que pueda ser utilizada en el componente de destino
     this.router.navigate(['/envio-correo/docentes'], {
-      state: {
-        classInfo: {
-          courseName: row.courseName,
-          section: row.section,
-          classId: row.classId,
-          startDate: row.startDate,
-          endDate: row.endDate,
-          status: row.status,
-          teacher: row.teacher,
-          schedules: row.schedules
-        }
-      }
+      state: { classInfo }
     });
+    
+    console.log('📧 Navigation executed with state:', { classInfo });
   }
 
   // Métodos para el modal de observaciones
@@ -415,14 +461,89 @@ export class PlanningClassesTable {
 
   selectTeacher(index: number) {
     console.log('Seleccionar docente para la fila', index);
+    const row = this.rows[index];
     
-    // Crear un key único para esta clase específica
+    // Validar campos obligatorios antes de proceder
+    const validation = this.validateRequiredFieldsForTeacherSelection(row);
+    if (!validation.isValid) {
+      alert(`⚠️ Antes de seleccionar un docente, debes completar los siguientes campos obligatorios:\n\n${validation.missingFields.join('\n')}`);
+      return;
+    }
+    
+    // Verificar si la fila está en modo de edición, tiene datos que requieren guardado 
+    // Y NO tiene docentes asignados aún (primera selección)
+    if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
+      console.log('📝 Guardando automáticamente la clase antes de seleccionar primer docente...');
+      
+      // Mostrar mensaje al usuario solo para la primera selección de docente
+      const shouldProceed = confirm(
+        '✅ Todos los campos obligatorios están completos.\n\nPara seleccionar un docente, primero guardaremos los datos de la clase. ¿Deseas continuar?'
+      );
+      
+      if (!shouldProceed) {
+        console.log('❌ Usuario canceló la navegación');
+        return;
+      }
+      
+      // Guardar la clase antes de navegar
+      this.saveClass(index);
+      
+      // Esperar un momento para que se complete el guardado antes de navegar
+      setTimeout(() => {
+        this.navigateToTeacherSelection(index);
+      }, 500);
+    } else {
+      // Si no hay cambios pendientes o ya tiene docentes, navegar directamente
+      this.navigateToTeacherSelection(index);
+    }
+  }
+
+  private shouldSaveRowBeforeNavigation(row: any): boolean {
+    // Verificar si la fila tiene datos mínimos que justifican el guardado
+    const hasBasicData = row.courseName && row.courseName.trim() !== '';
+    const hasSection = row.section && row.section.trim() !== '';
+    const hasCredits = row.credits && row.credits > 0;
+    
+    return hasBasicData || hasSection || hasCredits;
+  }
+
+  /**
+   * Valida que todos los campos obligatorios estén completos antes de seleccionar docente
+   * Retorna un objeto con isValid y la lista de campos faltantes
+   */
+  private validateRequiredFieldsForTeacherSelection(row: PlanningRow): { isValid: boolean; missingFields: string[] } {
+    const missingFields: string[] = [];
+    
+    // Campo: ID Materia (obligatorio)
+    if (!row.courseId || row.courseId.trim() === '') {
+      missingFields.push('• ID Materia');
+    }
+    
+    // Campo: Nombre de Materia (obligatorio)
+    if (!row.courseName || row.courseName.trim() === '') {
+      missingFields.push('• Nombre de Materia');
+    }
+    
+    // Campo: Cupos (obligatorio y debe ser mayor a 0)
+    if (!row.seats || row.seats <= 0) {
+      missingFields.push('• Cupos (debe ser mayor a 0)');
+    }
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields
+    };
+  }
+
+  private navigateToTeacherSelection(index: number) {
     const row = this.rows[index];
     const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
 
     // Crear un snapshot de la fila para poder restaurarla si se pierde durante la navegación
     const rowSnapshot = JSON.parse(JSON.stringify(row));
 
+    console.log('🔄 Navegando a selección de docentes...');
+    
     // Navegar a la pantalla de selección de docentes con el contexto de la clase
     this.router.navigate(['/seleccionar-docente'], {
       state: {
@@ -441,10 +562,49 @@ export class PlanningClassesTable {
 
   selectAdditionalTeacher(index: number) {
     console.log('Seleccionar docente adicional para la fila', index);
+    const row = this.rows[index];
+    
+    // Validar campos obligatorios antes de proceder
+    const validation = this.validateRequiredFieldsForTeacherSelection(row);
+    if (!validation.isValid) {
+      alert(`⚠️ Antes de seleccionar un docente adicional, debes completar los siguientes campos obligatorios:\n\n${validation.missingFields.join('\n')}`);
+      return;
+    }
+    
+    // Para docentes adicionales, solo mostrar aviso si está en edición Y no tiene ningún docente
+    // (caso poco común, pero mantiene consistencia)
+    if (row._editing && this.shouldSaveRowBeforeNavigation(row) && !this.hasTeacher(row)) {
+      console.log('📝 Guardando automáticamente la clase antes de seleccionar docente adicional...');
+      
+      // Mostrar mensaje al usuario solo si no tiene docentes
+      const shouldProceed = confirm(
+        '✅ Todos los campos obligatorios están completos.\n\nPara seleccionar un docente adicional, primero guardaremos los datos de la clase. ¿Deseas continuar?'
+      );
+      
+      if (!shouldProceed) {
+        console.log('❌ Usuario canceló la navegación');
+        return;
+      }
+      
+      // Guardar la clase antes de navegar
+      this.saveClass(index);
+      
+      // Esperar un momento para que se complete el guardado antes de navegar
+      setTimeout(() => {
+        this.navigateToAdditionalTeacherSelection(index);
+      }, 500);
+    } else {
+      // Si ya tiene docentes o no hay cambios pendientes, navegar directamente
+      this.navigateToAdditionalTeacherSelection(index);
+    }
+  }
 
+  private navigateToAdditionalTeacherSelection(index: number) {
     const row = this.rows[index];
     const classKey = `${row.courseName || 'nueva-clase'}-${row.section || 'sin-seccion'}-${index}`;
     const rowSnapshot = JSON.parse(JSON.stringify(row));
+
+    console.log('🔄 Navegando a selección de docente adicional...');
 
     this.router.navigate(['/seleccionar-docente'], {
       state: {
@@ -578,15 +738,30 @@ export class PlanningClassesTable {
         
         // Convertir a días y luego a semanas (redondeando hacia arriba)
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-        const weeks = Math.ceil(daysDifference / 7);
-        // Restar una semana al resultado según petición, sin permitir valor negativo
-        row.weeks = Math.max(0, weeks - 1);
+        let weeks = Math.ceil(daysDifference / 7);
+        
+        // Verificar si hay una semana especial (receso/semana santa) dentro del rango
+        if (this.currentSemester?.startSpecialWeek) {
+          const specialWeekStart = new Date(this.currentSemester.startSpecialWeek);
+          
+          // Solo restar 1 semana si la semana especial está dentro del rango de la clase
+          if (specialWeekStart >= startDate && specialWeekStart <= endDate) {
+            console.log(`⚠️ Semana especial detectada (${this.currentSemester.startSpecialWeek}) dentro del rango de la clase. Restando 1 semana.`);
+            weeks = Math.max(0, weeks - 1);
+          } else {
+            console.log(`ℹ️ Semana especial (${this.currentSemester.startSpecialWeek}) está fuera del rango de la clase. No se resta semana.`);
+          }
+        } else {
+          console.log('ℹ️ No hay semana especial configurada en el semestre actual.');
+        }
+        
+        row.weeks = Math.max(0, weeks);
       } else if (endDate < startDate) {
         // Si la fecha final es anterior a la inicial, mostrar error
         console.warn('La fecha final debe ser posterior a la fecha inicial');
         row.weeks = 0;
       } else {
-        // Si las fechas son iguales: equivalente a 0 semanas después de restar 1
+        // Si las fechas son iguales: 0 semanas
         row.weeks = 0;
       }
     } else {
@@ -604,9 +779,19 @@ export class PlanningClassesTable {
       if (endDate > startDate) {
         const timeDifference = endDate.getTime() - startDate.getTime();
         const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-        const weeks = Math.ceil(daysDifference / 7);
-        // Restar una semana y no devolver valores negativos
-        return Math.max(0, weeks - 1);
+        let weeks = Math.ceil(daysDifference / 7);
+        
+        // Verificar si hay una semana especial (receso/semana santa) dentro del rango
+        if (this.currentSemester?.startSpecialWeek) {
+          const specialWeekStart = new Date(this.currentSemester.startSpecialWeek);
+          
+          // Solo restar 1 semana si la semana especial está dentro del rango de la clase
+          if (specialWeekStart >= startDate && specialWeekStart <= endDate) {
+            weeks = Math.max(0, weeks - 1);
+          }
+        }
+        
+        return Math.max(0, weeks);
       }
     }
     return row.weeks || 0;
@@ -1665,5 +1850,244 @@ export class PlanningClassesTable {
       hasConflicts: conflicts.length > 0,
       conflicts
     };
+  }
+
+  // Métodos para el tooltip de fechas de docentes
+  async onTeacherMouseEnter(event: MouseEvent, teacherId: number) {
+    // Cancelar cualquier timeout pendiente
+    if (this.tooltipTimeout) {
+      clearTimeout(this.tooltipTimeout);
+      this.tooltipTimeout = null;
+    }
+
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    this.tooltipPosition = {
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10
+    };
+    
+    // Buscar la fila que contiene este docente para obtener el classId (backendId)
+    const row = this.findRowByTeacherId(teacherId);
+    
+    if (!row || !row.backendId) {
+      console.warn('⚠️ No se encontró la clase para el docente o la clase no tiene backendId');
+      // Mostrar tooltip básico sin datos reales
+      const teacherData: TeacherClassWithDates = {
+        id: 0,
+        semesterId: 0,
+        teacherId: teacherId,
+        classId: 0,
+        workHours: 0,
+        statusId: 0,
+        teacherName: this.getTeacherNameById(teacherId),
+        teacherLastName: '',
+        startDate: undefined,
+        endDate: undefined
+      };
+      
+      this.tooltipTeacherData = teacherData;
+      this.showTeacherTooltip = true;
+      return;
+    }
+    
+    try {
+      // Obtener los datos reales del teacher_class desde el backend
+      const teacherClass = await firstValueFrom(
+        this.teacherDatesService.getTeacherClassByTeacherAndClass(teacherId, row.backendId)
+      );
+      
+      // Asegurar que el nombre del docente esté disponible
+      if (!teacherClass.teacherName || teacherClass.teacherName.trim() === '') {
+        teacherClass.teacherName = this.getTeacherNameById(teacherId);
+      }
+      
+      this.tooltipTeacherData = teacherClass;
+      this.showTeacherTooltip = true;
+    } catch (error) {
+      console.error('Error loading teacher class data:', error);
+      
+      // Fallback: mostrar tooltip básico
+      const teacherData: TeacherClassWithDates = {
+        id: 0,
+        semesterId: 0,
+        teacherId: teacherId,
+        classId: row.backendId,
+        workHours: 0,
+        statusId: 0,
+        teacherName: this.getTeacherNameById(teacherId),
+        teacherLastName: '',
+        startDate: undefined,
+        endDate: undefined
+      };
+      
+      this.tooltipTeacherData = teacherData;
+      this.showTeacherTooltip = true;
+    }
+  }
+
+  onTeacherMouseLeave() {
+    // Agregar delay para permitir interacción con el tooltip
+    this.tooltipTimeout = setTimeout(() => {
+      this.showTeacherTooltip = false;
+      this.tooltipTeacherData = null;
+    }, 300); // 300ms de delay
+  }
+
+  // Método para cuando el mouse entra al tooltip (cancela el cierre)
+  onTooltipMouseEnter() {
+    if (this.tooltipTimeout) {
+      clearTimeout(this.tooltipTimeout);
+      this.tooltipTimeout = null;
+    }
+  }
+
+  // Método para cuando el mouse sale del tooltip
+  onTooltipMouseLeave() {
+    this.showTeacherTooltip = false;
+    this.tooltipTeacherData = null;
+  }
+
+  // Método para cuando se hace clic en "Asignar fechas" del tooltip
+  onEditTeacherDates() {
+    console.log('📅 Editando fechas de docente desde tooltip');
+    
+    if (!this.tooltipTeacherData) {
+      console.error('❌ No hay datos del docente en el tooltip');
+      return;
+    }
+
+    // Ocultar el tooltip
+    this.showTeacherTooltip = false;
+    
+    // Obtener el nombre del docente (usar el del backend o fallback al local)
+    let teacherName = '';
+    if (this.tooltipTeacherData.teacherName && this.tooltipTeacherData.teacherName.trim() !== '') {
+      // Si hay nombre del backend, usarlo (puede incluir apellido)
+      teacherName = this.tooltipTeacherData.teacherLastName 
+        ? `${this.tooltipTeacherData.teacherName} ${this.tooltipTeacherData.teacherLastName}`.trim()
+        : this.tooltipTeacherData.teacherName;
+    } else {
+      // Fallback al nombre local (que ya incluye apellido)
+      teacherName = this.getTeacherNameById(this.tooltipTeacherData.teacherId);
+    }
+    
+    // Obtener el nombre de la clase de la fila correspondiente
+    const row = this.findRowByTeacherId(this.tooltipTeacherData.teacherId);
+    const className = row ? `${row.courseName} - Sección ${row.section}` : 'Clase';
+    
+    this.datePopupData = {
+      teacherClassId: this.tooltipTeacherData.id,
+      teacherName: teacherName,
+      className: className,
+      currentStartDate: this.tooltipTeacherData.startDate,
+      currentEndDate: this.tooltipTeacherData.endDate,
+      semesterStartDate: this.getSemesterStartDate(),
+      semesterEndDate: this.getSemesterEndDate()
+    };
+
+    // Mostrar el modal de fechas
+    this.showDatesModal = true;
+    
+    // Limpiar el tooltip
+    this.tooltipTeacherData = null;
+  }
+
+  // Método para manejar cuando se seleccionan fechas en el modal
+  onTeacherDatesSelected(dates: TeacherDatesRequest) {
+    console.log('� Fechas seleccionadas:', dates);
+    
+    if (!this.datePopupData) {
+      console.error('❌ No hay datos del popup');
+      return;
+    }
+
+    // Actualizar las fechas mediante el servicio si tenemos teacherClassId válido
+    if (this.datePopupData.teacherClassId > 0) {
+      this.teacherDatesService.updateTeachingDates(this.datePopupData.teacherClassId, dates)
+        .subscribe({
+          next: (updatedTeacherClass) => {
+            console.log('✅ Fechas actualizadas:', updatedTeacherClass);
+            this.closeDatesModal();
+          },
+          error: (error) => {
+            console.error('❌ Error al actualizar fechas:', error);
+            this.closeDatesModal();
+          }
+        });
+    } else {
+      console.warn('⚠️ No se puede actualizar: teacherClassId no válido');
+      this.closeDatesModal();
+    }
+  }
+
+  // Método para cerrar el modal de fechas
+  closeDatesModal() {
+    this.showDatesModal = false;
+    this.datePopupData = null;
+  }
+
+  private getTeacherNameById(teacherId: number): string {
+    // Buscar el nombre del docente en todas las filas
+    for (const row of this.rows) {
+      if (row.teachers) {
+        const teacher = row.teachers.find(t => t.id === teacherId);
+        if (teacher) {
+          // Construir nombre completo
+          const fullName = teacher.lastName 
+            ? `${teacher.name} ${teacher.lastName}`.trim()
+            : teacher.name;
+          return fullName;
+        }
+      }
+    }
+    return 'Docente desconocido';
+  }
+
+  private findRowByTeacherId(teacherId: number): PlanningRow | null {
+    // Buscar la fila que contiene el docente
+    for (const row of this.rows) {
+      if (row.teachers && row.teachers.some(t => t.id === teacherId)) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  private getSemesterStartDate(): string {
+    if (this.currentSemester && this.currentSemester.startDate) {
+      return this.currentSemester.startDate;
+    }
+    
+    // Fallback si no se ha cargado el semestre actual
+    console.warn('Semestre actual no disponible, usando fechas de fallback');
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre - inicia en enero
+      return `${currentYear}-01-14`;
+    } else {
+      // Segundo semestre - inicia en agosto  
+      return `${currentYear}-08-14`;
+    }
+  }
+
+  private getSemesterEndDate(): string {
+    if (this.currentSemester && this.currentSemester.endDate) {
+      return this.currentSemester.endDate;
+    }
+    
+    // Fallback si no se ha cargado el semestre actual
+    console.warn('Semestre actual no disponible, usando fechas de fallback');
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    if (currentMonth < 6) {
+      // Primer semestre - termina en mayo
+      return `${currentYear}-05-31`;
+    } else {
+      // Segundo semestre - termina en noviembre
+      return `${currentYear}-12-01`;
+    }
   }
 }

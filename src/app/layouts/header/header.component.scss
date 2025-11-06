@@ -7,7 +7,8 @@
   background: #2C5697;
   display: flex;
   align-items: center;
-  padding: 12px 24px;
+  justify-content: space-between; /* logo left, actions right */
+  padding: 12px 32px; /* increase right padding so the logout button isn't clipped */
   z-index: 1000; /* Mantener sobre otros elementos */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra para separar del contenido */
 }
@@ -16,6 +17,24 @@
   height: 55px;
   object-fit: contain;
 }
+
+/* Logout button styles */
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #fff;
+  cursor: pointer;
+  margin-left: 12px; /* small gap from logo area */
+  margin-right: 6px; /* ensure not too close to viewport edge */
+}
+.logout-btn:hover { background: rgba(255,255,255,0.06); }
+.logout-btn svg { display: block; }
 
 /* Responsive para diferentes tamaños de pantalla */
 @media (max-width: 768px) {

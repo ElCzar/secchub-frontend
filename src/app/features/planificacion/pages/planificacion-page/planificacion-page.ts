@@ -950,7 +950,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
         // Protección: si ya tiene el mismo docente asignado, saltar para evitar duplicados
         const alreadyAssigned = (classRow.teachers && classRow.teachers.some((tt:any) => tt.id === selectedTeacher.id)) || (classRow.teacher && classRow.teacher.id === selectedTeacher.id);
         if (alreadyAssigned) {
-          console.log('ℹ️ Clase ya tiene asignado al mismo docente; omitiendo reasignación para evitar duplicado');
+          console.log('❌ Clase ya tiene asignado al mismo docente; omitiendo reasignación para evitar duplicado');
+          alert(`El profesor ${selectedTeacher.name} ya está asignado a esta clase (${classRow.classId || 'sin número'}).\n\nNo se puede asignar el mismo profesor dos veces a la misma clase.`);
           this.selectedTeachersService.clearSelectedTeachers(classKey);
           return;
         }
