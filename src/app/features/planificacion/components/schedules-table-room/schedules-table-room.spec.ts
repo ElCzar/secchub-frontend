@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { SchedulesTableRoom } from './schedules-table-room';
 
@@ -8,7 +9,7 @@ describe('SchedulesTableRoom', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SchedulesTableRoom]
+      imports: [SchedulesTableRoom, HttpClientTestingModule]
     })
     .compileComponents();
 

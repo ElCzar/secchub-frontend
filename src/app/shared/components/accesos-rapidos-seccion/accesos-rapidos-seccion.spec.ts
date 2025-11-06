@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { AccesosRapidosSeccion } from './accesos-rapidos-seccion';
 
@@ -8,7 +9,7 @@ describe('AccesosRapidosSeccion', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AccesosRapidosSeccion]
+      imports: [AccesosRapidosSeccion, HttpClientTestingModule]
     })
     .compileComponents();
 

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { LogAuditoriaPage } from './log-auditoria-page';
 
@@ -8,7 +9,7 @@ describe('LogAuditoriaPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LogAuditoriaPage]
+      imports: [LogAuditoriaPage, HttpClientTestingModule]
     })
     .compileComponents();
 

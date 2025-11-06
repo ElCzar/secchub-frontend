@@ -215,4 +215,230 @@ describe('MonitorFormPageComponent - Formulario de Monitores', () => {
       expect(component.lastName).toBe('N/A');
     });
   });
+
+  describe('✅ CRUD - Crear Monitor Completo', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+      fixture.detectChanges();
+    });
+
+    it('debe crear un monitor académico completo y enviarlo al backend', (done) => {
+      // Configurar mock para retornar éxito
+      mockStudentApplicationService.submitApplication.and.returnValue(of({
+        success: true,
+        message: 'Solicitud de monitor creada exitosamente',
+        applicationId: 123
+      } as any));
+
+      // Configurar datos del formulario usando propiedades reales
+      component.monitorType = 'academic';
+      component.hasBeenMonitor = false;
+      component.availabilityRows = [
+        { day: '', start: '08:00', end: '10:00', total: 2 },
+        { day: '', start: '14:00', end: '16:00', total: 2 }
+      ];
+
+      // Crear un formulario mock
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `
+        <input id="career" value="Ingeniería de Sistemas">
+        <input id="semester" value="5">
+        <input id="average" value="4.2">
+        <input id="cellphone" value="3001234567">
+        <input id="altPhone" value="3109876543">
+        <input id="address" value="Calle 123">
+        <input id="altEmail" value="juan@email.com">
+        <input name="hasBeenMonitor" type="radio" value="false" checked>
+      `;
+
+      (component as any)._lastFormEvent = { target: mockForm } as any;
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(mockStudentApplicationService.submitApplication).toHaveBeenCalled();
+        const payload = mockStudentApplicationService.submitApplication.calls.mostRecent().args[0];
+        expect(payload).toBeDefined();
+        expect(payload.program).toBe('Ingeniería de Sistemas');
+        done();
+      }, 100);
+    });
+
+    it('debe guardar el monitor en backend y mostrar modal de éxito', (done) => {
+      const expectedResponse = {
+        success: true,
+        message: 'Monitor registrado exitosamente',
+        applicationId: 456
+      };
+
+      mockStudentApplicationService.submitApplication.and.returnValue(of(expectedResponse as any));
+
+      component.monitorType = 'academic';
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `
+        <input id="career" value="Ingeniería">
+        <input id="semester" value="6">
+        <input id="average" value="4.0">
+        <input id="cellphone" value="3001111111">
+        <input id="altPhone" value="">
+        <input id="address" value="Dirección">
+        <input id="altEmail" value="email@test.com">
+      `;
+
+      (component as any)._lastFormEvent = { target: mockForm } as any;
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(mockStudentApplicationService.submitApplication).toHaveBeenCalled();
+        expect(component.showSuccessModal).toBe(true);
+        done();
+      }, 100);
+    });
+
+    it('debe mostrar popup de confirmación antes de enviar', () => {
+      component.showConfirmPopup = false;
+      
+      const mockForm = document.createElement('form');
+      mockForm.checkValidity = () => true;
+      const mockEvent = {
+        target: mockForm,
+        preventDefault: jasmine.createSpy('preventDefault')
+      } as any;
+
+      component.onSubmit(mockEvent);
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled();
+      expect(component.showConfirmPopup).toBe(true);
+    });
+
+    it('debe manejar error al crear monitor y mostrar mensaje', (done) => {
+      const errorResponse = {
+        error: 'Error al crear solicitud',
+        message: 'El usuario ya tiene una solicitud pendiente'
+      };
+
+      mockStudentApplicationService.submitApplication.and.returnValue(
+        throwError(() => errorResponse)
+      );
+
+      component.monitorType = 'academic';
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `<input id="career" value="Test">`;
+
+      (component as any)._lastFormEvent = { target: mockForm } as any;
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(component.formError).toBeTruthy();
+        expect(component.isSubmitting).toBe(false);
+        done();
+      }, 100);
+    });
+
+    it('debe permitir agregar múltiples horarios de disponibilidad', () => {
+      component.availabilityRows = [
+        { day: '', start: '08:00', end: '10:00', total: 2 }
+      ];
+
+      component.availabilityRows.push({ day: '', start: '14:00', end: '16:00', total: 2 });
+      component.availabilityRows.push({ day: '', start: '10:00', end: '12:00', total: 2 });
+
+      expect(component.availabilityRows.length).toBe(3);
+    });
+
+    it('debe permitir crear monitor académico', (done) => {
+      mockStudentApplicationService.submitApplication.and.returnValue(of({
+        success: true,
+        applicationId: 789
+      } as any));
+
+      component.monitorType = 'academic';
+      component.availabilityRows = [
+        { day: '', start: '08:00', end: '10:00', total: 2 }
+      ];
+      
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `
+        <input id="career" value="Sistemas">
+        <input id="semester" value="7">
+        <input id="average" value="4.5">
+        <input id="cellphone" value="3001234567">
+        <input id="altPhone" value="">
+        <input id="address" value="Calle 1">
+        <input id="altEmail" value="test@test.com">
+        <select id="courseSelect"><option value="101">Algoritmos</option></select>
+      `;
+
+      (component as any)._lastFormEvent = { target: mockForm };
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(mockStudentApplicationService.submitApplication).toHaveBeenCalled();
+        const payload = mockStudentApplicationService.submitApplication.calls.mostRecent().args[0];
+        expect(payload).toBeDefined();
+        done();
+      }, 100);
+    });
+
+    it('debe permitir crear monitor administrativo', (done) => {
+      mockStudentApplicationService.submitApplication.and.returnValue(of({
+        success: true,
+        applicationId: 999
+      } as any));
+
+      component.monitorType = 'administrative';
+      component.availabilityRows = [
+        { day: '', start: '14:00', end: '16:00', total: 2 }
+      ];
+      
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `
+        <input id="career" value="Admin">
+        <input id="semester" value="8">
+        <input id="average" value="4.3">
+        <input id="cellphone" value="3009999999">
+        <input id="altPhone" value="">
+        <input id="address" value="Calle 2">
+        <input id="altEmail" value="admin@test.com">
+        <select id="sectionSelect"><option value="201">Administración</option></select>
+      `;
+
+      (component as any)._lastFormEvent = { target: mockForm };
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(mockStudentApplicationService.submitApplication).toHaveBeenCalled();
+        const payload = mockStudentApplicationService.submitApplication.calls.mostRecent().args[0];
+        expect(payload).toBeDefined();
+        done();
+      }, 100);
+    });
+
+    it('debe limpiar formulario después de envío exitoso', (done) => {
+      mockStudentApplicationService.submitApplication.and.returnValue(of({
+        success: true,
+        applicationId: 111
+      } as any));
+
+      component.monitorType = 'academic';
+      component.hasBeenMonitor = true;
+      component.availabilityRows = [
+        { day: '', start: '08:00', end: '10:00', total: 2 },
+        { day: '', start: '14:00', end: '16:00', total: 2 }
+      ];
+
+      const mockForm = document.createElement('form');
+      mockForm.innerHTML = `<input id="career" value="Test">`;
+      mockForm.reset = jasmine.createSpy('reset');
+
+      (component as any)._lastFormEvent = { target: mockForm } as any;
+      component.onConfirmSend();
+
+      setTimeout(() => {
+        expect(mockForm.reset).toHaveBeenCalled();
+        expect(component.availabilityRows.length).toBe(1);
+        expect(component.monitorType).toBe('academic');
+        done();
+      }, 100);
+    });
+  });
 });

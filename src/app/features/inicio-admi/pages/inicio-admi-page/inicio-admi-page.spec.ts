@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { InicioAdmiPage } from './inicio-admi-page';
 
@@ -8,7 +9,7 @@ describe('InicioAdmiPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InicioAdmiPage]
+      imports: [InicioAdmiPage, HttpClientTestingModule]
     })
     .compileComponents();
 

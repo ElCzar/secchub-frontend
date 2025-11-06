@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { TeacherSelectModal } from './teacher-select-modal';
 
@@ -8,7 +9,7 @@ describe('TeacherSelectModal', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TeacherSelectModal]
+      imports: [TeacherSelectModal, HttpClientTestingModule]
     })
     .compileComponents();
 

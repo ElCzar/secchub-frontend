@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { PopDuplicacionSemetre } from './pop-duplicacion-semetre';
 
@@ -8,7 +9,7 @@ describe('PopDuplicacionSemetre', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PopDuplicacionSemetre]
+      imports: [PopDuplicacionSemetre, HttpClientTestingModule]
     })
     .compileComponents();
 
