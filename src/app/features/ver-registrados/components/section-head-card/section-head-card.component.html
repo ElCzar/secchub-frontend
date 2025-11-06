@@ -43,22 +43,6 @@
     </div>
   </div>
 
-  <!-- Acciones disponibles -->
-  <div class="card-actions" *ngIf="showActions">
-    <button class="btn btn-edit" 
-            (click)="onEditClick($event)"
-            title="Editar información del jefe de sección"
-            [attr.aria-label]="'Editar ' + getFullName()">
-      ✏️ Editar
-    </button>
-    <button class="btn btn-delete" 
-            (click)="onDeleteClick($event)"
-            title="Eliminar jefe de sección del sistema"
-            [attr.aria-label]="'Eliminar ' + getFullName()">
-      🗑️ Eliminar
-    </button>
-  </div>
-
   <!-- Overlay de carga -->
   <div class="loading-overlay" *ngIf="loading">
     <div class="spinner"></div>

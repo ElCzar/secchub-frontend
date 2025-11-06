@@ -141,7 +141,7 @@
         *ngFor="let user of filteredUsers; trackBy: trackByUserId"
         [user]="user"
         [actions]="cardActions"
-        [showActions]="true"
+        [showActions]="false"
         [loading]="false"
         (userSelected)="onUserSelected($event)"
         (editUser)="onEditUser($event)"
