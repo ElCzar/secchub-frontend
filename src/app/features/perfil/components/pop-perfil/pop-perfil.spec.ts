@@ -1,18 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-import { PopPerfil } from './pop-perfil';
+import { PopPerfilComponent } from './pop-perfil';
 
-describe('PopPerfil', () => {
-  let component: PopPerfil;
-  let fixture: ComponentFixture<PopPerfil>;
+describe('PopPerfilComponent', () => {
+  let component: PopPerfilComponent;
+  let fixture: ComponentFixture<PopPerfilComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PopPerfil]
+      imports: [PopPerfilComponent, HttpClientTestingModule]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PopPerfil);
+    fixture = TestBed.createComponent(PopPerfilComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

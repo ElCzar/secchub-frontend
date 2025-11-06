@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { ConfirmacionPageComponent } from './confirmacion-page.component';
 
@@ -8,7 +9,7 @@ describe('ConfirmacionPageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConfirmacionPageComponent]
+      imports: [ConfirmacionPageComponent, HttpClientTestingModule]
     })
     .compileComponents();
 

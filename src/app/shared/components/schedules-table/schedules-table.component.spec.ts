@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { SchedulesTableComponent } from './schedules-table.component';
 
@@ -8,7 +9,7 @@ describe('SchedulesTableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SchedulesTableComponent]
+      imports: [SchedulesTableComponent, HttpClientTestingModule]
     })
     .compileComponents();
 

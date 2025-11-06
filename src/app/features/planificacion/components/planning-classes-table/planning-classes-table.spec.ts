@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { PlanningClassesTable } from './planning-classes-table';
 
@@ -8,7 +9,7 @@ describe('PlanningClassesTable', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PlanningClassesTable]
+      imports: [PlanningClassesTable, HttpClientTestingModule]
     })
     .compileComponents();
 

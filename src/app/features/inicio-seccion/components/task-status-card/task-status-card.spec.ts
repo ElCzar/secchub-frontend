@@ -14,6 +14,25 @@ describe('TaskStatusCard', () => {
 
     fixture = TestBed.createComponent(TaskStatusCard);
     component = fixture.componentInstance;
+    
+    // Proporcionar el input requerido
+    fixture.componentRef.setInput('data', {
+      classesWithoutRoom: 0,
+      classesWithoutTeacher: 0,
+      scheduleConflicts: {
+        count: 0,
+        details: ''
+      },
+      unconfirmedTeachers: {
+        count: 0,
+        details: ''
+      },
+      deadline: {
+        date: '2025-12-31',
+        daysRemaining: 30
+      }
+    });
+    
     fixture.detectChanges();
   });
 

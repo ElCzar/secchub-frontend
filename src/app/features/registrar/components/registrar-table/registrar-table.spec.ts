@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { RegistrarTableComponent } from './registrar-table';
 
@@ -8,7 +9,7 @@ describe('RegistrarTableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RegistrarTableComponent]
+      imports: [RegistrarTableComponent, HttpClientTestingModule]
     })
     .compileComponents();
 
