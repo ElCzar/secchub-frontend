@@ -132,8 +132,6 @@ export class DocentesPage implements OnInit, OnDestroy {
         error: (error) => {
           console.error('❌ Error cargando docentes:', error);
           this.loadError = 'Error al cargar los docentes. Por favor, inténtalo de nuevo.';
-          // Fallback a datos mock en caso de error
-          this.loadMockData();
         }
       });
   }
@@ -163,123 +161,6 @@ export class DocentesPage implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Datos mock de fallback (temporales hasta que el backend esté listo)
-   */
-  private loadMockData() {
-    console.log('⚠️ Usando datos mock como fallback');
-    this.docentes = [
-      {
-        id: 1,
-        name: 'Ana María',
-        lastName: 'Gutiérrez Silva',
-        email: 'ana.gutierrez@javeriana.edu.co',
-        maxHours: 40,
-        assignedHours: 12,
-        availableHours: 28,
-        contractType: 'Tiempo Completo',
-        subjects: ['Redes', 'Optimización', 'Seguridad Informática'],
-        selected: false,
-        semesters: ['2024-1', '2024-2'],
-        classes: [
-          {
-            materia: 'Redes de Computadores',
-            seccion: 'SIS-01',
-            semestre: '2024-01',
-            horarios: ['Lunes 8:00-10:00', 'Miércoles 8:00-10:00'],
-            numeroClases: 2
-          }
-        ],
-        observaciones: ['Máster en Ciberseguridad', 'Especialista en Redes']
-      },
-      {
-        id: 2,
-        name: 'Carlos Eduardo',
-        lastName: 'Rodríguez Martínez',
-        email: 'carlos.rodriguez@javeriana.edu.co',
-        maxHours: 30,
-        assignedHours: 18,
-        availableHours: 12,
-        contractType: 'Cátedra',
-        subjects: ['Inteligencia Artificial', 'Machine Learning'],
-        selected: false,
-        semesters: ['2024-1', '2025-1'],
-        classes: [
-          {
-            materia: 'IA Avanzada',
-            seccion: 'SIS-04',
-            semestre: '2024-01',
-            horarios: ['Martes 10:00-12:00', 'Jueves 10:00-12:00'],
-            numeroClases: 2
-          }
-        ],
-        observaciones: ['PhD en Inteligencia Artificial', 'Investigador Senior']
-      },
-      {
-        id: 3,
-        name: 'María Elena',
-        lastName: 'López Hernández',
-        email: 'maria.lopez@javeriana.edu.co',
-        maxHours: 35,
-        assignedHours: 20,
-        availableHours: 15,
-        contractType: 'Tiempo Completo',
-        subjects: ['Bases de Datos', 'Arquitectura de Software'],
-        selected: false,
-        semesters: ['2024-2', '2025-1'],
-        classes: [
-          {
-            materia: 'Bases de Datos',
-            seccion: 'SIS-06',
-            semestre: '2024-02',
-            horarios: ['Martes 9:00-12:00', 'Jueves 9:00-12:00'],
-            numeroClases: 2
-          }
-        ],
-        observaciones: ['DBA Certificada Oracle', 'Especialista en NoSQL']
-      },
-      {
-        id: 4,
-        name: 'Daniel Alejandro',
-        lastName: 'Sánchez Castro',
-        email: 'daniel.sanchez@javeriana.edu.co',
-        maxHours: 25,
-        assignedHours: 15,
-        availableHours: 10,
-        contractType: 'Cátedra',
-        subjects: ['Algoritmos', 'Programación Avanzada'],
-        selected: false,
-        semesters: ['2024-2', '2025-1'],
-        classes: [
-          {
-            materia: 'Algoritmos y Estructuras',
-            seccion: 'ING-01',
-            semestre: '2024-02',
-            horarios: ['Viernes 8:00-11:00'],
-            numeroClases: 1
-          }
-        ],
-        observaciones: ['Especialista en Algoritmos', 'Competencias de Programación']
-      },
-      {
-        id: 5,
-        name: 'Sofia Valentina',
-        lastName: 'Ramírez Torres',
-        email: 'sofia.ramirez@javeriana.edu.co',
-        maxHours: 20,
-        assignedHours: 8,
-        availableHours: 12,
-        contractType: 'Cátedra',
-        subjects: ['Desarrollo Web', 'Frontend Development'],
-        selected: false,
-        semesters: ['2024-1', '2024-2'],
-        classes: [],
-        observaciones: ['Full Stack Developer', 'Especialista en Angular']
-      }
-    ];
-    this.filteredDocentes = [...this.docentes];
-    this.markSelectedTeacher();
-  }
 
   /**
    * Marcar el docente seleccionado en la lista
@@ -480,6 +361,13 @@ export class DocentesPage implements OnInit, OnDestroy {
   reloadTeachers() {
     this.loadTeachers();
   }
+
+  /**
+   * Checks if current user is administrator
+   */
+    public isAdministrator(): boolean {
+        return localStorage.getItem('userRole') === 'ROLE_ADMIN';
+    }
 }
 
 

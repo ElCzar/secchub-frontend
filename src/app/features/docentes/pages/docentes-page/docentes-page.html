@@ -5,8 +5,12 @@
 
 <!-- Sidebar fijo -->
 <aside class="sidebar">
-  <app-accesos-rapidos-admi *ngIf="role === 'admin'"></app-accesos-rapidos-admi>
-  <app-accesos-rapidos-seccion *ngIf="role === 'seccion'"></app-accesos-rapidos-seccion>
+    @if (isAdministrator()) {
+        <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+    }
+    @else {
+        <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    }
 </aside>
 
 <div class="docentes-page">
@@ -26,19 +30,6 @@
           [disabled]="isLoading"
           placeholder="Buscar docente..." 
           class="search-bar">
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label" for="semester-select">Filtrar por Semestre:</label>
-        <select 
-          id="semester-select" 
-          [(ngModel)]="semesterFilter" 
-          (ngModelChange)="applyFilters()" 
-          [disabled]="isLoading"
-          class="filter-select">
-          <option value="">Todos los semestres</option>
-          <option *ngFor="let semester of semesters" [value]="semester">{{semester}}</option>
-        </select>
       </div>
       
       <div class="filter-group">
@@ -100,18 +91,18 @@
 
 <!-- Modal detallado de información del profesor -->
 <app-teacher-select-modal
-  [docente]="selectedDocenteInfo"
-  [showModal]="showModal"
-  [classKey]="classKey"
-  [classInfo]="classInfo"
-  (modalClosed)="closeModal()"
-  (docenteSelected)="onDocenteSelected($event)">
+    [docente]="selectedDocenteInfo"
+    [showModal]="showModal"
+    [classKey]="classKey"
+    [classInfo]="classInfo"
+    (modalClosed)="closeModal()"
+    (docenteSelected)="onDocenteSelected($event)">
 </app-teacher-select-modal>
 
 <!-- Modal de selección de fechas para el profesor -->
 <app-teacher-dates-modal
-  [isVisible]="showDatesModal"
-  [data]="datePopupData"
-  (datesSelected)="onTeacherDatesSelected($event)"
-  (modalClosed)="closeDatesModal()">
+    [isVisible]="showDatesModal"
+    [data]="datePopupData"
+    (datesSelected)="onTeacherDatesSelected($event)"
+    (modalClosed)="closeDatesModal()">
 </app-teacher-dates-modal>

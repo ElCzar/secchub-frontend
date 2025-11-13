@@ -29,15 +29,10 @@ export interface ClaseDocente {
 
 // Función para convertir TeacherDTO a Docente
 export function convertTeacherDTOToDocente(teacher: any): Docente {
-  // Extraer nombre y apellido del fullName si está disponible
-  let name = teacher.name || '';
-  let lastName = teacher.lastName || '';
-  
-  if (!name && !lastName && teacher.fullName) {
-    const nameParts = teacher.fullName.split(' ');
-    name = nameParts[0] || '';
-    lastName = nameParts.slice(1).join(' ') || '';
-  }
+  // Usar directamente los campos name y lastName del TeacherDTO
+  // Ya vienen correctamente mapeados desde el servicio con la info del usuario
+  const name = teacher.name || '';
+  const lastName = teacher.lastName || '';
   
   return {
     id: teacher.id,
@@ -45,14 +40,14 @@ export function convertTeacherDTOToDocente(teacher: any): Docente {
     lastName: lastName,
     email: teacher.email,
     maxHours: teacher.maxHours,
-    assignedHours: teacher.totalHours || teacher.assignedHours,
+    assignedHours: teacher.assignedHours,
     availableHours: teacher.availableHours,
-    extraHours: teacher.extraHours || teacher.fullTimeExtraHours || teacher.adjunctExtraHours,
-    contractType: teacher.contractType || teacher.employmentTypeName || 'No especificado',
-    subjects: teacher.subjects || [], // Por ahora vacío, se puede mapear desde asignaciones
+    extraHours: teacher.extraHours,
+    contractType: teacher.contractType || 'No especificado',
+    subjects: teacher.subjects || [],
     selected: false,
-    semesters: teacher.semesters || [], // Por ahora vacío, se puede mapear desde asignaciones
-    classes: teacher.classes || [], // Por ahora vacío, se puede mapear desde asignaciones
+    semesters: teacher.semesters || [],
+    classes: teacher.classes || [],
     observaciones: teacher.observaciones || []
   };
 }
