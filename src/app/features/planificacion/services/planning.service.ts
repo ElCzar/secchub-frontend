@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { AlertPanelData } from '../../../core/services/alert-panel.service';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { HttpHeaders } from '@angular/common/http';
 import { Observable, map, tap, switchMap, catchError, forkJoin, of } from 'rxjs';
@@ -173,24 +172,6 @@ export class PlanningService {
     const token = localStorage.getItem('accessToken');
     const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
     return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/pending-confirmations`, { headers });
-  }
-
-  /**
-   * Obtiene las alertas del dashboard para el administrador (todas las secciones)
-   */
-  getDashboardAlertsForAdmin(): Observable<AlertPanelData> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any>(`${environment.apiUrl}/planning/admin/dashboard/alerts`, { headers }).pipe(
-      map((response: any) => ({
-        missingTeachers: response.missingTeachers || 0,
-        missingRooms: response.missingRooms || 0,
-        pendingConfirmations: response.pendingConfirmations || 0,
-        scheduleConflicts: response.scheduleConflicts || 0,
-        daysLeft: response.daysLeft || 0,
-        endDate: response.endDate
-      }))
-    );
   }
 
   /**
@@ -1790,78 +1771,5 @@ export class PlanningService {
       9: 'RECHAZADO'
     };
     return statusMap[statusId] || 'PENDIENTE';
-  }
-
-  /**
-   * Devuelve los datos agregados para el panel de alertas del jefe de sección (sin HU15)
-   */
-  getDashboardAlerts(): Observable<AlertPanelData> {
-    return this.getAllClassesWithSchedules().pipe(
-      switchMap((classes: any[]) => {
-        const missingTeachers = classes.filter((cls: any) => !cls.teacherAssigned || cls.teacherAssigned.length === 0).length;
-        const missingRooms = classes.filter((cls: any) => !cls.schedules || cls.schedules.length === 0 || cls.schedules.some((sch: any) => !sch.classroomId)).length;
-
-        // Para cada clase, obtener los docentes asignados y buscar statusId 4
-        const teacherStatusRequests = classes.map((cls: any) =>
-          this.http.get<any[]>(`${environment.apiUrl}/teachers/classes/class/${cls.id}`).pipe(
-            map((teacherClassList: any[]) => ({
-              classId: cls.id,
-              pendingCount: teacherClassList.filter(tc => tc.statusId === 4).length
-            })),
-            catchError(() => of({ classId: cls.id, pendingCount: 0 }))
-          )
-        );
-
-        return forkJoin(teacherStatusRequests).pipe(
-          switchMap((statusResults: any[]) => {
-            // Contar la cantidad total de docentes pendientes (statusId 4)
-            const pendingConfirmations = statusResults.reduce((acc, r) => acc + r.pendingCount, 0);
-
-            const scheduleConflicts = classes.filter((cls: any) => {
-              if (!cls.schedules || cls.schedules.length < 2) return false;
-              const seen = new Set();
-              return cls.schedules.some((sch: any) => {
-                const key = `${sch.day}-${sch.startTime}-${sch.endTime}`;
-                if (seen.has(key)) return true;
-                seen.add(key);
-                return false;
-              });
-            }).length;
-            return this.getCurrentSemesterIdObservable().pipe(
-              switchMap(semesterId => {
-                if (!semesterId) return of({
-                  missingTeachers,
-                  missingRooms,
-                  pendingConfirmations,
-                  scheduleConflicts,
-                  daysLeft: 0,
-                  endDate: undefined
-                });
-                return this.semesterService.getCurrentSemester().pipe(
-                  map((sem: any) => {
-                    let daysLeft = 0;
-                    let endDate = undefined;
-                    if (sem && sem.endDate) {
-                      const end = new Date(sem.endDate);
-                      const now = new Date();
-                      daysLeft = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-                      endDate = sem.endDate;
-                    }
-                    return {
-                      missingTeachers,
-                      missingRooms,
-                      pendingConfirmations,
-                      scheduleConflicts,
-                      daysLeft,
-                      endDate
-                    };
-                  })
-                );
-              })
-            );
-          })
-        );
-      })
-    );
   }
 }

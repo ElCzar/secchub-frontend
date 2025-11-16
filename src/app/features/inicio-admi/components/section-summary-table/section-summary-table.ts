@@ -10,17 +10,17 @@ import { SectionRow, SectionsSummary } from '../../models/dashboard.models';
   styleUrls: ['./section-summary-table.scss']
 })
 export class SectionSummaryTable {
-  private router = inject(Router);
+  private readonly router = inject(Router);
   @Input() data!: SectionsSummary;
 
   onView(row: SectionRow) {
     // Navegar a la pantalla de planificación del jefe de sección
-    this.router.navigate(['/inicio-seccion']);
+    this.router.navigate(['/planificacion']);
   }
 
   onEnter(row: SectionRow) {
     // Navegar a la pantalla de planificación del jefe de sección
-    this.router.navigate(['/inicio-seccion']);
+    this.router.navigate(['/planificacion']);
   }
 
 }

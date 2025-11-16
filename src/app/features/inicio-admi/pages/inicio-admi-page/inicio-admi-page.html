@@ -14,19 +14,14 @@
     <div class="hr-line"></div>
 
     <main class="content">
-      
-      <!-- Panel de alertas real -->
-      <app-alert-panel [isAdmin]="true"></app-alert-panel>
+      <!-- Tarjeta superior -->
+      <app-system-status-card [data]="systemStatus"></app-system-status-card>
 
       <!-- Tabla de resumen por sección -->
-      <ng-container *ngIf="sectionsSummary">
-        <app-section-summary-table [data]="sectionsSummary"></app-section-summary-table>
-      </ng-container>
+      <app-section-summary-table [data]="sectionsSummary"></app-section-summary-table>
 
-      <!-- Tarjeta superior -->
-      <ng-container *ngIf="systemStatus">
-        <app-system-status-card [data]="systemStatus"></app-system-status-card>
-      </ng-container>
+      <!-- Tabla de elementos faltantes y conflictos -->
+      
     </main>
   </div>
 </div>

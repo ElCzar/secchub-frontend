@@ -1,34 +1,24 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { DashboardResponse, SystemStatusSummary, SectionsSummary } from '../models/dashboard.models';
+import { SectionsSummary } from '../models/dashboard.models';
 import { environment } from '../../../../environments/environment';
+import { ClassResponseDTO } from '../../../shared/model/dto/planning/ClassResponseDTO.model';
+import { ClassroomScheduleConflictResponseDTO } from '../../../shared/model/dto/planning/ClassroomScheduleConflictResponseDTO.model';
+import { TeacherScheduleConflictResponseDTO } from '../../../shared/model/dto/planning/TeacherScheduleConflictResponseDTO.model';
+import { TeachingAssistantScheduleConflictResponseDTO } from '../../../shared/model/dto/planning/TeachingAssistantScheduleConflictResponseDTO.model';
+import { TeacherClassResponseDTO } from '../../../shared/model/dto/admin/TeacherClassResponseDTO.model';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
 
-  getDashboard(): Observable<DashboardResponse> {
-    const mockData: DashboardResponse = {
-      system: this.getMockSystemStatus(),
-      sections: this.getMockSectionsSummary()
-    };
-    return of(mockData);
-  }
-
-  getSystemStatus(): Observable<SystemStatusSummary> {
-    return of(this.getMockSystemStatus());
-  }
-
   /**
    * Obtiene el resumen de todas las secciones desde el backend
    */
   getSectionsSummary(): Observable<SectionsSummary> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    
-    return this.http.get<any[]>(`${environment.apiUrl}/sections/summary`, { headers }).pipe(
+    return this.http.get<any[]>(`${environment.apiUrl}/sections/summary`).pipe(
       map((sections: any[]) => ({
         rows: sections.map(s => ({
           sectionCode: s.name || s.sectionCode || 'N/A',
@@ -40,46 +30,47 @@ export class DashboardService {
     );
   }
 
-  private getMockSystemStatus(): SystemStatusSummary {
-    return {
-      activePlannings: { 
-        completedSections: 8, 
-        totalSections: 10 
-      },
-      pendingTeachers: 2,
-      scheduleConflicts: 1,
-      nextDeadline: '2025-08-15'
-    };
+  /**
+   * Obtains all pending teacher confirmations
+   */
+  countPendingTeacherConfirmations(): Observable<number> {
+    return this.http.get<TeacherClassResponseDTO[]>(`${environment.apiUrl}/teachers/classes/pending-decision`).pipe(
+      map((teachers: TeacherClassResponseDTO[]) => teachers.length)
+    );
   }
 
-  private getMockSectionsSummary(): SectionsSummary {
-    return {
-      rows: [
-        {
-          sectionCode: 'Sis-01',
-          status: 'CLOSED',
-          assignedClasses: 12,
-          unconfirmedTeachers: 0
-        },
-        {
-          sectionCode: 'Sis-02',
-          status: 'EDITING',
-          assignedClasses: 10,
-          unconfirmedTeachers: 3
-        },
-        {
-          sectionCode: 'Sis-03',
-          status: 'CLOSED',
-          assignedClasses: 11,
-          unconfirmedTeachers: 0
-        },
-        {
-          sectionCode: 'Sis-04',
-          status: 'EDITING',
-          assignedClasses: 8,
-          unconfirmedTeachers: 2
-        }
-      ]
-    };
+  /**
+   * Obtains classes without a teacher
+   */
+  getClassesWithoutTeacher(): Observable<ClassResponseDTO[]> {
+    return this.http.get<ClassResponseDTO[]>(`${environment.apiUrl}/planning/classes/current-semester/no-teacher`);
+  }
+
+  /**
+   * Obtains classes without a class
+   */
+  getClassesWithoutClassroom(): Observable<ClassResponseDTO[]> {
+    return this.http.get<ClassResponseDTO[]>(`${environment.apiUrl}/planning/classes/current-semester/no-classroom`);
+  }
+
+  /**
+   * Obtains classroom conflicts
+   */
+  getClassroomConflicts(): Observable<ClassroomScheduleConflictResponseDTO[]> {
+    return this.http.get<ClassroomScheduleConflictResponseDTO[]>(`${environment.apiUrl}/planning/conflicts/classrooms`);
+  }
+
+  /**
+   * Obtains teacher conflicts
+   */
+  getTeacherConflicts(): Observable<TeacherScheduleConflictResponseDTO[]> {
+    return this.http.get<TeacherScheduleConflictResponseDTO[]>(`${environment.apiUrl}/planning/conflicts/teachers`);
+  }
+
+  /**
+   * Obtains teaching assistant conflicts
+   */
+  getTeachingAssistantConflicts(): Observable<TeachingAssistantScheduleConflictResponseDTO[]> {
+    return this.http.get<TeachingAssistantScheduleConflictResponseDTO[]>(`${environment.apiUrl}/teaching-assistants/conflicts`);
   }
 }

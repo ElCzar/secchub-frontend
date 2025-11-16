@@ -1,9 +1,10 @@
-// src/app/features/inicio-admi/models/dashboard.models.ts
 export interface SystemStatusSummary {
   activePlannings: { completedSections: number; totalSections: number };
   pendingTeachers: number;                // docentes sin confirmar disponibilidad
-  scheduleConflicts: number;              // conflictos de horario
-  nextDeadline: string;                   // ISO date string, ej. '2025-08-15'
+  scheduleConflicts: number;              // conflictos de horario detectados
+  classesWithoutTeacher: number;          // clases sin docente asignado
+  classesWithoutClassroom: number;        // clases sin aula asignada
+  nextDeadline: string;                   // ISO date string
 }
 
 export interface SectionRow {

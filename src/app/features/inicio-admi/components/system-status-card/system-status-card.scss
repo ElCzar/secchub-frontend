@@ -1,25 +1,106 @@
-.card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+.table-card {
   background: #fff;
-  padding: 16px;
-  box-shadow: 0 1px 0 rgba(0,0,0,.02);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
-.card__title {
-  font-size: var(--fs-h1);
-  color: var(--brand-rojo);
-  margin: 0 0 12px;
+.table-card__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #c41d1d;
+  margin-bottom: 1rem;
 }
-.card__title .muted { color: var(--text-500); font-weight: 600; }
 
-.list {
-  list-style: none; padding: 0; margin: 0; display: grid; gap: 10px;
+.tabla-wrap { 
+  overflow-x: auto; 
 }
-.list__item { display: flex; gap: 10px; align-items: flex-start; }
-.icon { width: 22px; text-align: center; line-height: 22px; }
-.icon.ok   { color: #22c55e; }
-.icon.warn { color: #eab308; }
-.icon.date { color: var(--brand-azul); }
-.link { color: var(--brand-azul); text-decoration: none; }
-.link:hover { text-decoration: underline; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+
+.tabla th, .tabla td {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 0.85rem 0.5rem;
+  text-align: left;
+  color: #222;
+}
+
+.tabla th {
+  font-weight: 600;
+  background-color: #f9fafb;
+}
+
+.tabla tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.badge {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  padding: 4px 12px; 
+  border-radius: 999px; 
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+  white-space: nowrap;
+}
+
+.badge--ok { 
+  color: #15803d; 
+  background: #ecfdf5; 
+  border-color: #86efac; 
+}
+
+.badge--warn { 
+  color: #a16207; 
+  background: #fffbeb; 
+  border-color: #fde68a; 
+}
+
+.badge--danger { 
+  color: #991b1b; 
+  background: #fef2f2; 
+  border-color: #fca5a5; 
+}
+
+/* Column sizing */
+.c-metric {
+  width: 35%;
+}
+
+.c-value {
+  width: 40%;
+}
+
+.c-status {
+  width: 25%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .table-card {
+    padding: 1rem;
+  }
+
+  .tabla {
+    font-size: 0.9rem;
+  }
+
+  .tabla th, .tabla td {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+  }
+}
