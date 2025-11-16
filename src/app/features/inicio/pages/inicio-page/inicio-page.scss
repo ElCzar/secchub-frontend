@@ -36,3 +36,21 @@
   margin-bottom: 24px;
   margin-left: 200px;
 }
+
+/* Page actions: make the large primary button bright red */
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+
+  .btn--primary {
+    background-color: #ff3b30; /* bright red */
+    border-color: #ff3b30;
+    color: #ffffff;
+  }
+
+  .btn--primary:hover {
+    background-color: #e02a24; /* slightly darker on hover */
+    border-color: #e02a24;
+  }
+}

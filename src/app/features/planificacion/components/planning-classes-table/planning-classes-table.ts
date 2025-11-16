@@ -1655,21 +1655,21 @@ export class PlanningClassesTable implements OnInit {
    */
   private mapDayToBackend(day: string): string {
     const dayMap: { [key: string]: string } = {
-      'LUN': 'Monday',
-      'MAR': 'Tuesday', 
-      'MIE': 'Wednesday',
-      'JUE': 'Thursday',
-      'VIE': 'Friday',
-      'SAB': 'Saturday',
-      'DOM': 'Sunday',
+      'LUN': 'Lunes',
+      'MAR': 'Martes', 
+      'MIE': 'Miercoles',
+      'JUE': 'Jueves',
+      'VIE': 'Viernes',
+      'SAB': 'Sabado',
+      'DOM': 'Domingo',
       // Mapeos inversos por si ya viene en formato de backend
-      'Monday': 'Monday',
-      'Tuesday': 'Tuesday',
-      'Wednesday': 'Wednesday',
-      'Thursday': 'Thursday',
-      'Friday': 'Friday',
-      'Saturday': 'Saturday',
-      'Sunday': 'Sunday'
+      'Lunes': 'Lunes',
+      'Martes': 'Martes',
+      'Miercoles': 'Miercoles',
+      'Jueves': 'Jueves',
+      'Viernes': 'Viernes',
+      'Sabado': 'Sabado',
+      'Domingo': 'Domingo'
     };
     
     const backendDay = dayMap[day];

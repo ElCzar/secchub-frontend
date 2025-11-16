@@ -443,19 +443,19 @@ export class ClassroomService {
   mapDayToBackendFormat(frontendDay: string): string {
     // Mapeo entre abreviaturas del frontend y los valores esperados por el backend
     const dayMap: { [key: string]: string } = {
-      'LUN': 'Monday',
-      'MAR': 'Tuesday',
-      'MIE': 'Wednesday',
-      'JUE': 'Thursday',
-      'VIE': 'Friday',
-      'SAB': 'Saturday',
-      'DOM': 'Sunday'
+      'LUN': 'Lunes',
+      'MAR': 'Martes',
+      'MIE': 'Miercoles',
+      'JUE': 'Jueves',
+      'VIE': 'Viernes',
+      'SAB': 'Sabado',
+      'DOM': 'Domingo'
     };
     
     const result = dayMap[frontendDay];
     if (result === undefined) {
-      console.warn(`Día no reconocido para mapeo al formato del backend: "${frontendDay}", usando "Monday" por defecto`);
-      return 'Monday';
+      console.warn(`Día no reconocido para mapeo al formato del backend: "${frontendDay}", usando "Lunes" por defecto`);
+      return 'Lunes';
     }
     
     return result;
@@ -467,16 +467,16 @@ export class ClassroomService {
    */
   mapDayToFrontendFormat(backendDay: string): string {
     // Mapeo entre valores del backend y abreviaturas del frontend
-    // ⚠️ CORREGIDO: Manejar tanto formato "Monday" como "MONDAY"
+    // ⚠️ CORREGIDO: Manejar tanto formato "Lunes" como "MONDAY"
     const dayMap: { [key: string]: string } = {
-      // Formato Title Case (Monday, Tuesday, etc.)
-      'Monday': 'LUN',
-      'Tuesday': 'MAR',
-      'Wednesday': 'MIE',
-      'Thursday': 'JUE',
-      'Friday': 'VIE',
-      'Saturday': 'SAB',
-      'Sunday': 'DOM',
+      // Formato Title Case (Lunes, Martes, etc.)
+      'Lunes': 'LUN',
+      'Martes': 'MAR',
+      'Miercoles': 'MIE',
+      'Jueves': 'JUE',
+      'Viernes': 'VIE',
+      'Sabado': 'SAB',
+      'Domingo': 'DOM',
       // Formato UPPER CASE (MONDAY, TUESDAY, etc.)
       'MONDAY': 'LUN',
       'TUESDAY': 'MAR',

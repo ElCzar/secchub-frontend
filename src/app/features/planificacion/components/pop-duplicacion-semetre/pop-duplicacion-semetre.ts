@@ -2,6 +2,9 @@ import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlanningService, ClassDTO } from '../../services/planning.service';
+import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
+import { CourseInformationService } from '../../../../shared/services/course-information.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-pop-duplicacion-semetre',
@@ -30,23 +33,32 @@ export class PopDuplicacionSemetre implements OnInit {
    */
   onApplySemester() {
     if (!this.previewData) return;
-    // Obtener el ID del semestre origen
-    const semesterId = this.previewData.semesterId;
+    
     // Obtener los IDs de clases seleccionadas
     const classIds = this.selectedClassIds;
-    const payload = {
-      semesterId,
-      classIds
-    };
-    console.log('Payload para duplicación:', payload);
-    this.planningService.applySelectedSemesterClasses(payload).subscribe({
+    
+    if (classIds.length === 0) {
+      this.error = 'Debe seleccionar al menos una clase para duplicar';
+      return;
+    }
+    
+    console.log('IDs de clases a duplicar:', classIds);
+    
+    this.loading = true;
+    this.error = null;
+    
+    // Usar el nuevo endpoint de duplicación
+    this.planningService.duplicateClasses(classIds).subscribe({
       next: (response) => {
-        console.log('Duplicación exitosa. Clases duplicadas:', classIds);
-        alert(`✅ Se duplicaron ${response.classesApplied ?? classIds.length} clases seleccionadas al semestre actual.`);
+        console.log('Duplicación exitosa. Clases duplicadas:', response.length);
+        alert(`✅ Se duplicaron ${response.length} clases seleccionadas al semestre actual.`);
+        this.loading = false;
         this.closeModal.emit();
       },
       error: (err) => {
-        // Manejo de error
+        console.error('Error duplicando clases:', err);
+        this.error = 'Error al duplicar las clases seleccionadas';
+        this.loading = false;
       }
     });
   }
@@ -78,6 +90,9 @@ export class PopDuplicacionSemetre implements OnInit {
   // Mapeo dinámico de ID de semestres (año-período -> ID)
   private semesterIdMap: {[key: string]: number} = {};
   
+  // Mapeo de courseId -> nombre del curso
+  private courseNameMap: {[key: number]: string} = {};
+  
   // Estado de vista previa
   showPreview: boolean = false;
   previewData: {totalClasses: number, semesterId: number, classes: ClassDTO[]} | null = null;
@@ -92,62 +107,101 @@ export class PopDuplicacionSemetre implements OnInit {
   @Output() closeModal = new EventEmitter<void>();
   @Output() applySemester = new EventEmitter<string>();
   
-  constructor(private planningService: PlanningService) {}
+  constructor(
+    private planningService: PlanningService,
+    private semesterService: SemesterInformationService,
+    private courseService: CourseInformationService
+  ) {}
   
   ngOnInit() {
     this.loadAvailableSemesters();
+    this.loadAllCourses();
+  }
+  
+  /**
+   * Carga todos los cursos y crea un mapa de ID -> nombre
+   */
+  private loadAllCourses(): void {
+    console.log('🔍 Cargando todos los cursos...');
+    this.courseService.findAllCourses().subscribe({
+      next: (courses) => {
+        console.log('📚 Cursos cargados:', courses.length);
+        // Crear mapa de courseId -> courseName
+        courses.forEach(course => {
+          if (course.id && course.name) {
+            this.courseNameMap[course.id] = course.name;
+          }
+        });
+        console.log('📋 Mapa de cursos creado:', this.courseNameMap);
+      },
+      error: (error) => {
+        console.error('❌ Error cargando cursos:', error);
+      }
+    });
   }
   
   /**
    * Carga la lista de semestres pasados desde el backend
+   * Obtiene todos los semestres y excluye el actual
    */
   private loadAvailableSemesters(): void {
-    this.planningService.getPastSemesters().subscribe({
-      next: (semesters) => {
-        console.log('🔍 Semestres pasados del backend:', semesters);
-        // Convertir los semestres del backend al formato esperado por el componente
-        this.availableSemesters = semesters.map(semester => {
+    console.log('🔍 Cargando todos los semestres y excluyendo el actual...');
+    
+    // Obtener todos los semestres y el semestre actual en paralelo
+    forkJoin({
+      allSemesters: this.semesterService.getAllSemesters(),
+      currentSemester: this.semesterService.getCurrentSemester()
+    }).subscribe({
+      next: ({ allSemesters, currentSemester }) => {
+        console.log('📋 Todos los semestres:', allSemesters);
+        console.log('� Semestre actual:', currentSemester);
+        
+        // Filtrar para excluir el semestre actual
+        const pastSemesters = allSemesters.filter(semester => 
+          semester.id !== currentSemester.id
+        );
+        
+        console.log('🔍 Semestres pasados (excluyendo actual):', pastSemesters);
+        
+        // Convertir los semestres al formato esperado por el componente
+        this.availableSemesters = pastSemesters.map(semester => {
           const label = `${semester.year}-${semester.period.toString().padStart(2, '0')}`;
           // Construir el mapa dinámico: label -> ID
           this.semesterIdMap[label] = semester.id;
           console.log(`  ✓ ${label} → ID: ${semester.id}`);
           return label;
         });
+        
         console.log('📋 Mapeo de semestres creado:', this.semesterIdMap);
         console.log('📊 Semestres disponibles cargados:', this.availableSemesters);
       },
       error: (error) => {
-        console.error('Error cargando semestres disponibles:', error);
-        // Fallback: usar la lógica anterior si hay error
-        this.generateAvailableSemestersFallback();
+        console.error('❌ Error cargando semestres disponibles:', error);
+        // Fallback: intentar usar solo getPastSemesters de planning service
+        console.log('⚠️ Intentando fallback con getPastSemesters...');
+        this.planningService.getPastSemesters().subscribe({
+          next: (semesters) => {
+            this.availableSemesters = semesters.map(semester => {
+              const label = `${semester.year}-${semester.period.toString().padStart(2, '0')}`;
+              this.semesterIdMap[label] = semester.id;
+              return label;
+            });
+            console.log('📊 Semestres cargados desde fallback:', this.availableSemesters);
+          },
+          error: (fallbackError) => {
+            console.error('❌ Error en fallback:', fallbackError);
+          }
+        });
       }
     });
-  }
-  
-  /**
-   * Genera la lista de semestres disponibles como fallback
-   * Formato: YYYY-01 (primer semestre) y YYYY-03 (segundo semestre)
-   */
-  private generateAvailableSemestersFallback(): void {
-    const currentYear = new Date().getFullYear();
-    const semesters: string[] = [];
-    
-    // Generar semestres de los últimos 3 años
-    for (let year = currentYear; year >= currentYear - 2; year--) {
-      semesters.push(`${year}-01`); // Primer semestre
-      semesters.push(`${year}-03`); // Segundo semestre
-    }
-    
-    this.availableSemesters = semesters;
   }
   
   /**
    * Maneja el cambio de selección de semestre
    */
   onSemesterChange(): void {
-  // ...existing code...
-  // Guardar cantidad de materias anuales
-  this.annualCount = 0;
+    // Guardar cantidad de materias anuales
+    this.annualCount = 0;
     // Reset preview cuando cambia la selección
     this.showPreview = false;
     this.previewData = null;
@@ -162,13 +216,13 @@ export class PopDuplicacionSemetre implements OnInit {
     if (!semesterId) return;
 
     // Obtener clases del semestre y verificar materias inválidas
-    this.planningService.getSemesterPlanningPreview(semesterId).subscribe({
-      next: async (response) => {
+    this.planningService.getClassesBySemester(semesterId).subscribe({
+      next: async (classes) => {
         this.annualClassIds = [];
         this.annualCount = 0;
-        if (response.classes && response.classes.length > 0) {
+        if (classes && classes.length > 0) {
           await Promise.all(
-            response.classes.map(async (cls) => {
+            classes.map(async (cls) => {
               try {
                 const course = await this.planningService.getCourseById(cls.courseId).toPromise();
                 if (course && course.isValid === false) {
@@ -216,19 +270,31 @@ export class PopDuplicacionSemetre implements OnInit {
       return;
     }
     
-    console.log(`📥 Obteniendo vista previa para semestre: ${this.selectedSemester} (ID: ${semesterId})`);
+    console.log(`📥 Obteniendo clases para semestre: ${this.selectedSemester} (ID: ${semesterId})`);
     
-    this.planningService.getSemesterPlanningPreview(semesterId).subscribe({
-      next: async (response) => {
-        console.log('✅ Vista previa recibida:', response);
+    // Usar el endpoint correcto: GET /planning/classes/semester/{semesterId}
+    this.planningService.getClassesBySemester(semesterId).subscribe({
+      next: async (classes) => {
+        console.log('✅ Clases recibidas del semestre:', classes);
         this.annualClassIds = [];
         this.showAnnualWarning = false;
-        if (response.classes && response.classes.length > 0) {
+        
+        if (classes && classes.length > 0) {
+          // Enriquecer clases con nombres de cursos desde el mapa
+          const enrichedClasses = classes.map(cls => ({
+            ...cls,
+            courseName: cls.courseName || this.courseNameMap[cls.courseId] || 'Curso sin nombre'
+          }));
+          
+          console.log('📚 Clases enriquecidas con nombres de cursos:', enrichedClasses);
+          
           // Inicializar arrays
           this.annualClassIds = [];
           this.selectedClassIds = [];
+          
+          // Verificar cuáles son materias anuales (isValid === false)
           await Promise.all(
-            response.classes.map(async (cls) => {
+            enrichedClasses.map(async (cls) => {
               try {
                 const course = await this.planningService.getCourseById(cls.courseId).toPromise();
                 if (course && course.isValid === false) {
@@ -244,21 +310,35 @@ export class PopDuplicacionSemetre implements OnInit {
               }
             })
           );
+          
           this.showAnnualWarning = this.annualClassIds.length > 0;
-          this.previewData = response;
+          
+          // Crear estructura de preview compatible con clases enriquecidas
+          this.previewData = {
+            totalClasses: enrichedClasses.length,
+            semesterId: semesterId,
+            classes: enrichedClasses
+          };
+          
           this.hasClassesInPreview = true;
-          this.previewMessage = `Se encontraron ${response.totalClasses} clase(s) planificada(s) para ${this.selectedSemester}`;
+          this.previewMessage = `Se encontraron ${enrichedClasses.length} clase(s) planificada(s) para ${this.selectedSemester}`;
         } else {
-          this.previewData = response;
+          // No hay clases
+          this.previewData = {
+            totalClasses: 0,
+            semesterId: semesterId,
+            classes: []
+          };
           this.hasClassesInPreview = false;
           this.previewMessage = `❌ No hay clases planificadas para el semestre ${this.selectedSemester}`;
         }
+        
         this.showPreview = true;
         this.loading = false;
       },
       error: (error) => {
-        console.error('❌ Error obteniendo vista previa:', error);
-        this.error = `Error al obtener la vista previa del semestre ${this.selectedSemester}`;
+        console.error('❌ Error obteniendo clases del semestre:', error);
+        this.error = `Error al obtener las clases del semestre ${this.selectedSemester}`;
         this.loading = false;
       }
     });

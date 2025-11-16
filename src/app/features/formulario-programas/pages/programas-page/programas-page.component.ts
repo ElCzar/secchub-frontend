@@ -179,13 +179,29 @@ export class ProgramasPageComponent implements OnInit {
   private convertToRequestSchedule(schedule: ScheduleRow): RequestScheduleRequestDTO {
     console.log("Convirtiendo horario:", schedule);
     return {
-      day: schedule.day,
-      startTime: schedule.startTime + ':00', // Agregar segundos si es necesario
+      day: this.convertDayToFullSpanish(schedule.day),
+      startTime: schedule.startTime + ':00',
       endTime: schedule.endTime + ':00',
       classRoomTypeId: this.getRoomTypeId(schedule.roomType),
       modalityId: this.getModalityId(schedule.modality),
       disability: schedule.disability
     };
+  }
+
+  /**
+   * Convierte el día abreviado (LUN, MAR, etc.) a formato completo español (Lunes, Martes, etc.)
+   */
+  private convertDayToFullSpanish(day: string): string {
+    const dayMap: Record<string, string> = {
+      'LUN': 'Lunes',
+      'MAR': 'Martes',
+      'MIE': 'Miercoles',
+      'JUE': 'Jueves',
+      'VIE': 'Viernes',
+      'SAB': 'Sabado',
+      'DOM': 'Domingo'
+    };
+    return dayMap[day] || day;
   }
 
   /**

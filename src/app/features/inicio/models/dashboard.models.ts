@@ -8,7 +8,7 @@ export interface SystemStatusSummary {
 }
 
 export interface SectionRow {
-  sectionCode: string;        // ej. 'Sis-01'
+  sectionCode: string;
   status: 'CLOSED' | 'EDITING';
   assignedClasses: number;
   unconfirmedTeachers: number;
@@ -18,7 +18,13 @@ export interface SectionsSummary {
   rows: SectionRow[];
 }
 
-export interface DashboardResponse {
-  system: SystemStatusSummary;
-  sections: SectionsSummary;
+export interface ActionRow {
+  type: 'CLASSROOM_SCHEDULE' | 'TEACHER_SCHEDULE' | 'TEACHING_ASSISTANT_SCHEDULE' | 'MISSING_TEACHER' | 'MISSING_CLASSROOM';
+  isConflict: boolean;
+  resourceName: string;
+  details: string;
+}
+
+export interface ActionsSummary {
+  rows: ActionRow[];
 }

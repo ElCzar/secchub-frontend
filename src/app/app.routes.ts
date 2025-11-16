@@ -7,8 +7,7 @@ import { LoginPageComponent } from './features/auth/pages/login-page/login-page.
 import { PlanificacionClasesPage } from './features/planificacion/pages/planificacion-page/planificacion-page';
 import { DocentesPage } from './features/docentes/pages/docentes-page/docentes-page';
 
-import { InicioAdmiPage } from './features/inicio-admi/pages/inicio-admi-page/inicio-admi-page';
-import { InicioSeccionPage } from './features/inicio-seccion/pages/inicio-seccion-page/inicio-seccion-page';
+import { InicioPage } from './features/inicio/pages/inicio-page/inicio-page';
 import { InicioSeccionDeshabilitadaPage } from './features/inicio-seccion-deshabilitada/pages/inicio-seccion-deshabilitada-page/inicio-seccion-deshabilitada-page';
 import { SolicitudProgramasPages } from './features/solicitud-programas/pages/solicitud-programas-pages/solicitud-programas-pages';
 import { ENVIO_CORREO_ROUTES } from './features/envio-correo/envio-correo.routes';
@@ -33,9 +32,9 @@ export const routes: Routes = [
   
     { path: 'seleccionar-docente', component: DocentesPage },
   
-    { path: 'inicio-admi', component: InicioAdmiPage },
+    { path: 'inicio-admi', component: InicioPage },
   
-    { path: 'inicio-seccion', component: InicioSeccionPage },
+    { path: 'inicio-seccion', component: InicioPage },
 
     { path: 'inicio-seccion-deshabilitada', component: InicioSeccionDeshabilitadaPage },
 

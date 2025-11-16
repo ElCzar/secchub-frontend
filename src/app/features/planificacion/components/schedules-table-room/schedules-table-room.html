@@ -75,7 +75,7 @@
           <select class="input" [ngModel]="getSimpleRoomName(r.room)" (ngModelChange)="onRoomChange(i, $event)" [disabled]="!editable || r.modality === 'Online'">
             <option value="">Seleccionar aula...</option>
             <option *ngFor="let classroom of classrooms" [value]="classroom.name">
-              {{ classroom.name }} ({{ classroom.building }}, Cap: {{ classroom.capacity }})
+              {{ classroom.name }} (Cap: {{ classroom.capacity }}, {{ classroom.campus }})
             </option>
           </select>
           <small style="color: #777; font-size: 10px;" *ngIf="r.classroomId">ID: {{ r.classroomId }}</small>

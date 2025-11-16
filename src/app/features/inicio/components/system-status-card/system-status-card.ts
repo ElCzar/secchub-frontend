@@ -10,6 +10,7 @@ import { SystemStatusSummary } from '../../models/dashboard.models';
 })
 export class SystemStatusCard {
   @Input() data!: SystemStatusSummary;
+  @Input() isAdmin!: boolean;
 
   isAllSectionsCompleted(): boolean {
     if (!this.data?.activePlannings) return false;

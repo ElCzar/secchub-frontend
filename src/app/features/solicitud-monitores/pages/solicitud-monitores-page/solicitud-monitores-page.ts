@@ -216,19 +216,29 @@ export class SolicitudMonitoresPage implements OnInit {
 
     // Fetch user information for each unique userId
     const userInfoObservables = userIds.map(id => this.userInformationService.getUserInformationById(id));
-    // Fetch existing teaching assistants for the student applications
-    const teachingAssistantObservables = studentApplicationIds.map(saId => this.monitoresService.getTeachingAssistantByStudentApplicationId(saId));
+    // Fetch existing teaching assistants for the student applications (catch 404 errors individually)
+    const teachingAssistantObservables = studentApplicationIds.map(saId => 
+      firstValueFrom(this.monitoresService.getTeachingAssistantByStudentApplicationId(saId))
+        .catch(error => {
+          console.log(`Teaching assistant not found for SA ${saId} (expected for pending applications)`);
+          return null; // Return null instead of failing
+        })
+    );
 
     // After both user information and teaching assistants are loaded, convert to Monitor model
     Promise.all([
       Promise.all(userInfoObservables.map(obs => firstValueFrom(obs))),
-      Promise.all(teachingAssistantObservables.map(obs => firstValueFrom(obs)))
+      Promise.all(teachingAssistantObservables)
     ]).then(([userInfos, teachingAssistantResponses]) => {
       this.userInformation = userInfos.filter((info): info is UserInformationResponseDTO => info !== null);
       
-      // Extract teaching assistants from HTTP response bodies
+      console.log('User information loaded:', this.userInformation.length);
+      
+      // Extract teaching assistants from HTTP response bodies (handle null responses from 404s)
       this.teachingAssistants = teachingAssistantResponses
         .map(response => {
+          if (!response) return null; // Handle 404 errors that returned null
+          
           const responseBody = response?.body;
           // Check if the response body is an array or a single object
           if (Array.isArray(responseBody)) {
@@ -241,6 +251,8 @@ export class SolicitudMonitoresPage implements OnInit {
         })
         .filter((ta): ta is TeachingAssistantResponseDTO => ta !== null && ta !== undefined);
 
+      console.log('Teaching assistants loaded:', this.teachingAssistants.length);
+
       for (const ta of this.teachingAssistants) {
         console.log(`Teaching Assistant loaded:`, ta);
         console.log(`TA Properties:`, Object.keys(ta));
@@ -250,6 +262,15 @@ export class SolicitudMonitoresPage implements OnInit {
       this.monitores = this.studentApplications.map(sa => {
         const userInfo = this.userInformation.find(ui => ui.id === sa.userId);
         const teachingAssistant = this.teachingAssistants.find(ta => ta.studentApplicationId === sa.id);
+        
+        console.log(`Processing SA ${sa.id}:`, {
+          hasUserInfo: !!userInfo,
+          isAdmin: this.isAdministrator(),
+          statusId: sa.statusId,
+          confirmedStatusId: this.statuses.find(s => s.name === 'Confirmed')?.id,
+          willConvert: (userInfo && this.isAdministrator() && sa.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id) || (userInfo && !this.isAdministrator())
+        });
+        
         if (userInfo && this.isAdministrator() && sa.statusId === this.statuses.find(s => s.name === 'Confirmed')?.id) {
           return this.convertToMonitor(sa, userInfo, teachingAssistant || null);
         } else if (userInfo && !this.isAdministrator()) {
@@ -266,9 +287,16 @@ export class SolicitudMonitoresPage implements OnInit {
       this.secciones = Array.from(new Set(this.monitores.map(m => m.sectionId).filter((seccion): seccion is number => !!seccion)))
         .sort((a: number, b: number) => a - b);
 
+      console.log('Total monitores created:', this.monitores.length);
+      console.log('Monitores:', this.monitores);
+      
       this.applyFilters();
+      
+      console.log('After applyFilters:');
+      console.log('adminMonitores:', this.adminMonitores.length, this.adminMonitores);
+      console.log('nonAdminMonitores:', this.nonAdminMonitores.length, this.nonAdminMonitores);
     }).catch(error => {
-      console.error('Error processing monitors data:', error);
+      console.error('Error processing teaching assistant data:', error);
     });
   }
 
@@ -363,7 +391,6 @@ export class SolicitudMonitoresPage implements OnInit {
     }
     
     this.showSendModal = true;
-    // TODO: Implementar lógica de envío real de alerta
   }
 
   /**
@@ -497,9 +524,7 @@ export class SolicitudMonitoresPage implements OnInit {
     const base = this.monitores.filter(m => {
       const matchesQuery = !q || 
         [
-          m.id, this.monitores.find(info => info.id === m.userId)?.nombre, 
-          this.monitores.find(info => info.id === m.userId)?.apellido, 
-          this.monitores.find(info => info.id === m.userId)?.correo
+          m.id, m.userId, m.nombre, m.apellido, m.correo
         ]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(q));

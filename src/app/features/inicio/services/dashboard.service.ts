@@ -73,4 +73,13 @@ export class DashboardService {
   getTeachingAssistantConflicts(): Observable<TeachingAssistantScheduleConflictResponseDTO[]> {
     return this.http.get<TeachingAssistantScheduleConflictResponseDTO[]>(`${environment.apiUrl}/teaching-assistants/conflicts`);
   }
+
+  /**
+   * Closes the planning for a section
+   */
+  closeSectionPlanning(): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/sections/close-planning`, {
+      observe: 'response'
+    });
+  }
 }

@@ -733,14 +733,6 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
       notes: row.notes ? [...row.notes] : []
     }));
 
-    // Filtro por rol (sección)
-    if (this.role === 'seccion') {
-      const userSection = 'SIS'; // En producción vendría del usuario autenticado
-      filtered = filtered.filter(row => 
-        row.section?.startsWith(userSection) ?? false
-      );
-    }
-
     // Filtro por búsqueda de texto
     if (this.searchText.trim()) {
       const searchLower = this.searchText.toLowerCase().trim();
@@ -748,7 +740,9 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
   row.courseName?.toLowerCase().includes(searchLower) ||
   row.courseId?.toLowerCase().includes(searchLower) ||
   ((row.teachers && row.teachers.some(t => (t.name || '').toLowerCase().includes(searchLower))) || row.teacher?.name?.toLowerCase().includes(searchLower)) ||
-  row.section?.toLowerCase().includes(searchLower)
+  row.section?.toLowerCase().includes(searchLower) ||
+  // Buscar en aulas/salones dentro de los horarios
+  (row.schedules && row.schedules.some(schedule => schedule.room?.toLowerCase().includes(searchLower)))
       );
     }
 

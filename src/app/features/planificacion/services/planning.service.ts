@@ -83,6 +83,7 @@ export class PlanningService {
   applySelectedSemesterClasses(payload: { semesterId: number, classIds: number[] }): Observable<{message: string, classesApplied: number}> {
     return this.http.post<{message: string, classesApplied: number}>(`${this.baseUrl}/semesters/apply-selected`, payload);
   }
+
   /**
    * Obtiene la cantidad de clases sin salón asignado para el jefe de sección autenticado (JWT)
    */
@@ -107,16 +108,6 @@ export class PlanningService {
   }
 
   /**
-   * Obtiene los conflictos de planificación (docentes y salones con clases simultáneas)
-   * para el jefe de sección autenticado (JWT)
-   */
-  getScheduleConflicts(): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any>(`${environment.apiUrl}/planning/conflicts`, { headers });
-  }
-
-  /**
    * Obtiene la cantidad de clases sin salón asignado para el administrador (todas las secciones)
    */
   getMissingRoomsCountForAdmin(): Observable<number> {
@@ -135,54 +126,6 @@ export class PlanningService {
     const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
     return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers }).pipe(
       map((classes: any[]) => classes.length)
-    );
-  }
-
-  /**
-   * Obtiene los conflictos de planificación para el administrador (todas las secciones)
-   */
-  getScheduleConflictsForAdmin(): Observable<any> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any>(`${environment.apiUrl}/planning/admin/conflicts`, { headers });
-  }
-
-  /**
-   * Obtiene la lista completa de clases sin salón para el administrador
-   */
-  getClassesWithoutRoomForAdmin(): Observable<any[]> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-room`, { headers });
-  }
-
-  /**
-   * Obtiene la lista completa de clases sin docente para el administrador
-   */
-  getClassesWithoutTeacherForAdmin(): Observable<any[]> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/classes/without-teacher`, { headers });
-  }
-
-  /**
-   * Obtiene la lista completa de docentes sin confirmar disponibilidad para el administrador
-   */
-  getPendingConfirmationsForAdmin(): Observable<any[]> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<any[]>(`${environment.apiUrl}/planning/admin/pending-confirmations`, { headers });
-  }
-
-  /**
-   * Obtiene el estado de planificaciones (abierta/cerradas) para el administrador
-   */
-  getPlanningStatusStats(): Observable<{ openCount: number; totalSections: number; closedCount: number }> {
-    const token = localStorage.getItem('accessToken');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    return this.http.get<{ openCount: number; totalSections: number; closedCount: number }>(
-      `${environment.apiUrl}/sections/planning-status-stats`, 
-      { headers }
     );
   }
 
@@ -499,7 +442,7 @@ export class PlanningService {
     // Copia para no modificar el original
     const preparedData = { ...scheduleData };
 
-    // Mapear día a formato esperado por el backend (Monday, Tuesday, etc.)
+    // Mapear día a formato esperado por el backend (Lunes, Martes, etc.)
     if (preparedData.day && ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'].includes(preparedData.day)) {
       preparedData.day = this.classroomService.mapDayToBackendFormat(preparedData.day);
     }
@@ -597,7 +540,7 @@ export class PlanningService {
             // Normalizar los datos para compatibilidad con el frontend
             return schedules.map(schedule => ({
               ...schedule,
-              // Convertir día del formato backend (Monday) a frontend (LUN)
+              // Convertir día del formato backend (Lunes) a frontend (LUN)
               day: this.classroomService.mapDayToFrontendFormat(schedule.day),
               // Mapear modalidad para el frontend (usar modalityName o mapear modalityId)
               modality: schedule.modalityName || this.classroomService.mapModalityIdToFrontendName(schedule.modalityId || 1),
@@ -804,6 +747,26 @@ export class PlanningService {
     return this.http.post<ClassDTO[]>(`${this.baseUrl}/duplicate`, null, { params });
   }
 
+  /**
+   * Duplicar clases específicas por sus IDs
+   * POST /planning/duplicate/classes
+   */
+  duplicateClasses(classIds: number[]): Observable<ClassDTO[]> {
+    console.log('=== DUPLICANDO CLASES SELECCIONADAS ===');
+    console.log('IDs de clases a duplicar:', classIds);
+    
+    return this.http.post<ClassDTO[]>(`${this.baseUrl}/duplicate/classes`, classIds).pipe(
+      tap(response => {
+        console.log('✅ Clases duplicadas exitosamente:', response);
+        console.log(`Total de clases duplicadas: ${response.length}`);
+      }),
+      catchError(error => {
+        console.error('❌ Error duplicando clases:', error);
+        throw error;
+      })
+    );
+  }
+
   // ==========================================
   // MÉTODOS DE UTILIDAD PARA EL FRONTEND
   // ==========================================
@@ -933,14 +896,14 @@ export class PlanningService {
    */
   private mapDayFromBackend(day: string): string {
     const dayMap: { [key: string]: string } = {
-      // Formato Title Case (Monday, Tuesday, etc.)
-      'Monday': 'LUN',
-      'Tuesday': 'MAR', 
-      'Wednesday': 'MIE',
-      'Thursday': 'JUE',
-      'Friday': 'VIE',
-      'Saturday': 'SAB',
-      'Sunday': 'DOM',
+      // Formato Title Case (Lunes, Martes, etc.)
+      'Lunes': 'LUN',
+      'Martes': 'MAR', 
+      'Miercoles': 'MIE',
+      'Jueves': 'JUE',
+      'Viernes': 'VIE',
+      'Sabado': 'SAB',
+      'Domingo': 'DOM',
       // Formato UPPER CASE (MONDAY, TUESDAY, etc.)
       'MONDAY': 'LUN',
       'TUESDAY': 'MAR',

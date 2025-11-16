@@ -1,6 +1,6 @@
 @if (data) {
   <div class="table-card">
-    <h2 class="table-card__title">Estado del Sistema</h2>
+    <h2 class="table-card__title">Estado de Planificación</h2>
 
     <div class="tabla-wrap">
       <table class="tabla">
@@ -20,18 +20,20 @@
 
         <tbody>
           <!-- Active Plannings -->
-          <tr>
-            <td><strong>Planificaciones Activas</strong></td>
-            <td>{{ data.activePlannings.completedSections }} / {{ data.activePlannings.totalSections }} secciones completadas</td>
-            <td>
-              <span class="badge" [ngClass]="{ 
-                'badge--ok': isAllSectionsCompleted(), 
-                'badge--warn': !isAllSectionsCompleted() 
-              }">
-                {{ getCompletionPercentage() }}%
-              </span>
-            </td>
-          </tr>
+          @if(isAdmin){
+            <tr>
+              <td><strong>Planificaciones Activas</strong></td>
+              <td>{{ data.activePlannings.completedSections }} / {{ data.activePlannings.totalSections }} secciones completadas</td>
+              <td>
+                <span class="badge" [ngClass]="{ 
+                  'badge--ok': isAllSectionsCompleted(), 
+                  'badge--warn': !isAllSectionsCompleted() 
+                }">
+                  {{ getCompletionPercentage() }}%
+                </span>
+              </td>
+            </tr>
+          }
 
           <!-- Pending Teachers -->
           <tr>
