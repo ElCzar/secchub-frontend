@@ -1,0 +1,47 @@
+// =================================
+// Programa Registrar Component Styles
+// =================================
+
+.form-section {
+  margin-bottom: 2.5rem;
+  
+  &:last-of-type {
+    margin-bottom: 2rem;
+  }
+}
+
+.section-title {
+  color: var(--brand-rojo, #820A1E);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--brand-azul, #007bff);
+}
+
+.section-description {
+  color: var(--text-600, #6c757d);
+  font-style: italic;
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid var(--brand-azul, #007bff);
+}
+
+// =================================
+// Responsive Design
+// =================================
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 1rem;
+  }
+}

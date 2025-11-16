@@ -1,0 +1,20 @@
+<div *ngIf="visible" class="overlay" role="dialog" aria-modal="true" [attr.aria-label]="dynamicTitle" (keydown)="$event.key === 'Escape' && onCancel()" tabindex="-1">
+  <div class="overlay__backdrop" (click)="onCancel()"></div>
+  <div class="card" role="document">
+    <h2 class="title">{{ dynamicTitle }}</h2>
+    <div class="divider"></div>
+    <div class="body">
+      <div class="icon danger-icon">
+        🗑️
+      </div>
+      <p class="message">{{ message }}</p>
+      <div *ngIf="fullName" class="monitor-info">
+        <strong>Monitor:</strong> {{ fullName }}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn--secondary" (click)="onCancel()">{{ cancelText }}</button>
+      <button class="btn btn--danger" (click)="onConfirm()">{{ confirmText }}</button>
+    </div>
+  </div>
+</div>

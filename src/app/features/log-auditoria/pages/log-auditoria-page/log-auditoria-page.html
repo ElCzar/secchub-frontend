@@ -1,0 +1,63 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+</aside>
+
+<!-- Contenido principal -->
+<main class="main-content">
+  <div class="container">
+    <h1 class="titulo-pagina">Consultar Log de Auditoría</h1>
+    
+    <div class="hr-line"></div>
+    
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="applyClientSideFilters()" 
+          placeholder="Buscar usuario, acción o método..." 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="fecha-filter">Filtrar por fecha:</label>
+        <input 
+          id="fecha-filter"
+          type="date" 
+          [(ngModel)]="fechaFilter" 
+          (ngModelChange)="applyFilters()" 
+          class="filter-select">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="page-size">Entradas por página:</label>
+        <select id="page-size" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)" class="filter-select">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Componente de tabla de log de auditoría -->
+    <app-log-auditoria-table 
+      [logEntries]="logEntries"
+      [loading]="loading"
+      [currentPage]="currentPage"
+      [pageSize]="pageSize"
+      [totalEntries]="totalEntries"
+      [totalPages]="totalPages"
+      (refresh)="loadLogEntries()"
+      (pageChange)="onPageChange($event)"
+    ></app-log-auditoria-table>
+  </div>
+</main>

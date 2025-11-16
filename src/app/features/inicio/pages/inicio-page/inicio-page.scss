@@ -1,0 +1,56 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.titulo-pagina {
+  font-size: var(--fs-title, 30px);
+  color: var(--brand-azul);
+  margin-bottom: 24px;
+  margin-left: 200px; /* 280px del sidebar + 24px del gap */
+  padding-bottom: 8px;
+}
+
+
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+
+.sidebar {
+  position: sticky; 
+  top: 16px;
+}
+
+.content {
+  display: grid;
+  gap: 16px;
+}
+
+.hr-line {
+  height: 2px;
+  background: var(--border, #cfd6e4);
+  margin-bottom: 24px;
+  margin-left: 200px;
+}
+
+/* Page actions: make the large primary button bright red */
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+
+  .btn--primary {
+    background-color: #ff3b30; /* bright red */
+    border-color: #ff3b30;
+    color: #ffffff;
+  }
+
+  .btn--primary:hover {
+    background-color: #e02a24; /* slightly darker on hover */
+    border-color: #e02a24;
+  }
+}

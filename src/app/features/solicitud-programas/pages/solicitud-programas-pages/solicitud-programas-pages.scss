@@ -1,0 +1,433 @@
+/* Estilos para la página Solicitudes de Programas
+   Usando el mismo layout que la página de planificación
+*/
+
+.page { 
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 25px;
+    transition: all 0.3s ease;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.sidebar { 
+    background: var(--brand-azul-10, #f1f5fb); 
+    border-radius: var(--radius); 
+    padding: 16px;
+    margin: 0 !important;
+    margin-right: 0 !important;
+}
+
+.content {
+    display: grid;
+    gap: 16px;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.titulo-pagina {
+    margin-bottom: 8px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+.btn--secondary {
+    background: #e9eef7;
+    color: #234574;
+    font-weight: 600;
+}
+
+.btn--primary {
+    background: var(--brand-azul);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ==============================
+  Estilos para filtros
+  ============================== */
+.filters-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.filter-label {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--text-700);
+    margin: 0;
+}
+
+.search-bar {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    min-width: 280px;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    &::placeholder {
+        color: #999;
+    }
+}
+
+.filter-select {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    option {
+        padding: 8px 12px;
+    }
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .search-bar {
+        min-width: auto;
+    }
+}
+
+/* Ajustar layout cuando el sidebar está oculto */
+:host-context(body.sidebar-hidden) .page {
+    grid-template-columns: 1fr !important;
+    padding-left: 20px !important;
+}
+
+:host-context(body.sidebar-hidden) .sidebar {
+    display: none !important;
+}
+
+/* Botón toggle del sidebar como elemento normal de la página */
+app-sidebar-toggle-button {
+    grid-column: 1 / -1; /* Ocupa toda la fila del grid */
+    margin-bottom: 16px;
+    position: static !important; /* Forzar posición normal */
+    
+    .sidebar-toggle-btn {
+        background: var(--brand-azul) !important;
+        border: none !important;
+        color: white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: static !important; /* Forzar posición normal */
+    }
+    
+    .sidebar-toggle-btn:hover {
+        background: var(--brand-azul-dark, #1e3a5f) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    }
+}
+
+/* ==============================
+  Estilos originales de la tabla (mantenidos)
+  ============================== */
+
+.search-container input {
+  width: 320px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.tabla-placeholder {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 12px;
+  color: var(--text-500);
+}
+
+.tabla-wrap { overflow-x: auto; }
+
+/* Reutilizamos la clase .tabla del componente de tablas existente para coherencia */
+.tabla {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tabla thead th {
+  height: 44px;
+  line-height: 44px;
+  padding: 0 12px;
+  background: var(--muted);
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabla tbody td { padding: 8px 12px; vertical-align: middle; border-bottom: 1px solid var(--border); }
+.tabla tbody tr.is-deleted { opacity: .5; }
+
+.actions--right { 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hint-text {
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.actions--enviar { margin-top: 20px; }
+
+.btn-icon { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background:var(--brand-azul); color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer }
+.btn-icon:hover{ opacity:.9 }
+
+/* Select checkbox larger styling for better visibility */
+.select-checkbox {
+  /* Increase visual size while preserving layout */
+  width: 18px;
+  height: 18px;
+  -webkit-transform: scale(1.4);
+  transform: scale(1.4);
+  transform-origin: center;
+  margin: 0 6px;
+  vertical-align: middle;
+  /* Use accent-color where supported to match theme */
+  accent-color: var(--brand-azul, #2c5697);
+}
+
+/* Ensure the header cell doesn't shift when checkbox is scaled */
+.tabla thead th:first-child,
+.tabla tbody td:first-child {
+  width: 56px; /* enough space for larger checkbox */
+  text-align: center;
+}
+
+/* Small icon buttons with neutral background used in combinations table */
+.btn-icon--small {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--text-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.btn-icon--small svg { display: block; }
+
+/* Estilos para el bloque de combinaciones */
+.tabla-placeholder h3{ margin:0 0 8px 0; font-size:16px }
+
+/* Ajustes para inputs numéricos en la tabla de combinaciones */
+.tabla input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* Popup already has its own styles in component */
+
+/* Local button utilities (page-specific, avoid touching global styles) */
+.btn--large { padding: 15px 15px; min-width: 120px; border-radius: 999px; }
+
+/* Accent button: grey when disabled, green when enabled */
+.btn--accent {
+  padding: 15px 15px;
+  border-radius: 999px;
+  border: 0;
+  transition: background .12s ease, transform .08s ease, filter .08s ease;
+}
+
+.btn--accent[disabled],
+.btn--accent:disabled {
+  background: var(--muted);
+  color: var(--text-500);
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.btn--accent:not([disabled]) {
+  background: #10B981; /* green accent */
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn--accent:not([disabled]):hover { filter: brightness(.95); transform: translateY(-1px); }
+
+/* Styles for the collapsible schedules row inside the main table */
+.row-horarios details {
+  background: var(--muted);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.row-horarios summary {
+  list-style: none;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  padding-left: 28px; /* space for the arrow */
+  font-size: 0.98rem;
+}
+
+/* Left arrow indicator (points right by default, down when open) */
+.row-horarios summary::before{
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid var(--text-700);
+  transition: transform .12s ease;
+}
+
+.row-horarios details[open] summary::before{
+  transform: translateY(-50%) rotate(90deg);
+}
+.row-horarios .sched-wrap {
+  margin-top: 8px;
+  border-radius: 8px;
+}
+.row-horarios app-schedules-table { display: block }
+
+/* Compact variant for schedules inside the solicitudes page */
+.row-horarios {
+  font-size: 0.92rem;
+}
+.row-horarios .sched-row {
+  /* slightly more compact columns for page display */
+  grid-template-columns: 60px 130px 110px 110px 130px 96px minmax(120px,180px);
+  gap: 12px;
+}
+.row-horarios .input { height: 32px; padding: 0 8px; }
+.row-horarios .btn-icon { width: 30px; height: 30px; }
+.row-horarios .btn-icon.blue { width: 30px; height: 30px; }
+
+
+/* ==============================
+  Estados de solicitudes
+  ============================== */
+.tabla tbody tr.is-deleted {
+  opacity: 0.4;
+  text-decoration: line-through;
+  background-color: #f8f8f8;
+}
+
+.tabla tbody tr.is-accepted {
+  background-color: #d4edda; /* Verde suave */
+  border-left: 4px solid #28a745;
+}
+
+.tabla tbody tr.is-combined {
+  background-color: #fff3cd; /* Amarillo suave */
+  border-left: 4px solid #ffc107;
+}
+
+/* Badges de estado */
+.status-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.status-badge.status-accepted {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.status-combined {
+  background-color: #ffc107;
+  color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  /* On medium screens keep the extra 20px shift but reduce overall width */
+  .page-container { margin-left: calc(var(--sidebar-width, 280px) + 20px); max-width: 920px; }
+  .layout-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  /* On small screens the accesos-rapidos switches to position:static (see its media query),
+     so we remove left margin to allow full-width content. */
+  .page-container { margin-left: 0; padding-right: 12px; }
+  .search-container input { width: 100%; }
+}

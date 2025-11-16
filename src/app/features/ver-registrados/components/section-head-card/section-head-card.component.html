@@ -1,0 +1,51 @@
+<!-- Card específica para Jefes de Sección -->
+<button class="user-card section-head-card" 
+        [class.loading]="loading"
+        [class.inactive]="!isActive()"
+        (click)="onCardClick()"
+        [attr.aria-label]="'Información del jefe de sección ' + getFullName()">
+  
+  <!-- Header del jefe de sección -->
+  <div class="card-header">
+    <div class="user-avatar">
+      <span class="role-icon">{{ getRoleIcon(UserRole.SECTION_HEAD) }}</span>
+    </div>
+    <div class="user-info">
+      <h3 class="user-name">{{ getFullName() }}</h3>
+      <span class="user-role">{{ getRoleLabel(UserRole.SECTION_HEAD) }}</span>
+    </div>
+    <div class="user-status" [class]="getStatusClass(user.status)">
+      {{ getStatusLabel(user.status) }}
+    </div>
+  </div>
+
+  <!-- Información específica del jefe de sección -->
+  <div class="card-body">
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Email:</span>
+        <span class="info-value">{{ user.userInfo.email }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Facultad:</span>
+        <span class="info-value">{{ user.userInfo.faculty }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Sección:</span>
+        <span class="info-value">{{ sectionHeadUser.sectionInfo.name }}</span>
+      </div>
+    
+      <div class="info-item">
+        <span class="info-label">Documento:</span>
+        <span class="info-value">{{ user.userInfo.documentNumber }}</span>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <span class="sr-only">Cargando información del jefe de sección...</span>
+  </div>
+</button>

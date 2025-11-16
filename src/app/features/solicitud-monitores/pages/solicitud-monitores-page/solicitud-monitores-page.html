@@ -1,0 +1,117 @@
+<app-header></app-header>
+
+<div class="page">
+  <!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+  <app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+  <aside class="sidebar">
+    <!-- Accesos rápidos permanente -->
+    @if (isAdministrator()) {
+      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+    } @else {
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    }
+  </aside>
+
+  <main class="content">
+    <h1 class="titulo-pagina">Ver y Editar Monitores</h1>
+    <div class="hr-line"></div>
+
+    <!-- Filtros de búsqueda (mismo estilo que Planificación) -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="sm-search">Buscar:</label>
+        <input 
+          id="sm-search"
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="onSearchChange()" 
+          placeholder="Buscar por ID, nombre, apellido o correo..." 
+          class="search-bar">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="sm-materia">Filtrar por Materia:</label>
+        <select id="sm-materia" [(ngModel)]="selectedMateria" (ngModelChange)="onMateriaChange()" class="filter-select">
+          <option value="">Todas las materias</option>
+          @for (mat of materias; track mat) {
+            <option [value]="mat">{{mat}}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="sm-seccion">Filtrar por Sección:</label>
+        <select id="sm-seccion" [(ngModel)]="selectedSeccion" (ngModelChange)="onSeccionChange()" class="filter-select">
+          <option value="">Todas las secciones</option>
+          @for (sec of secciones; track sec) {
+            <option [value]="sec">{{sec}}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Botón de guardar cambios -->
+    <div class="toolbar">
+      <button class="btn btn--primary" (click)="guardarCambios()">Guardar cambios</button>
+      @if (isAdministrator()) {
+        <button class="btn btn--secondary" (click)="exportarNomina()">Obtener Nómina</button>
+      } @else {
+        <button class="btn btn--secondary" (click)="enviarAAdministrador()">Enviar a administrador</button>
+      }
+    </div>
+
+    <!-- Tabla 1: Monitores Administrativos -->
+    <button type="button" class="section-toggle" (click)="showAdminTable = !showAdminTable">
+      <span class="caret" [class.open]="showAdminTable">▸</span>
+      Monitores Administrativos
+    </button>
+    <div class="hr-line"></div>
+    @if (showAdminTable) {
+      <app-monitores-table
+        [monitores]="adminMonitores"
+        [classes]="classes"
+        [adminMode]="true"
+        [showMonitorAdministrativo]="false"
+        (update)="onMonitoresUpdate($event)">
+      </app-monitores-table>
+    }
+
+    <!-- Tabla 2: Monitores Académicos (todas las columnas actuales excepto Monitor Administrativo) -->
+    <button type="button" class="section-toggle" (click)="showAcademicTable = !showAcademicTable">
+      <span class="caret" [class.open]="showAcademicTable">▸</span>
+      Monitores Académicos
+    </button>
+    <div class="hr-line"></div>
+    @if (showAcademicTable) {
+      <app-monitores-table
+        [monitores]="nonAdminMonitores"
+        [classes]="classes"
+        [adminMode]="false"
+        [showMonitorAdministrativo]="false"
+        (update)="onMonitoresUpdate($event)">
+      </app-monitores-table>
+    }
+  </main>
+</div>
+
+<!-- Popup de guardar cambios -->
+<app-pop-guardar-cambios 
+  [visible]="showSaveModal"
+  [isSuccess]="saveSuccess"
+  [successMessage]="saveSuccess ? 'Los cambios en los monitores se han guardado correctamente' : (cambiosCount === 0 ? 'No hay cambios de aceptación/rechazo para enviar.' : 'Envío realizado al administrador correctamente')"
+  [errorMessage]="'Error al guardar los cambios. Verifique la conexión e intente nuevamente.'"
+  (closed)="onSaveModalClosed()"
+  (retry)="onRetrySave()">
+</app-pop-guardar-cambios>
+
+<!-- Popup de confirmación de envío -->
+<app-pop-enviar-cambios 
+  [visible]="showSendModal"
+  [title]="'¿Seguro deseas enviar cambios al administrador?'"
+  [message]="'Una vez enviados, los cambios serán revisados por el administrador y no podrás editarlos hasta recibir una respuesta.'"
+  [cambiosCount]="cambiosCount"
+  [confirmText]="'Sí, enviar'"
+  [cancelText]="'Cancelar'"
+  (confirm)="onConfirmSend()"
+  (cancelled)="onCancelSend()">
+</app-pop-enviar-cambios>

@@ -1,0 +1,109 @@
+<div class="sched-wrap">
+  <div class="sched-head">
+    <span class="title">Horarios</span>
+  </div>
+
+  <div class="sched-table">
+    <!-- Cabecera -->
+    <div class="sched-row sched-row--head">
+      <div class="acciones">Acciones</div>
+      <div>Día</div>
+      <div>Hora Inicio</div>
+      <div>Hora Final</div>
+      <div>Tipo de salón</div>
+      <div>Discapacidad</div>
+      <div>Modalidad</div>
+    </div>
+
+    <!-- Filas dinámicas -->
+    <div class="sched-row" *ngFor="let r of rows; let i = index">
+      <!-- Acciones izquierda -->
+      <div class="acciones">
+        <button 
+          type="button" 
+          class="btn-icon blue" 
+          (click)="remove(i)"
+          [disabled]="isReadOnly">−</button>
+        <button 
+          type="button" 
+          class="btn-icon blue" 
+          (click)="add()"
+          [disabled]="isReadOnly">+</button>
+      </div>
+
+      <!-- Día -->
+      <div>
+        <select 
+          class="input" 
+          [ngModel]="r.day" 
+          (ngModelChange)="patch(i,{day:$event})"
+          [disabled]="isReadOnly">
+          <option value="">Seleccione…</option>
+          <option *ngFor="let d of days" [value]="d.v">{{ d.t }}</option>
+        </select>
+      </div>
+
+      <!-- Hora inicio -->
+      <div>
+        <select 
+          class="input" 
+          [ngModel]="r.startTime"
+          (ngModelChange)="patch(i,{startTime:$event})"
+          [disabled]="isReadOnly">
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let t of timeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <!-- Hora final -->
+      <div>
+        <select 
+          class="input" 
+          [ngModel]="r.endTime"
+          (ngModelChange)="patch(i,{endTime:$event})"
+          [disabled]="isReadOnly">
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let t of timeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <!-- Tipo de salón -->
+      <div>
+        <select 
+          class="input"
+          [ngModel]="r.roomTypeId"
+          (ngModelChange)="onRoomTypeIdChange(i, $event)"
+          [disabled]="isReadOnly">
+          <option [ngValue]="undefined" disabled>Seleccione…</option>
+          <option *ngFor="let rt of roomTypeOptions" [ngValue]="rt.id">{{ rt.label }}</option>
+        </select>
+      </div>
+
+      <!-- Discapacidad -->
+      <div class="radio">
+        <label><input 
+          type="radio" 
+          [checked]="r.disability" 
+          (change)="patch(i,{disability:true})"
+          [disabled]="isReadOnly"> Sí</label>
+        <label><input 
+          type="radio" 
+          [checked]="!r.disability" 
+          (change)="patch(i,{disability:false})"
+          [disabled]="isReadOnly"> No</label>
+      </div>
+
+      <!-- Modalidad -->
+      <div>
+        <select 
+          class="input" 
+          [ngModel]="r.modality" 
+          (ngModelChange)="patch(i,{modality:$event})"
+          [disabled]="isReadOnly">
+          <option value="" disabled>Seleccione…</option>
+          <option *ngFor="let m of modalityOptions" [value]="m.value">{{ m.label }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,130 @@
+.disabled-section-container {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fb 0%, #e8edf5 100%);
+
+  .message-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 48px 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    text-align: center;
+  }
+
+  .icon {
+    font-size: 96px;
+    margin-bottom: 24px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .title {
+    color: var(--brand-rojo);
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 16px;
+  }
+
+  .divider {
+    height: 3px;
+    background: var(--brand-rojo);
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto 32px;
+    border-radius: 2px;
+  }
+
+  .message-content {
+    margin: 32px 0 40px;
+    text-align: left;
+  }
+
+  .message {
+    font-size: 18px;
+    color: var(--text-700);
+    line-height: 1.8;
+    margin: 16px 0;
+  }
+
+  .message-highlight {
+    font-size: 18px;
+    color: var(--brand-azul);
+    font-weight: 600;
+    line-height: 1.8;
+    margin: 24px 0 16px;
+    padding: 16px;
+    background: rgba(44, 86, 151, 0.05);
+    border-left: 4px solid var(--brand-azul);
+    border-radius: 4px;
+  }
+
+  .actions {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 16px 32px;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    min-width: 180px;
+
+    &--danger {
+      background: var(--brand-rojo);
+      color: #fff;
+      border: 0;
+
+      &:hover {
+        background: #6a0818;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(130, 10, 30, 0.3);
+      }
+    }
+
+    &--large {
+      padding: 16px 32px !important;
+      font-size: 16px;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .message-card {
+      padding: 32px 24px;
+    }
+
+    .icon {
+      font-size: 72px;
+    }
+
+    .title {
+      font-size: 24px;
+    }
+
+    .message,
+    .message-highlight {
+      font-size: 16px;
+    }
+  }
+}

@@ -1,0 +1,130 @@
+
+/* =====================================================
+   Estilos para el componente de sub-horarios de clases
+   Archivo: schedules-table.component.scss
+   Descripción: Define la apariencia de la tabla de sub-horarios,
+   inputs, botones y disposición general.
+   ===================================================== */
+
+.sched-wrap {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+
+/* Encabezado de la tabla de sub-horarios */
+.sched-head {
+  margin-bottom: 10px;
+  .title {
+    font-weight: 700;
+    color: var(--text-700);
+  }
+}
+
+
+/* Contenedor de la tabla de sub-horarios */
+.sched-table {
+  display: grid;
+  gap: 10px;
+}
+
+
+/* Fila de la tabla de sub-horarios */
+.sched-row {
+  display: grid;
+  /* more generous spacing between columns to match page visuals */
+  grid-template-columns: 80px 160px 140px 140px 160px 120px minmax(150px, 220px);
+  gap: 24px;
+  align-items: center;
+}
+
+
+/* Fila de encabezado de la tabla */
+.sched-row--head {
+  font-weight: 700;
+  color: var(--text-700);
+}
+
+
+/* Estilos para los campos de entrada de la tabla */
+.input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 10px;
+  font: inherit;
+  background: #fff;
+  outline: none;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+  }
+}
+
+/* Ensure modality select is not clipped: allow it to size to content within its grid cell */
+.sched-row select.input {
+  min-width: 140px;
+}
+
+/* When schedules table is rendered inside the combine popup, use a compact layout
+   tailored to the popup width so columns like 'Discapacidad' and 'Modalidad' fit. */
+:host-context(.combine-dialog) .sched-row {
+  grid-template-columns: 60px 150px 140px 110px 150px 110px minmax(140px, 320px);
+  gap: 28px;
+  font-size: 0.92rem;
+}
+
+:host-context(.combine-dialog) .sched-row .input {
+  height: 34px;
+  padding: 0 8px;
+}
+
+:host-context(.combine-dialog) .sched-row select.input {
+  min-width: 150px;
+}
+
+
+/* Grupo de radios para modalidad o tipo de aula */
+.radio {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  label {
+    display: inline-flex;
+    gap: 6px;
+  }
+}
+
+
+/* Contenedor de botones de acción (agregar/eliminar fila) */
+.acciones {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+
+/* Botón circular para acciones rápidas en la tabla */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.blue {
+    background: #2C5697;
+    color: #fff;
+    border: none;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

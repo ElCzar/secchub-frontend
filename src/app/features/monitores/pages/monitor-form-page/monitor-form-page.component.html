@@ -1,0 +1,201 @@
+<app-header></app-header>
+
+<div class="container">
+  <!-- Título + hr, igual al resto de pantallas -->
+  <h1 class="titulo-pagina">Formulario para Monitores</h1>
+  <div class="hr-line"></div>
+
+  <div class="card-soft" style="max-width: 540px; margin: 0 auto; padding: 20px;">
+    <form class="monitor-form" autocomplete="off" (submit)="onSubmit($event)">
+      <!-- Banner de error visible cuando faltan campos -->
+      @if (formError) {
+        <div class="form-error" role="alert">{{ formError }}</div>
+      }
+      
+      <!-- ID del estudiante (solo visualización) -->
+      <div class="form-group mb-16">
+        <div class="field-label">ID del estudiante</div>
+        <div class="input-display">{{ studentId || 'No disponible' }}</div>
+      </div>
+
+      <!-- Número de documento (solo visualización) -->
+      <div class="form-group mb-16">
+        <div class="field-label">Número de documento</div>
+        <div class="doc-inline" style="display:flex; gap:8px; align-items:center;">
+          <!-- Tipo de documento (visualización) -->
+          <div class="input-display" style="flex:0 0 120px;">{{ documentType || 'N/A' }}</div>
+          <!-- Número de documento (visualización) -->
+          <div class="input-display" style="flex:1;">{{ documentNumber || 'No disponible' }}</div>
+        </div>
+      </div>
+
+      <!-- Nombre y Apellido (solo visualización) -->
+      <div class="form-group mb-16" style="display:flex; gap:16px;">
+        <div style="flex:1;">
+          <div class="field-label">Nombre</div>
+          <div class="input-display">{{ firstName || 'No disponible' }}</div>
+        </div>
+        <div style="flex:1;">
+          <div class="field-label">Apellido</div>
+          <div class="input-display">{{ lastName || 'No disponible' }}</div>
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="form-group mb-16">
+        <label for="address">Dirección de residencia *</label>
+        <input id="address" name="address" type="text" class="input" required />
+      </div>
+
+      <!-- Correo institucional (solo visualización) -->
+      <div class="form-group mb-16">
+        <div class="field-label">Correo Institucional</div>
+        <div class="input-display">{{ institutionalEmail || 'No disponible' }}</div>
+      </div>
+
+      <!-- Correo alterno -->
+      <div class="form-group mb-16">
+        <label for="altEmail">Correo Alterno *</label>
+        <input id="altEmail" name="altEmail" type="email" class="input" required />
+      </div>
+
+      <!-- Celular -->
+      <div class="form-group mb-16">
+        <label for="cellphone">Celular *</label>
+        <input id="cellphone" name="cellphone" type="text" class="input" required />
+      </div>
+
+      <!-- Teléfono alterno -->
+      <div class="form-group mb-16">
+        <label for="altPhone">Teléfono alterno *</label>
+        <input id="altPhone" name="altPhone" type="text" class="input" required />
+      </div>
+
+      <!-- Carrera -->
+      <div class="form-group mb-16">
+        <label for="career">Carrera a la que pertenece *</label>
+        <input id="career" name="career" type="text" class="input" required />
+      </div>
+
+      <!-- Semestre -->
+      <div class="form-group mb-16">
+        <label for="semester">Semestre que va a cursar *</label>
+        <input id="semester" name="semester" type="number" min="1" max="20" class="input" required />
+      </div>
+
+      <!-- Promedio -->
+      <div class="form-group mb-16">
+        <label for="average">Promedio acumulado *</label>
+        <input id="average" name="average" type="number" step="0.01" min="0" max="5" class="input" required />
+      </div>
+
+      <!-- ¿Ha sido monitor? (radios) -->
+      <fieldset class="form-group mb-16">
+        <legend>¿Ha sido monitor? *</legend>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:4px;">
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="hasBeenMonitor" value="true" [(ngModel)]="hasBeenMonitor" required />
+            <span>Sí</span>
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="hasBeenMonitor" value="false" [(ngModel)]="hasBeenMonitor" required />
+            <span>No</span>
+          </label>
+        </div>
+      </fieldset>
+
+          <fieldset class="form-group mb-16">
+            <legend>¿Cuál es su disponibilidad? *</legend>
+            <app-availability-table [(rows)]="availabilityRows"></app-availability-table>
+          </fieldset>
+
+      <!-- Tipo de monitor (académico o administrativo) -->
+      <fieldset class="form-group mb-16">
+        <legend>Tipo de monitoría *</legend>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:4px;">
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="monitorType" [(ngModel)]="monitorType" value="academic" required />
+            <span>Monitor Académico</span>
+          </label>
+          <label style="display:inline-flex; align-items:center; gap:8px;">
+            <input type="radio" name="monitorType" [(ngModel)]="monitorType" value="administrative" required />
+            <span>Monitor Administrativo</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- CAMPOS PARA MONITOR ACADÉMICO -->
+      @if (monitorType === 'academic') {
+        <div>
+          <!-- Asignatura -->
+          <div class="form-group mb-16">
+            <label for="subject">Asignatura para monitoría académica *</label>
+            <select id="subject" name="subject" class="input" required [disabled]="loadingSubjects">
+              <option value="">{{ loadingSubjects ? 'Cargando...' : 'Seleccione una asignatura' }}</option>
+              @for (subject of subjects; track subject.id) {
+                <option [value]="subject.id">{{ subject.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Nota -->
+          <div class="form-group mb-16">
+            <label for="subjectGrade">Nota obtenida en la asignatura seleccionada *</label>
+            <input id="subjectGrade" name="subjectGrade" type="number" step="0.1" min="0" max="5" class="input" required />
+          </div>
+
+          <!-- Profesor -->
+          <div class="form-group mb-16">
+            <label for="professor">Nombre del profesor con quien tomó la asignatura *</label>
+            <input id="professor" name="professor" type="text" class="input" required />
+          </div>
+        </div>
+      }
+
+      <!-- CAMPOS PARA MONITOR ADMINISTRATIVO -->
+      @if (monitorType === 'administrative') {
+        <div class="form-group mb-24">
+          <label for="section">Seleccionar Sección para monitoría administrativa *</label>
+          <select id="section" name="section" class="input" [disabled]="loadingSections" required>
+            <option value="">{{ loadingSections ? 'Cargando...' : 'Seleccione una sección' }}</option>
+            @for (section of sections; track section.id) {
+              <option [value]="section.id">{{ section.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <button type="submit" class="btn btn--primary" style="width:100%;" [disabled]="isSubmitting">
+        @if (isSubmitting) {
+          <span>Enviando...</span>
+        } @else {
+          <span>Enviar</span>
+        }
+      </button>
+    </form>
+  </div>
+    
+    <!-- Popup de confirmación reutilizable -->
+    <app-confirm-send-popup
+      [visible]="showConfirmPopup"
+      (confirm)="onConfirmSend()"
+      (decline)="showConfirmPopup = false">
+    </app-confirm-send-popup>
+
+    <!-- Modal de éxito -->
+    <app-success-modal
+      [visible]="showSuccessModal"
+      title="Solicitud enviada exitosamente"
+      message="Su solicitud para monitor ha sido enviada correctamente. Recibirá una notificación por correo electrónico cuando sea procesada."
+      (closed)="onSuccessModalClose()">
+    </app-success-modal>
+
+    <!-- Modal de error -->
+    <app-error-modal
+      [visible]="showErrorModal"
+      title="Error al enviar"
+      [message]="errorModalMessage"
+      okText="Aceptar"
+      (closed)="onErrorModalClose()">
+    </app-error-modal>
+</div>

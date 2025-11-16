@@ -1,0 +1,11 @@
+<div *ngIf="visible" class="modal-backdrop">
+  <div class="modal">
+    <h3 class="modal-title">{{ title }}</h3>
+    <div class="modal-body">
+      <p>{{ message }}</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ok" (click)="onClose()">{{ okText }}</button>
+    </div>
+  </div>
+</div>

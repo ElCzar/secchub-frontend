@@ -1,0 +1,242 @@
+<!-- Modal backdrop -->
+<div 
+  class="modal-backdrop" 
+  [class.visible]="isVisible" 
+  (click)="onBackdropClick($event)"
+  (keydown.escape)="onClose()"
+  [attr.aria-hidden]="!isVisible">
+  
+  <!-- Modal content -->
+  <div class="modal-content" role="dialog" aria-labelledby="profile-title" aria-modal="true">
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 id="profile-title" class="modal-title">
+        <i class="icon-user" aria-hidden="true"></i>
+        Perfil de Usuario
+      </h2>
+      <button 
+        type="button" 
+        class="close-button" 
+        (click)="onClose()" 
+        aria-label="Cerrar modal">
+        <i class="icon-close" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Cargando perfil...</p>
+    </div>
+
+    <!-- Profile content -->
+    <div *ngIf="!isLoading && userProfile" class="modal-body">
+      
+      <!-- View mode -->
+      <div *ngIf="!isEditing" class="profile-view">
+        
+        <!-- Avatar section -->
+        <div class="avatar-section">
+          <div class="avatar-circle">
+            <i class="icon-user-large" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <!-- Profile info -->
+        <div class="profile-info">
+          <div class="info-field">
+            <span class="field-label">Nombre Completo:</span>
+            <p class="field-value">{{ userProfile.name }} {{ userProfile.lastName }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Usuario:</span>
+            <p class="field-value">{{ userProfile.username }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Correo Electrónico:</span>
+            <p class="field-value">{{ userProfile.email }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Facultad:</span>
+            <p class="field-value">{{ userProfile.faculty }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Tipo de Documento:</span>
+            <p class="field-value">{{ userProfile.documentTypeId }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Número de Documento:</span>
+            <p class="field-value">{{ userProfile.documentNumber }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Rol:</span>
+            <p class="field-value">{{ getRolText() }}</p>
+          </div>
+
+          <div class="info-field">
+            <span class="field-label">Estado:</span>
+            <p class="field-value">
+              <span [class]="userProfile.statusId === 1 ? 'status-active' : 'status-inactive'">
+                {{ userProfile.statusId === 1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="profile-actions">
+          <button 
+            *ngIf="canEdit"
+            type="button" 
+            class="btn btn-primary" 
+            (click)="onEditProfile()">
+            <i class="icon-edit" aria-hidden="true"></i>
+            Editar Perfil
+          </button>
+          
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="onClose()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit mode -->
+      <div *ngIf="isEditing" class="profile-edit">
+        
+        <!-- Avatar section -->
+        <div class="avatar-section">
+          <div class="avatar-circle">
+            <i class="icon-user-large" aria-hidden="true"></i>
+          </div>
+          <p class="avatar-text">Editar Perfil</p>
+        </div>
+
+        <!-- Edit form -->
+        <form class="edit-form" (ngSubmit)="onSaveProfile()">
+          
+          <div class="form-field">
+            <label for="name" class="field-label">Nombre:</label>
+            <input 
+              id="name"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.name"
+              name="name"
+              placeholder="Ingrese el nombre"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="lastName" class="field-label">Apellido:</label>
+            <input 
+              id="lastName"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.lastName"
+              name="lastName"
+              placeholder="Ingrese el apellido"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="correo" class="field-label">Correo Electrónico:</label>
+            <input 
+              id="correo"
+              type="email" 
+              class="form-input" 
+              [(ngModel)]="editForm.email"
+              name="correo"
+              placeholder="Ingrese el correo electrónico"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="documentType" class="field-label">Tipo de Documento:</label>
+            <input 
+              id="documentType"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.documentType"
+              name="documentType"
+              placeholder="Tipo de documento"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <label for="documentNumber" class="field-label">Número de Documento:</label>
+            <input 
+              id="documentNumber"
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="editForm.documentNumber"
+              name="documentNumber"
+              placeholder="Número de documento"
+              required
+              [disabled]="isLoading">
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Usuario:</span>
+            <p class="field-value readonly">{{ userProfile.username }}</p>
+            <small class="field-note">El nombre de usuario no puede ser modificado</small>
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Facultad:</span>
+            <p class="field-value readonly">{{ userProfile.faculty}}</p>
+            <small class="field-note">La facultad no puede ser modificada</small>
+          </div>
+
+          <div class="form-field">
+            <span class="field-label">Rol:</span>
+            <p class="field-value readonly">{{ getRolText() }}</p>
+            <small class="field-note">El rol no puede ser modificado</small>
+          </div>
+
+          <!-- Form actions -->
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="!editForm.name.trim() || !editForm.lastName.trim() || !editForm.email.trim() || !editForm.documentType.trim() || !editForm.documentNumber.trim() || isLoading">
+              <i class="icon-save" aria-hidden="true"></i>
+              {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+            
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="onCancelEdit()"
+              [disabled]="isLoading">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="!isLoading && !userProfile" class="error-container">
+      <i class="icon-error" aria-hidden="true"></i>
+      <p>Error al cargar el perfil del usuario</p>
+      <button type="button" class="btn btn-primary" (click)="loadUserProfile()">
+        Intentar de nuevo
+      </button>
+    </div>
+
+  </div>
+</div>

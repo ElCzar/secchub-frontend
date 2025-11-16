@@ -1,0 +1,77 @@
+.accesos-rapidos {
+  background: var(--brand-azul);
+  color: #fff;
+  /* Use a CSS variable so pages can align to the same width. Fallback to 280px */
+  width: var(--sidebar-width, 280px);
+  padding: 24px 18px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 79px; /* Altura aproximada del header (55px logo + 24px padding) */
+  left: 0;
+  height: calc(100vh - 79px); /* Altura total menos la altura del header */
+  overflow-y: auto;
+  border-radius: 0;
+  z-index: 900; /* Menor que el header (1000) para aparecer debajo */
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0);
+}
+
+.accesos-rapidos.hidden {
+  transform: translateX(-100%);
+}
+.accesos-rapidos__title {
+  color: var(--brand-amarillo);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  margin: 0 0 8px 0;
+}
+.accesos-rapidos__header{
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.accesos-rapidos__header-content{
+  display:flex;
+  align-items: center; /* Centrar el título verticalmente */
+}
+.accesos-rapidos__close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.accesos-rapidos__close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+/* Estilos del logo removidos ya que se eliminó la imagen */
+.accesos-rapidos__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.accesos-rapidos__link {
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  border: 0;
+  padding: 8px 6px;
+  font-size: var(--fs-base);
+  cursor: pointer;
+}
+.accesos-rapidos__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .accesos-rapidos { position: static; width: 100%; height: auto; border-radius: 0; }
+}

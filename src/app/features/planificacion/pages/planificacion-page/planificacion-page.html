@@ -1,0 +1,112 @@
+<app-header></app-header>
+
+<div class="page">
+  <!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+  <app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+  <aside class="sidebar">
+    <!-- Mostramos el acceso rápido según rol -->
+    @if (isAdministrator()) {
+      <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+    } @else {
+      <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+    }
+  </aside>
+
+  <main class="content">
+    <h1 class="titulo-pagina">
+      Programación de Clases
+      @if (currentSemester) {
+        <span class="semester-badge">{{ currentSemester.year }}-{{ currentSemester.period }}</span>
+      }
+    </h1>
+    <div class="hr-line"></div>
+
+    <!-- Filtros de búsqueda -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label class="filter-label" for="search-input">Buscar:</label>
+        <input 
+          id="search-input"
+          [(ngModel)]="searchText" 
+          (ngModelChange)="applyFilters()" 
+          placeholder="Buscar por nombre de materia, ID de materia, docente o aula" 
+          class="search-bar">
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label" for="materia-select">Filtrar por Materia:</label>
+        <select id="materia-select" [(ngModel)]="materiaFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las materias</option>
+          <option *ngFor="let materia of availableMaterias" [value]="materia">{{materia}}</option>
+        </select>
+      </div>
+      
+      <!-- Filtro de sección solo visible para administradores -->
+      <div class="filter-group" *ngIf="role === 'admin'">
+        <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
+        <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
+          <option value="">Todas las secciones</option>
+          <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn--primary" (click)="onAddRow()">+ Nueva Clase</button>
+      <button class="btn btn--secondary" (click)="planAnterior()">Planificación Semestre Anterior</button>
+      <button class="btn btn--secondary" [routerLink]="['/solicitud-programas']">Aplicar Planeacion Programas</button>
+    </div>
+
+    <!-- Leyenda de estados de docentes -->
+    <div class="status-legend">
+      <h3 class="legend-title">Estado de Confirmación del Docente:</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="status-symbol symbol-pending"></span>
+          <span class="legend-text">Pendiente</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-symbol symbol-confirmed"></span>
+          <span class="legend-text">Confirmado</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-symbol symbol-rejected"></span>
+          <span class="legend-text">Rechazado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla principal -->
+    <app-planning-classes-table
+      [rows]="rows"
+      (patchRow)="onPatchRow($event)"
+      (addRow)="onAddRow()"
+      (removeRow)="onRemoveRow($event)"
+      (saveRow)="onSaveRow($event)">
+    </app-planning-classes-table>
+
+    <div class="actions">
+      <button class="btn btn--primary" (click)="guardar()">Exportar Reporte</button>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de conflicto de horarios -->
+<app-schedule-conflict
+  [showModal]="showScheduleConflict"
+  [teacherName]="conflictData.teacherName"
+  [conflictSchedule]="conflictData.conflictSchedule"
+  [conflictSubject]="conflictData.conflictSubject"
+  [newSchedule]="conflictData.newSchedule"
+  [newSubject]="conflictData.newSubject"
+  (modalClosed)="onConflictModalClosed()"
+  (assignDifferentTeacher)="onAssignDifferentTeacher()">
+</app-schedule-conflict>
+
+<!-- Modal de duplicación de semestres -->
+<app-pop-duplicacion-semetre 
+  *ngIf="showDuplicacionPopup"
+  (closeModal)="onCloseDuplicacion()"
+  (applySemester)="onApplySemester($event)">
+</app-pop-duplicacion-semetre>

@@ -1,0 +1,320 @@
+/* =========================================================
+   GESTIONAR SISTEMA PAGE STYLES
+   ========================================================= */
+
+.main-content {
+  margin-left: 280px; /* Espacio para sidebar fijo */
+  padding: 0;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.container {
+  max-width: none;
+  margin: 0;
+  padding: 24px 32px;
+}
+
+/* ==============================
+  Estilos para filtros (copiados de planificación)
+  ============================== */
+.filters-container {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.filter-label {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-700);
+  margin: 0;
+}
+
+.search-bar {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  font: inherit;
+  background: #fff;
+  outline: none;
+  min-width: 280px;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.filter-select {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  font: inherit;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+  }
+
+  option {
+    padding: 8px 12px;
+  }
+}
+
+/* Toolbar (copiado de planificación) */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--brand-azul);
+  color: #fff;
+  font-weight: 600;
+  
+  &:hover:not(:disabled) {
+    background: #1e40af;
+  }
+  
+  &.btn--disabled,
+  &:disabled {
+    background: #9ca3af;
+    color: #d1d5db;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.btn--secondary {
+  background: #e9eef7;
+  color: #234574;
+  font-weight: 600;
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .search-bar {
+    min-width: auto;
+  }
+}
+
+/* Sección de guardar */
+.save-section {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* ==============================
+  Formulario de Planificación
+  ============================== */
+.planning-info-container {
+  margin: 24px 0;
+  padding: 20px;
+  background: #f8fffe;
+  border: 1px solid #e0f2f1;
+  border-radius: 8px;
+}
+
+.section-title {
+  font-size: var(--fs-large);
+  font-weight: 600;
+  color: var(--brand-azul);
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--brand-azul);
+}
+
+.planning-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-700);
+  margin: 0;
+}
+
+.form-select,
+.form-input {
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 12px;
+  font: inherit;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &:invalid {
+    border-color: var(--error);
+  }
+}
+
+.form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 20px;
+  }
+  
+  .toolbar {
+    flex-direction: column;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .planning-info-container {
+    padding: 16px;
+  }
+}
+
+/* ==============================
+  New Semester Form Styles
+  ============================== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.new-semester-form {
+  background: #f8f9fa;
+  border: 2px solid var(--primary-600);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  
+  h4 {
+    margin: 0 0 16px 0;
+    color: var(--primary-700);
+    font-size: var(--fs-medium);
+    font-weight: 600;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-start;
+  
+  .btn {
+    min-width: 140px;
+  }
+}
+
+/* Form help text and optional label */
+.form-help-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.optional-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #9ca3af;
+  font-style: italic;
+  margin-left: 4px;
+}
+
+/* Responsive adjustments for new semester form */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    
+    .btn {
+      min-width: auto;
+    }
+  }
+}

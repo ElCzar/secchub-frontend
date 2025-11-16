@@ -1,0 +1,155 @@
+<!-- Modal con overlay -->
+<div class="modal-overlay" 
+     (click)="onClose()" 
+     (keydown.escape)="onClose()">
+  <!-- Contenedor del popup -->
+  <div class="modal-container" 
+       (click)="$event.stopPropagation()"
+       (keydown)="$event.stopPropagation()"
+       aria-labelledby="modal-title"
+       aria-describedby="modal-content">
+    
+    <!-- Título del popup -->
+    <h2 id="modal-title" class="popup-title">
+      {{ showPreview ? 'Vista Previa del Semestre' : 'Duplicación Semestres Anteriores' }}
+    </h2>
+    
+    <!-- Línea divisoria -->
+    <div class="hr-line"></div>
+    
+    <!-- Contenido del popup -->
+    <div id="modal-content" class="modal-content">
+      
+      <!-- Vista de selección de semestre -->
+      <div *ngIf="!showPreview" class="semester-selection">
+        <!-- Pregunta -->
+        <p class="question-text">¿Cuál semestre desea duplicar?</p>
+        <!-- Desplegable de semestres -->
+        <div class="select-container">
+          <select 
+            class="semester-select" 
+            [(ngModel)]="selectedSemester" 
+            (change)="onSemesterChange()">
+            <option value="" disabled>Seleccione un semestre</option>
+            <option *ngFor="let semester of availableSemesters" [value]="semester">
+              {{ semester }}
+            </option>
+          </select>
+        </div>
+        <!-- Advertencia debajo del select -->
+        <p *ngIf="showAnnualWarning" class="preview-summary warning annual-warning-inline">
+          ⚠️ Advertencia:
+          <span *ngIf="annualCount === 1"><b>Se encontró {{ annualCount }} materia anual, no se recomienda duplicarla.</b></span>
+          <span *ngIf="annualCount > 1"><b>Se encontraron {{ annualCount }} materias anuales, no se recomienda duplicarlas.</b></span>
+        </p>
+        
+        <!-- Mensaje de error -->
+        <div *ngIf="error" class="error-message">
+          {{ error }}
+        </div>
+      </div>
+      
+      <!-- Vista previa del semestre -->
+      <div *ngIf="showPreview && previewData" class="semester-preview">
+        <div class="preview-header">
+          <h3>Semestre {{ selectedSemester }}</h3>
+          <p class="preview-summary" [ngClass]="{'success': previewData.classes.length > 0, 'warning': previewData.classes.length === 0}">
+            {{ previewMessage }}
+          </p>
+          <!-- Advertencia solo en la vista previa si no está en el select -->
+          <p *ngIf="showAnnualWarning && !selectedSemester" class="preview-summary warning annual-warning-inline">
+            ⚠️ Advertencia:
+            <span *ngIf="annualCount === 1"><b>Se encontró {{ annualCount }} materia anual, no se recomienda duplicarla.</b></span>
+            <span *ngIf="annualCount > 1"><b>Se encontraron {{ annualCount }} materias anuales, no se recomienda duplicarlas.</b></span>
+          </p>
+        </div>
+        <div class="preview-classes" *ngIf="previewData.classes.length > 0">
+          <div class="class-item" *ngFor="let class of previewData.classes" [ngClass]="{'annual-class': annualClassIds.includes(class.id || -1)}">
+            <div class="class-select-label" style="position: absolute; top: 8px; right: 16px;">
+              <label style="display: flex; align-items: center;">
+                <input type="checkbox"
+                  [checked]="selectedClassIds.includes(class.id || -1)"
+                  (change)="onToggleClass(class.id || -1, $event.target.checked)" />
+                <span style="margin-left:8px; font-weight:normal;">Seleccionar</span>
+              </label>
+            </div>
+            <ng-container *ngIf="annualClassIds.includes(class.id || -1)">
+              <div class="annual-warning-label" style="color:#d32f2f; font-weight:bold; margin-bottom:6px; display:flex; align-items:center;">
+                <span style="font-size:18px; margin-right:6px;">⚠️</span>
+                Materia anual, no se recomienda duplicarla.
+              </div>
+            </ng-container>
+            <div class="class-header">
+              <h4 class="course-name">{{ class.courseName || 'Curso sin nombre' }}</h4>
+              <div class="class-details">
+                <span class="capacity">Capacidad: {{ class.capacity || 0 }}</span>
+                <span class="dates">
+                  {{ class.startDate | date:'dd/MM/yyyy' }} - {{ class.endDate | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+            <div class="schedules" *ngIf="class.schedules && class.schedules.length > 0">
+              <div class="schedule-item" *ngFor="let schedule of class.schedules">
+                <span class="day">{{ formatDay(schedule.day) }}</span>
+                <span class="time">{{ schedule.startTime }} - {{ schedule.endTime }}</span>
+                <span class="modality">{{ schedule.modalityName || 'Presencial' }}</span>
+                <span class="room" *ngIf="schedule.classroomRoom">{{ schedule.classroomRoom }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="previewData.classes.length === 0" class="no-classes">
+          <p>❌ {{ previewMessage }}</p>
+        </div>
+      </div>
+      
+      <!-- Indicador de carga -->
+      <div *ngIf="loading" class="loading-indicator">
+        <p>Cargando...</p>
+      </div>
+      
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="modal-actions">
+      <button 
+        type="button" 
+        class="btn btn--secondary" 
+        (click)="onClose()" 
+        [disabled]="loading">
+        Cancelar
+      </button>
+      
+      <!-- Botones para vista de selección -->
+      <div *ngIf="!showPreview" class="action-buttons">
+        <button 
+          type="button" 
+          class="btn btn--outline" 
+          [disabled]="!selectedSemester || loading"
+          (click)="onShowPreview()">
+          Vista Previa
+        </button>
+      </div>
+      
+      <!-- Botones para vista previa -->
+      <div *ngIf="showPreview" class="action-buttons">
+        <button 
+          type="button" 
+          class="btn btn--secondary" 
+          (click)="onBackToSelection()" 
+          [disabled]="loading">
+          Volver
+        </button>
+        
+        <button 
+          type="button" 
+          class="btn btn--primary" 
+          [disabled]="loading || (previewMessage && previewMessage.includes('No hay'))"
+          (click)="onApplySemester()">
+          Aplicar Planificación
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>

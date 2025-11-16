@@ -1,0 +1,236 @@
+/* =========================================================
+   FORMULARIO DE MONITORES — estilos locales del componente
+   ========================================================= */
+
+/* Layout base del page (título + hr ya vienen del global) */
+.container {
+  padding: 16px;
+  background: #fff; /* Fondo blanco para toda la página */
+  min-height: 100vh;
+}
+/* ==========================================
+   Título y línea divisoria alineados a la izquierda
+   ========================================== */
+.titulo-pagina {
+  text-align: left;
+  margin-left: 0;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+}
+
+.hr-line {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Card contenedora del formulario */
+.card-soft {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px rgba(44, 86, 151, 0.08);
+}
+
+/* Formato general */
+.monitor-form {
+  .form-group { margin-bottom: 16px; }
+
+  label, legend {
+    display: block;
+    font-weight: 600;
+    color: var(--text-700);
+    margin-bottom: 6px;
+  }
+
+  // Resaltar el asterisco en los campos obligatorios
+  .required {
+    color: #d32f2f;
+  }
+
+  legend {
+    font-size: var(--fs-base);
+    padding: 0;
+    border: none;
+  }
+
+  .field-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-700);
+    margin-bottom: 6px;
+  }
+
+  .input-display {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    color: var(--text-600);
+    font-size: var(--fs-base);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .input {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: var(--fs-base);
+    background: #fff;
+    transition: border-color .2s;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: var(--brand-azul);
+      box-shadow: 0 0 0 2px rgba(44, 86, 151, .10);
+      outline: none;
+    }
+  }
+}
+
+/* Banner de error visible cuando falta información requerida */
+.form-error {
+  background: rgba(211, 47, 47, 0.06);
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  color: #8b1e1e;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ==========================================
+   Número de documento con tipo embebido
+   (select a la izquierda, sin label visible)
+   ========================================== */
+.doc-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  /* Ancho fijo cómodo para el tipo; el input toma el resto */
+  select.input {
+    flex: 0 0 120px;
+  }
+  input.input {
+    flex: 1 1 auto;
+  }
+}
+
+/* ==========================================
+   Filas de dos columnas (Nombre/Apellido)
+   ========================================== */
+.row-2 {
+  display: flex;
+  gap: 16px;
+
+  > * { flex: 1; }
+}
+
+/* ==========================================
+   Radios en línea (Sí / No)
+   ========================================== */
+.radio-line {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 4px;
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  input[type="radio"] { cursor: pointer; }
+}
+
+/* ==========================================
+   Disponibilidad (mini tarjeta con grid)
+   Para usar: <div class="availability-card">
+                <div class="availability-grid"> ... </div>
+              </div>
+   ========================================== */
+.availability-card {
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.availability-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 100px; /* Día | Inicio | Final | Total */
+  gap: 8px;
+  align-items: center;
+
+  small {
+    display: block;
+    color: var(--text-500);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+}
+
+/* ==========================================
+   Botón primario (consistente con global)
+   ========================================== */
+.btn--primary {
+  width: 100%;
+  background: var(--brand-azul);
+  color: #fff;
+  padding: 14px 0;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 0;
+  font-size: var(--fs-base);
+  margin-top: 12px;
+  transition: background .2s;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { 
+    background: #234574; 
+  }
+
+  &:disabled {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+/* ==========================================
+   Responsivo
+   ========================================== */
+@media (max-width: 600px) {
+  .card-soft { padding: 14px; }
+
+  .row-2 {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .doc-inline {
+    flex-direction: column;
+
+    select.input,
+    input.input {
+      width: 100%;
+      flex: 0 0 auto;
+    }
+  }
+
+  .availability-grid {
+    grid-template-columns: 1fr; /* una debajo de otra en móviles */
+  }
+}

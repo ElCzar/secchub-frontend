@@ -1,0 +1,151 @@
+/* =========================================================
+   LOG AUDITORÍA TABLE STYLES
+   ========================================================= */
+
+.table-container {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-500);
+  font-style: italic;
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-base);
+}
+
+.table-header {
+  background: var(--brand-azul);
+  color: #fff;
+  
+  th {
+    text-align: left;
+    padding: 16px 20px;
+    font-weight: 600;
+    font-size: var(--fs-base);
+    border-bottom: 2px solid var(--border);
+    
+    &:first-child {
+      border-top-left-radius: 8px;
+    }
+    
+    &:last-child {
+      border-top-right-radius: 8px;
+    }
+  }
+}
+
+.table-row {
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #f8f9fa;
+  }
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+  
+  td {
+    padding: 14px 20px;
+    vertical-align: middle;
+    color: var(--text-700);
+  }
+}
+
+/* Columnas específicas */
+.user-column {
+  font-weight: 600;
+  color: var(--brand-azul);
+  min-width: 150px;
+}
+
+.action-column {
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.description-column {
+  color: var(--text-500);
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.date-column {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-700);
+  min-width: 100px;
+}
+
+.time-column {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-700);
+  min-width: 80px;
+  text-align: center;
+}
+
+.no-data-row {
+  .no-data-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-500);
+    font-style: italic;
+    background: #f8f9fa;
+  }
+}
+
+.table-info {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid var(--border);
+  
+  .entries-count {
+    margin: 0;
+    font-size: var(--fs-small);
+    color: var(--text-500);
+    text-align: right;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .log-table {
+    min-width: 600px;
+  }
+  
+  .table-header th,
+  .table-row td {
+    padding: 12px 16px;
+  }
+  
+  .description-column {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .log-table {
+    min-width: 500px;
+  }
+  
+  .table-header th,
+  .table-row td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}

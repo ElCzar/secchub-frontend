@@ -1,0 +1,128 @@
+.sched-wrap {
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.sched-head {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  margin-bottom: 10px;
+  .title { 
+    font-weight: 700; 
+    color: var(--text-700); 
+  }
+}
+
+.sched-table { 
+    display: grid; 
+    gap: 10px;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.sched-row {
+  display: grid;
+  grid-template-columns: 100px 160px 180px 180px 140px;
+  gap: 12px; 
+  align-items: center;
+  width: fit-content;
+}
+
+.sched-row--head { 
+    font-weight: 700; 
+    color: var(--text-700); 
+}
+
+.actions { 
+    display: flex; 
+    gap: 6px; 
+}
+
+.btn-icon { 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    border: 1px solid var(--border); 
+    background: var(--brand-azul); 
+    font-weight: 700; 
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s ease;
+    
+    &:hover:not(:disabled) { 
+        background: #1e4076;
+    }
+    
+    &:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+}
+
+.input { 
+    width: 100%; 
+    max-width: 100%;
+    height: 40px; 
+    border: 1px solid var(--border); 
+    border-radius: 6px; 
+    padding: 0 10px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.input:focus { 
+    border-color: var(--brand-azul); 
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15); 
+    outline: none;
+}
+
+.time-cell { 
+    display: flex; 
+    gap: 6px; 
+    align-items: center;
+    
+    .input {
+        width: 100%;
+        min-width: 140px;
+    }
+}
+
+.icon { 
+    width: 28px; 
+    height: 28px; 
+    border: 1px solid var(--border); 
+    border-radius: 50%; 
+    background:#fff; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+}
+
+.radio { 
+    display:flex; 
+    gap:12px; 
+    align-items:center; 
+    label{ 
+        display:inline-flex; 
+        gap:6px; 
+    } 
+}
+
+/* Estilos para el campo readonly de total horas */
+.readonly-input {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+    font-weight: 600;
+    text-align: center;
+}

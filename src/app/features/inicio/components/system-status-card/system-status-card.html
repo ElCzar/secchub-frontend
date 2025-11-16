@@ -1,0 +1,118 @@
+@if (data) {
+  <div class="table-card">
+    <h2 class="table-card__title">Estado de Planificación</h2>
+
+    <div class="tabla-wrap">
+      <table class="tabla">
+        <colgroup>
+          <col class="c-metric" />
+          <col class="c-value" />
+          <col class="c-status" />
+        </colgroup>
+
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th>Valor</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <!-- Active Plannings -->
+          @if(isAdmin){
+            <tr>
+              <td><strong>Planificaciones Activas</strong></td>
+              <td>{{ data.activePlannings.completedSections }} / {{ data.activePlannings.totalSections }} secciones completadas</td>
+              <td>
+                <span class="badge" [ngClass]="{ 
+                  'badge--ok': isAllSectionsCompleted(), 
+                  'badge--warn': !isAllSectionsCompleted() 
+                }">
+                  {{ getCompletionPercentage() }}%
+                </span>
+              </td>
+            </tr>
+          }
+
+          <!-- Pending Teachers -->
+          <tr>
+            <td><strong>Docentes Sin Confirmar</strong></td>
+            <td>{{ data.pendingTeachers }} pendiente{{ data.pendingTeachers !== 1 ? 's' : '' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{ 
+                'badge--ok': data.pendingTeachers === 0, 
+                'badge--warn': data.pendingTeachers > 0 && data.pendingTeachers <= 5,
+                'badge--danger': data.pendingTeachers > 5
+              }">
+                {{ data.pendingTeachers === 0 ? '✅ Completo' : '⚠ Pendiente' }}
+              </span>
+            </td>
+          </tr>
+
+          <!-- Schedule Conflicts -->
+          <tr>
+            <td><strong>Conflictos de Horario</strong></td>
+            <td>{{ data.scheduleConflicts }} conflicto{{ data.scheduleConflicts !== 1 ? 's' : '' }} detectado{{ data.scheduleConflicts !== 1 ? 's' : '' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{ 
+                'badge--ok': data.scheduleConflicts === 0, 
+                'badge--warn': data.scheduleConflicts > 0 && data.scheduleConflicts <= 3,
+                'badge--danger': data.scheduleConflicts > 3
+              }">
+                {{ data.scheduleConflicts === 0 ? '✅ Sin conflictos' : '⚠ Requiere atención' }}
+              </span>
+            </td>
+          </tr>
+
+          <!-- Classes Without Teacher -->
+          <tr>
+            <td><strong>Clases Sin Docente</strong></td>
+            <td>{{ data.classesWithoutTeacher }} clase{{ data.classesWithoutTeacher !== 1 ? 's' : '' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{ 
+                'badge--ok': data.classesWithoutTeacher === 0, 
+                'badge--warn': data.classesWithoutTeacher > 0 && data.classesWithoutTeacher <= 5,
+                'badge--danger': data.classesWithoutTeacher > 5
+              }">
+                {{ data.classesWithoutTeacher === 0 ? '✅ Completo' : '⚠ Pendiente' }}
+              </span>
+            </td>
+          </tr>
+
+          <!-- Classes Without Classroom -->
+          <tr>
+            <td><strong>Clases Sin Aula</strong></td>
+            <td>{{ data.classesWithoutClassroom }} clase{{ data.classesWithoutClassroom !== 1 ? 's' : '' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{ 
+                'badge--ok': data.classesWithoutClassroom === 0, 
+                'badge--warn': data.classesWithoutClassroom > 0 && data.classesWithoutClassroom <= 5,
+                'badge--danger': data.classesWithoutClassroom > 5
+              }">
+                {{ data.classesWithoutClassroom === 0 ? '✅ Completo' : '⚠ Pendiente' }}
+              </span>
+            </td>
+          </tr>
+
+          <!-- Next Deadline -->
+          @if (data.nextDeadline) {
+            <tr>
+              <td><strong>Vencimiento Planificación</strong></td>
+              <td>{{ formatDeadline(data.nextDeadline) }}</td>
+              <td>
+                <span class="badge" [ngClass]="{ 
+                  'badge--ok': !isDeadlineNear(data.nextDeadline), 
+                  'badge--warn': isDeadlineNear(data.nextDeadline) && !isDeadlinePassed(data.nextDeadline),
+                  'badge--danger': isDeadlinePassed(data.nextDeadline)
+                }">
+                  {{ getDeadlineStatus(data.nextDeadline) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

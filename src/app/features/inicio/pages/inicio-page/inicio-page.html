@@ -1,0 +1,53 @@
+<app-header></app-header>
+
+<!-- Botón toggle que solo aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button></app-sidebar-toggle-button>
+
+<!-- Sidebar fijo -->
+<aside class="sidebar">
+  @if(isAdmin()) {
+    <app-accesos-rapidos-admi></app-accesos-rapidos-admi>
+  } @else {
+    <app-accesos-rapidos-seccion></app-accesos-rapidos-seccion>
+  }
+</aside>
+
+<div class="main-content-container">
+  <div class="container">
+    @if (isAdmin()) {
+      <h1 class="titulo-pagina">Bienvenido, Administrador Académico</h1>
+    } @else {
+      <h1 class="titulo-pagina">Bienvenido, Jefe de Sección</h1>
+    }
+    <div class="hr-line"></div>
+
+    <main class="content">
+      <!-- Tarjeta superior -->
+      <app-system-status-card [data]="systemStatus" [isAdmin]="isAdmin()"></app-system-status-card>
+
+      <!-- Tabla de resumen por sección -->
+      @if (isAdmin()) {
+        <app-section-summary-table [data]="sectionsSummary"></app-section-summary-table>
+      }
+
+      <!-- Tabla de elementos faltantes y conflictos -->
+      <app-action-summary-card [data]="actionSummary"></app-action-summary-card>
+      
+      <!-- Cerrar planificación para Jefe de Sección -->
+      @if (!isAdmin()) {
+        <div class="page-actions">
+          <button class="btn btn--primary btn--large" (click)="abrirPopupCerrarPlanificacion()">
+            CERRAR PLANIFICACIÓN
+          </button>
+        </div>
+      }
+    </main>
+  </div>
+</div>
+
+<!-- Popup de confirmación -->
+<app-pop-up-cerrar-planificacion
+  [visible]="mostrarPopupCerrar"
+  (confirm)="confirmarCierrePlanificacion()"
+  (cancelled)="cancelarCierrePlanificacion()">
+</app-pop-up-cerrar-planificacion>

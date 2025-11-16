@@ -1,0 +1,50 @@
+@if (data && data.rows && data.rows.length > 0) {
+  <div class="action-card">
+    <h2 class="action-card__title">Acciones Pendientes</h2>
+    
+    <div class="action-heroes">
+      @for (row of visibleRows; track row) {
+        <button 
+          class="action-hero"
+          [ngClass]="getActionClass(row)"
+          (click)="handleActionClick(row)"
+          type="button">
+          
+          <div class="action-hero__icon">{{ getActionIcon(row) }}</div>
+          
+          <div class="action-hero__content">
+            <h3 class="action-hero__title">{{ getActionTitle(row.type) }}</h3>
+            <p class="action-hero__resource">
+              <strong>{{ row.resourceName }}</strong>
+            </p>
+            <p class="action-hero__details">{{ row.details }}</p>
+          </div>
+          
+          <div class="action-hero__arrow">
+            <span class="action-hero__link">{{ getRouteLabel(row) }}</span>
+            <span class="arrow">→</span>
+          </div>
+        </button>
+      }
+    </div>
+
+    @if (hasMoreItems) {
+      <div class="view-all">
+        <button 
+          class="view-all__button" 
+          (click)="viewAllActions()"
+          type="button">
+          Ver Todo ({{ remainingItemsCount }} más)
+        </button>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="action-card action-card--empty">
+    <h2 class="action-card__title">Acciones Pendientes</h2>
+    <div class="empty-state">
+      <div class="empty-state__icon">✅</div>
+      <p class="empty-state__message">No hay acciones pendientes</p>
+    </div>
+  </div>
+}

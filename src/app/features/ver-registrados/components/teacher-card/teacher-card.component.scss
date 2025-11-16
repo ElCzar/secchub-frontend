@@ -1,0 +1,56 @@
+@use '../../../../shared/styles/card-base.scss' as base;
+
+.teacher-card {
+  @extend %user-card-base;
+  border-left: 4px solid #28a745; // Verde para docentes
+  
+  .card-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    
+    .role-icon {
+      font-size: 2rem;
+    }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      span {
+        font-size: 0.95rem;
+        color: #333;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &:hover {
+    border-left-color: #20c997;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+  }
+
+  &.inactive {
+    opacity: 0.7;
+    border-left-color: #6c757d;
+    
+    .card-header {
+      background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+    }
+  }
+}

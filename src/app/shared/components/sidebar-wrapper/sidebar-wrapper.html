@@ -1,0 +1,16 @@
+<!-- Botón toggle que aparece cuando el sidebar está oculto -->
+<app-sidebar-toggle-button 
+  *ngIf="!(sidebarToggleService.sidebarVisible$ | async)">
+</app-sidebar-toggle-button>
+
+<!-- Sidebar que aparece/desaparece según el estado -->
+<div class="sidebar-container" 
+     [class.sidebar-hidden]="!(sidebarToggleService.sidebarVisible$ | async)">
+  <app-accesos-rapidos-admi 
+    *ngIf="role === 'admin'">
+  </app-accesos-rapidos-admi>
+  
+  <app-accesos-rapidos-seccion 
+    *ngIf="role === 'seccion'">
+  </app-accesos-rapidos-seccion>
+</div>

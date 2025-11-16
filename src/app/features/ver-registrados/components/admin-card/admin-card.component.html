@@ -1,0 +1,66 @@
+<!-- 
+  Template para el componente AdminCardComponent
+  Muestra información específica de usuarios con rol de administrador
+  Hereda funcionalidad base de BaseUserCardComponent
+-->
+
+<article class="user-card admin-card" 
+         [class.loading]="loading"
+         [class.inactive]="!isActive()"
+         [attr.aria-label]="'Tarjeta de administrador: ' + getFullName()">
+  
+  <!-- Header con información principal -->
+  <header class="card-header">
+    <div class="user-avatar" [attr.aria-label]="'Avatar de ' + getFullName()">
+      <span class="role-icon" [attr.aria-label]="'Icono de rol: ' + getRoleLabel(UserRole.ADMIN)">
+        {{ getRoleIcon(UserRole.ADMIN) }}
+      </span>
+    </div>
+    
+    <div class="user-info">
+      <h3 class="user-name">{{ getFullName() }}</h3>
+      <span class="user-role">{{ getRoleLabel(UserRole.ADMIN) }}</span>
+    </div>
+    
+    <div class="user-status" 
+         [class]="getStatusClass(user.status)"
+         [attr.aria-label]="'Estado: ' + getStatusLabel(user.status)">
+      {{ getStatusLabel(user.status) }}
+    </div>
+  </header>
+
+  <!-- Información específica del administrador -->
+  <section class="card-body">
+    <ul class="info-grid" aria-label="Información del administrador">
+      
+      <li class="info-item">
+        <span class="info-label">Email:</span>
+        <span class="info-value">{{ user.userInfo.email }}</span>
+      </li>
+      
+      <li class="info-item">
+        <span class="info-label">Facultad:</span>
+        <span class="info-value">{{ user.userInfo.faculty }}</span>
+      </li>
+      
+      <li class="info-item">
+        <span class="info-label">Documento:</span>
+        <span class="info-value">{{ user.userInfo.documentNumber }}</span>
+      </li>
+      
+      
+     
+      
+    </ul>
+  </section>
+
+  <!-- Overlay de carga -->
+  <output class="loading-overlay" 
+          *ngIf="loading" 
+          aria-live="polite" 
+          aria-label="Cargando información del administrador">
+    <div class="spinner" aria-hidden="true"></div>
+    <span class="sr-only">Cargando...</span>
+  </output>
+  
+</article>

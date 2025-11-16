@@ -1,0 +1,440 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of, forkJoin } from 'rxjs';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
+
+export interface TeacherAssignmentDTO {
+  id?: number;
+  teacherId: number;
+  classId: number;
+  workHours: number;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  observation?: string;
+  createdDate?: string;
+  responseDate?: string;
+  extraHours?: number;
+}
+
+export interface TeacherClassAssignHoursRequestDTO {
+  workHoursToAssign: number;
+}
+
+export interface TeacherClassAssignHoursResponseDTO {
+  teacherName: string;
+  maxHours: number;
+  totalAssignedHours: number;
+  workHoursToAssign: number;
+  exceedsMaxHours: number;
+}
+
+export interface TeacherClassDatesRequestDTO {
+  startDate: string; // ISO format YYYY-MM-DD
+  endDate: string;   // ISO format YYYY-MM-DD
+}
+
+export interface TeacherDTO {
+  id: number;
+  name: string;
+  lastName: string;
+  email?: string;
+  maxHours: number;
+  assignedHours: number;
+  availableHours: number;
+  extraHours?: number;
+  contractType?: string;
+  assignments?: TeacherAssignmentDTO[];
+  // Teacher-Class specific fields
+  teacherClassId?: number; // ID of the teacher-class assignment
+  startDate?: string; // Individual teaching start date for this assignment
+  endDate?: string;   // Individual teaching end date for this assignment
+}
+
+export interface ClassDTO {
+  id?: number;
+  courseName: string;
+  courseId: string;
+  section: string;
+  classId: string;
+  startDate: string;
+  endDate: string;
+  weeks: number;
+  status: string;
+  capacity?: number;
+  semesterId?: number;
+  notes?: string[];
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TeacherAssignmentService {
+  public readonly baseUrl = `${environment.apiUrl}/api/teacher-assignments`;
+
+  constructor(private readonly http: HttpClient) {}
+
+  // ==========================================
+  // GESTIÓN DE ASIGNACIONES
+  // ==========================================
+
+  /**
+   * Asignar un docente a una clase académica
+   */
+  assignTeacherToClass(
+    teacherId: number, 
+    classId: number, 
+    workHours: number, 
+    observation?: string
+  ): Observable<TeacherDTO> {
+    const params = new HttpParams()
+      .set('teacherId', teacherId.toString())
+      .set('classId', classId.toString())
+      .set('workHours', workHours.toString())
+      .set('observation', observation || '');
+
+    return this.http.post<TeacherDTO>(`${this.baseUrl}/assign`, null, { params });
+  }
+
+  /**
+   * Actualizar una asignación existente
+   */
+  updateAssignment(
+    assignmentId: number, 
+    workHours: number, 
+    observation?: string
+  ): Observable<TeacherDTO> {
+    const params = new HttpParams()
+      .set('workHours', workHours.toString())
+      .set('observation', observation || '');
+
+    return this.http.put<TeacherDTO>(`${this.baseUrl}/${assignmentId}`, null, { params });
+  }
+
+  /**
+   * Eliminar una asignación
+   */
+  removeAssignment(assignmentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${assignmentId}`);
+  }
+
+  /**
+   * Actualizar las fechas de inicio y fin de una asignación teacher-class específica
+   */
+  updateTeacherClassDates(
+    teacherClassId: number,
+    dates: TeacherClassDatesRequestDTO
+  ): Observable<any> {
+    const url = `${environment.apiUrl}/teachers/classes/${teacherClassId}/dates`;
+    console.log(`📅 Actualizando fechas para teacher-class ${teacherClassId}:`, dates);
+    
+    return this.http.patch(url, dates).pipe(
+      tap(response => {
+        console.log(`✅ Fechas actualizadas para teacher-class ${teacherClassId}:`, response);
+      }),
+      catchError(error => {
+        console.error(`❌ Error actualizando fechas para teacher-class ${teacherClassId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Eliminar una asignación de profesor a clase específica
+   */
+  removeTeacherFromClass(teacherId: number, classId: number): Observable<void> {
+    console.log(`🗑️ Eliminando asignación: teacherId=${teacherId}, classId=${classId}`);
+    const url = `${environment.apiUrl}/teachers/classes/teacher/${teacherId}/class/${classId}`;
+    return this.http.delete<void>(url).pipe(
+      tap(() => console.log(`✅ Asignación eliminada exitosamente`)),
+      catchError(error => {
+        console.error(`❌ Error eliminando asignación:`, error);
+        throw error;
+      })
+    );
+  }
+
+  // ==========================================
+  // CONSULTAS DE ASIGNACIONES
+  // ==========================================
+
+  /**
+   * Obtener advertencia sobre horas extra al asignar trabajo a un profesor
+   */
+  getTeacherExtraHoursWarning(
+    teacherId: number,
+    workHoursToAssign: number
+  ): Observable<TeacherClassAssignHoursResponseDTO> {
+    const requestBody: TeacherClassAssignHoursRequestDTO = {
+      workHoursToAssign
+    };
+    
+    return this.http.post<TeacherClassAssignHoursResponseDTO>(
+      `${environment.apiUrl}/teachers/${teacherId}/extra-hours-warning`,
+      requestBody
+    ).pipe(
+      tap(response => console.log('📊 Respuesta de horas extra:', response)),
+      catchError(error => {
+        console.error('❌ Error obteniendo advertencia de horas extra:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Obtener profesores asignados a una clase
+   * IMPORTANTE: Retorna UN registro por cada asignación teacher-class (no agrupa por teacherId)
+   * Cada registro tiene su propio teacherClassId, startDate y endDate
+   */
+  getTeachersAssignedToClass(classId: number): Observable<TeacherDTO[]> {
+    const integrationUrl = `${environment.apiUrl}/teachers/classes/class/${classId}`;
+    console.log(`📡 Obteniendo asignaciones teacher-class para clase ${classId} desde: ${integrationUrl}`);
+    
+    return this.http.get<any[]>(integrationUrl).pipe(
+      tap(rawResponse => {
+        console.log(`📥 Respuesta teacher-class para clase ${classId}:`, rawResponse);
+        console.log(`📊 Número de asignaciones teacher-class:`, rawResponse?.length || 0);
+      }),
+      switchMap((teacherClassList: any[]) => {
+        if (!teacherClassList || teacherClassList.length === 0) {
+          console.log(`⚠️ No hay asignaciones teacher-class para la clase ${classId}`);
+          return of([]);
+        }
+        
+        // Para cada asignación teacher-class (NO agrupar, mantener registros individuales)
+        // 1. Obtener información del teacher desde /teachers/{teacherId}
+        // 2. Luego obtener información del user desde /users/{userId}
+        // 3. Preservar teacherClassId, startDate, endDate de cada registro
+        const teacherClassRequests = teacherClassList.map(tc => 
+          this.http.get<any>(`${environment.apiUrl}/teachers/${tc.teacherId}`).pipe(
+            tap(teacherInfo => {
+              console.log(`👤 Teacher info para teacherId ${tc.teacherId}:`, teacherInfo);
+            }),
+            switchMap(teacherInfo => 
+              this.http.get<any>(`${environment.apiUrl}/user/id/${teacherInfo.userId}`).pipe(
+                tap(userInfo => {
+                  console.log(`👤 User info para userId ${teacherInfo.userId}:`, userInfo);
+                }),
+                map(userInfo => ({
+                  // Teacher identification
+                  id: tc.teacherId,
+                  name: userInfo.name || 'Docente',
+                  lastName: userInfo.lastName || '',
+                  email: userInfo.email || '',
+                  
+                  // Teacher capacity
+                  maxHours: teacherInfo.maxHours || 40,
+                  assignedHours: tc.workHours || 0,
+                  availableHours: (teacherInfo.maxHours || 40) - (tc.workHours || 0),
+                  extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                  contractType: teacherInfo.employmentTypeId === 1 ? 'Planta' : 'Cátedra',
+                  
+                  // CRITICAL: Individual teacher-class assignment data
+                  teacherClassId: tc.id, // ID de la asignación teacher-class (único por registro)
+                  startDate: tc.startDate || undefined, // Fecha inicio individual (puede ser null)
+                  endDate: tc.endDate || undefined      // Fecha fin individual (puede ser null)
+                })),
+                catchError(userError => {
+                  console.error(`❌ Error obteniendo user info para userId ${teacherInfo.userId}:`, userError);
+                  // Si falla el usuario, usar datos del teacher
+                  return of({
+                    id: tc.teacherId,
+                    name: 'Docente',
+                    lastName: '',
+                    email: '',
+                    maxHours: teacherInfo.maxHours || 40,
+                    assignedHours: tc.workHours || 0,
+                    availableHours: (teacherInfo.maxHours || 40) - (tc.workHours || 0),
+                    extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                    contractType: teacherInfo.employmentTypeId === 1 ? 'Planta' : 'Cátedra',
+                    teacherClassId: tc.id,
+                    startDate: tc.startDate || undefined,
+                    endDate: tc.endDate || undefined
+                  });
+                })
+              )
+            ),
+            catchError(teacherError => {
+              console.error(`❌ Error obteniendo teacher info para teacherId ${tc.teacherId}:`, teacherError);
+              // Si falla el teacher, retornar datos básicos
+              return of({
+                id: tc.teacherId,
+                name: 'Docente',
+                lastName: '',
+                email: '',
+                maxHours: 40,
+                assignedHours: tc.workHours || 0,
+                availableHours: 40 - (tc.workHours || 0),
+                extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                contractType: 'N/A',
+                teacherClassId: tc.id,
+                startDate: tc.startDate || undefined,
+                endDate: tc.endDate || undefined
+              });
+            })
+          )
+        );
+        
+        // Ejecutar todas las peticiones en paralelo
+        // NO AGRUPAR - cada registro mantiene su identidad única (teacherClassId)
+        return forkJoin(teacherClassRequests);
+      }),
+      tap(teacherClassAssignments => {
+        console.log(`✅ Asignaciones teacher-class con info completa para clase ${classId}:`, teacherClassAssignments);
+        console.log(`📋 Total de registros (sin agrupar):`, teacherClassAssignments.length);
+      }),
+      catchError(error => {
+        console.error(`❌ Error obteniendo asignaciones teacher-class de clase ${classId}:`, error);
+        console.error(`❌ Status: ${error.status}`);
+        console.error(`❌ URL intentada: ${integrationUrl}`);
+        return of([]); // Retornar array vacío en caso de error
+      })
+    );
+  }
+
+  /**
+   * Obtener clases asignadas a un profesor
+   */
+  getClassesAssignedToTeacher(teacherId: number): Observable<ClassDTO[]> {
+  return this.http.get<ClassDTO[]>(`${environment.apiUrl}/v1/teachers/${teacherId}/classes`);
+  }
+
+  /**
+   * Obtener profesores disponibles para una clase
+   */
+  getAvailableTeachersForClass(classId: number, requiredHours: number): Observable<TeacherDTO[]> {
+    const params = new HttpParams().set('requiredHours', requiredHours.toString());
+    return this.http.get<TeacherDTO[]>(`${this.baseUrl}/class/${classId}/available-teachers`, { params });
+  }
+
+  // ==========================================
+  // GESTIÓN DE DECISIONES (HU17)
+  // ==========================================
+
+  /**
+   * Profesor acepta una asignación
+   */
+  acceptAssignment(assignmentId: number, observation?: string): Observable<TeacherDTO> {
+    const params = new HttpParams().set('observation', observation || '');
+    return this.http.post<TeacherDTO>(`${this.baseUrl}/${assignmentId}/accept`, null, { params });
+  }
+
+  /**
+   * Profesor rechaza una asignación
+   */
+  rejectAssignment(assignmentId: number, observation?: string): Observable<TeacherDTO> {
+    const params = new HttpParams().set('observation', observation || '');
+    return this.http.post<TeacherDTO>(`${this.baseUrl}/${assignmentId}/reject`, null, { params });
+  }
+
+  /**
+   * Obtener asignaciones pendientes de un profesor
+   */
+  getPendingAssignments(teacherId: number): Observable<TeacherDTO[]> {
+    return this.http.get<TeacherDTO[]>(`${this.baseUrl}/teacher/${teacherId}/pending`);
+  }
+
+  /**
+   * Actualizar el nombre del profesor asignado a una clase
+   */
+  updateTeacherNameForClass(
+    classId: number, 
+    teacherId: number, 
+    name: string, 
+    lastName: string
+  ): Observable<TeacherDTO> {
+    const params = new HttpParams()
+      .set('name', name)
+      .set('lastName', lastName);
+
+    return this.http.put<TeacherDTO>(`${this.baseUrl}/class/${classId}/teacher/${teacherId}/name`, null, { params });
+  }
+
+  /**
+   * Cambiar el docente asignado a una clase
+   */
+  changeTeacherForClass(
+    classId: number, 
+    newTeacherId: number, 
+    workHours: number, 
+    observation?: string
+  ): Observable<TeacherDTO> {
+    const params = new HttpParams()
+      .set('newTeacherId', newTeacherId.toString())
+      .set('workHours', workHours.toString())
+      .set('observation', observation || '');
+
+    return this.http.put<TeacherDTO>(`${this.baseUrl}/class/${classId}/teacher`, null, { params });
+  }
+
+  // ==========================================
+  // REPORTES Y ESTADÍSTICAS
+  // ==========================================
+
+  /**
+   * Obtener reporte de carga horaria por profesor
+   */
+  getWorkloadReport(): Observable<TeacherDTO[]> {
+    return this.http.get<TeacherDTO[]>(`${this.baseUrl}/workload-report`);
+  }
+
+  /**
+   * Obtener estadísticas generales de asignaciones
+   */
+  getAssignmentStatistics(): Observable<{ [key: string]: any }> {
+    return this.http.get<{ [key: string]: any }>(`${this.baseUrl}/statistics`);
+  }
+
+  // ==========================================
+  // MÉTODOS DE UTILIDAD PARA EL FRONTEND
+  // ==========================================
+
+  /**
+   * Convertir TeacherDTO a formato esperado por el frontend
+   */
+  formatTeacherForDisplay(teacher: TeacherDTO): { id: string; name: string } {
+    return {
+      id: teacher.id.toString(),
+      name: `${teacher.name} ${teacher.lastName}`.trim()
+    };
+  }
+
+  /**
+   * Calcular horas disponibles de un docente
+   */
+  calculateAvailableHours(teacher: TeacherDTO): number {
+    return teacher.maxHours - teacher.assignedHours;
+  }
+
+  /**
+   * Verificar si un docente tiene capacidad para más horas
+   */
+  hasCapacityForHours(teacher: TeacherDTO, requiredHours: number): boolean {
+    return this.calculateAvailableHours(teacher) >= requiredHours;
+  }
+
+  /**
+   * Obtener el estado de asignación en formato legible
+   */
+  getAssignmentStatusLabel(status: string): string {
+    const statusLabels: Record<string, string> = {
+      'PENDING': 'Pendiente',
+      'ACCEPTED': 'Aceptado',
+      'REJECTED': 'Rechazado'
+    };
+    return statusLabels[status] || 'Desconocido';
+  }
+
+  /**
+   * Filtrar docentes por disponibilidad de horas
+   */
+  filterTeachersByAvailability(teachers: TeacherDTO[], requiredHours: number): TeacherDTO[] {
+    return teachers.filter(teacher => this.hasCapacityForHours(teacher, requiredHours));
+  }
+
+  /**
+   * Ordenar docentes por horas disponibles (descendente)
+   */
+  sortTeachersByAvailability(teachers: TeacherDTO[]): TeacherDTO[] {
+    return teachers.sort((a, b) => this.calculateAvailableHours(b) - this.calculateAvailableHours(a));
+  }
+}

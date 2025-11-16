@@ -1,0 +1,271 @@
+.page { 
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    transition: all 0.3s ease;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+
+.sidebar { 
+    background: var(--brand-azul-10, #f1f5fb); 
+    border-radius: var(--radius); 
+    padding: 16px;
+    margin: 0 !important;
+    margin-right: 0 !important;
+}
+.content {
+    display: grid;
+    gap: 16px;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+.titulo-pagina {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.semester-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    background: var(--brand-azul-10, #f1f5fb);
+    color: var(--brand-azul, #234574);
+    border: 2px solid var(--brand-azul, #234574);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+.btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+.btn--secondary {
+    background: #e9eef7;
+    color: #234574;
+    font-weight: 600;
+}
+.btn--primary {
+    background: var(--brand-azul);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ==============================
+  Estilos para filtros
+  ============================== */
+.filters-container {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.filter-label {
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--text-700);
+    margin: 0;
+}
+
+.search-bar {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    min-width: 440px;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    &::placeholder {
+        color: #999;
+    }
+}
+
+.filter-select {
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px;
+    font: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+        border-color: var(--brand-azul);
+        box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+    }
+
+    option {
+        padding: 8px 12px;
+    }
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .search-bar {
+        min-width: auto;
+    }
+}
+
+/* Ajustar layout cuando el sidebar está oculto */
+:host-context(body.sidebar-hidden) .page {
+    grid-template-columns: 1fr !important;
+    padding-left: 20px !important;
+}
+
+:host-context(body.sidebar-hidden) .sidebar {
+    display: none !important;
+}
+
+/* Botón toggle del sidebar como elemento normal de la página */
+app-sidebar-toggle-button {
+    grid-column: 1 / -1; /* Ocupa toda la fila del grid */
+    margin-bottom: 16px;
+    position: static !important; /* Forzar posición normal */
+    
+    .sidebar-toggle-btn {
+        background: var(--brand-azul) !important;
+        border: none !important;
+        color: white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: static !important; /* Forzar posición normal */
+    }
+    
+    .sidebar-toggle-btn:hover {
+        background: var(--brand-azul-dark, #1e3a5f) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+    }
+}
+
+/* ==============================
+  Leyenda de estados
+  ============================== */
+.status-legend {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-700);
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.legend-items {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-700);
+}
+
+.legend-text {
+    font-weight: 500;
+}
+
+/* Reutilizar estilos de símbolos de la tabla */
+.status-symbol {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    flex-shrink: 0;
+}
+
+.symbol-pending {
+    width: 0;
+    height: 0;
+    border: none;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 12px solid #f39c12;
+    background: transparent;
+}
+
+.symbol-confirmed {
+    border-radius: 50%;
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.symbol-rejected {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Responsive para leyenda */
+@media (max-width: 768px) {
+    .legend-items {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

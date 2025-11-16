@@ -1,0 +1,131 @@
+
+/* =====================================================
+   Estilos para la página principal del módulo Programas
+   Archivo: programas-page.component.scss
+   Descripción: Define la disposición general, bloques de
+   metadatos, acciones y responsividad de la página.
+   ===================================================== */
+
+/* Layout principal de la página de Programas */
+.page-container {
+  margin-left: 120px;     /* Desplaza el bloque principal hacia la derecha */
+  max-width: 1600px;      /* Controla el ancho máximo del contenido */
+  padding-right: 20px;    /* Espacio de respiración a la derecha */
+}
+
+
+/* Encabezado de la página (título y controles principales) */
+.page-head {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+
+/* Bloques de metadatos (ID, Carrera, Semestre, Total, etc.) */
+.meta {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  color: var(--text-700);
+
+  strong {
+    color: var(--text-900);
+  }
+}
+
+
+
+/* Sección de acciones (botones principales) */
+.actions {
+  margin-top: 8px;
+}
+
+/* Alinea los botones de acciones a la derecha */
+.actions--right {
+  text-align: right;
+}
+
+/* Espaciado extra para el botón Enviar al final */
+.actions--enviar {
+  margin-top: 32px;
+}
+
+/* Estilos para botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn--secondary {
+  background: #e9eef7;
+  color: #234574;
+  font-weight: 600;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: #d1ddf0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(35, 69, 116, 0.15);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn:disabled:hover {
+  background-color: inherit;
+  opacity: 0.6;
+}
+
+/* Animación de spinner de carga */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Contenedor de placeholder para la tabla de clases */
+.tabla-placeholder {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 20px; 
+  color: var(--text-500);
+}
+
+
+/* ---------------------------
+   Responsivo
+   - En pantallas medianas y pequeñas, se ajusta el margen y el ancho
+   --------------------------- */
+@media (max-width: 992px) {
+  .page-container { margin-left: 60px; max-width: 920px; }
+}
+
+@media (max-width: 768px) {
+  .page-container { margin-left: 24px; max-width: none; padding-right: 12px; }
+  .meta { gap: 16px; }
+}
+

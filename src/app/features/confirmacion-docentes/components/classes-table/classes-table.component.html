@@ -1,0 +1,50 @@
+<div class="tabla-wrap">
+  <table class="tabla">
+    <colgroup>
+      <col class="c-section" />
+      <col class="c-subject" />
+      <col class="c-semester" />
+      <col class="c-id" />
+      <col class="c-sched" />
+      <col class="c-select" *ngIf="selectable" />
+    </colgroup>
+
+    <thead>
+      <tr>
+        <th>Sección</th>
+        <th>Materia</th>
+        <th>Semestre</th>
+        <th>Id Clase</th>
+        <th>Horarios</th>
+        <th *ngIf="selectable">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+  <tr *ngFor="let r of rows; trackBy: trackById" [class.accept]="getState(r.id.toString()) === 'accept'" [class.reject]="getState(r.id.toString()) === 'reject'" [class.review]="getState(r.id.toString()) === 'review'">
+        <td>{{ r.section }}</td>
+        <td>{{ r.subject }}</td>
+        <td>{{ r.semester }}</td>
+        <td>{{ r.id }}</td>
+        <td class="sched-cell">
+          <div *ngFor="let s of r.schedules; let last = last">
+            {{ s }}<br *ngIf="!last">
+          </div>
+          <div *ngIf="!r.schedules || r.schedules.length === 0" class="no-schedule">
+            Sin horarios
+          </div>
+        </td>
+        <td *ngIf="selectable" class="sel-cell">
+          <button class="btn btn--small btn--accept" [attr.aria-pressed]="getState(r.id.toString()) === 'accept'" (click)="setAccept(r.id.toString())">Aceptar</button>
+          <button class="btn btn--small btn--reject" [attr.aria-pressed]="getState(r.id.toString()) === 'reject'" (click)="setReject(r.id.toString())">Rechazar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <app-pop-message
+    [visible]="popVisible"
+    (messageChange)="onPopMessageChange($event)"
+    (close)="onPopClose()"
+  ></app-pop-message>
+</div>
+

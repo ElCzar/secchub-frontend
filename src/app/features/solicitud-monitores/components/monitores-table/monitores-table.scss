@@ -1,0 +1,413 @@
+/* =========================================================
+   TABLA DE MONITORES
+   Estilos para la tabla principal de solicitud de monitores
+   ========================================================= */
+
+.table-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.monitores-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Academic mode table - wider with all academic columns */
+.monitores-table.academic-mode {
+  min-width: 2400px;
+  
+  th, td {
+    padding: 12px 10px;
+  }
+}
+
+/* Admin mode table - narrower, focused on administrative info */
+.monitores-table.admin-mode {
+  min-width: 1600px;
+  max-width: 100%;
+  
+  th, td {
+    padding: 12px 10px;
+  }
+}
+.monitores-table thead th:first-child,
+.monitores-table tbody td:first-child {
+  border-left: 0; /* lo maneja el borde exterior de la tabla */
+}
+
+.monitores-table thead th:last-child,
+.monitores-table tbody td:last-child {
+  border-right: 0; /* lo maneja el borde exterior de la tabla */
+}
+
+/* Header de la tabla */
+.monitores-table thead {
+  background: #f3f6fa;
+  color: var(--brand-azul);
+  font-weight: 600;
+}
+
+.monitores-table thead th {
+  padding: 16px 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--brand-azul);
+  white-space: normal;
+  line-height: 1.3;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  vertical-align: middle;
+  border-bottom: 2px solid var(--border);
+}
+
+.monitores-table th,
+.monitores-table td {
+  /* Solo líneas horizontales: superior e inferior */
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-left: none;
+  border-right: none;
+  padding: 12px 10px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Email column exception - allow wrapping */
+.monitores-table .email-column {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Filas alternadas y hover */
+.monitores-table tbody tr:nth-child(even) td { background-color: #f9fafc; }
+.monitores-table tbody tr:hover td { background-color: #eef4fb; }
+
+/* Estados de fila: aceptado / rechazado */
+.row-accepted td {
+  background-color: #55ff88 !important; /* verde muy suave */
+  border-top-color: #63de82;
+  border-bottom-color: #52da74;
+}
+
+.row-rejected td {
+  background-color: #fa9f95 !important; /* rojo muy suave */
+  border-top-color: #ef6b62;
+  border-bottom-color: #ec4337;
+}
+
+/* No sobreescribir hover cuando hay estado */
+.row-accepted:hover td,
+.row-rejected:hover td { background-color: inherit; }
+
+/* Ajustes del expander */
+.expander-row td {
+  background: #f8f9fa;
+  padding: 0;
+  border-top: none;
+  border-bottom: none; /* no línea debajo del botón Horarios cuando está colapsado */
+}
+
+/* Horarios anidados */
+.monitores-table tr:has(app-horarios-monitores) td {
+  padding: 12px !important;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Ensure horarios section fits within table width */
+app-horarios-monitores {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+/* Quitar línea entre la fila de datos y el botón Horarios */
+.monitores-table tr.monitor-row td {
+  border-bottom: none;
+}
+
+/* Column-specific widths */
+.approval-column {
+  width: 140px;
+  min-width: 140px;
+  text-align: center;
+  padding: 8px !important;
+}
+
+.id-column {
+  width: 120px;
+  min-width: 120px;
+}
+
+.name-column {
+  width: 160px;
+  min-width: 160px;
+}
+
+.lastname-column {
+  width: 160px;
+  min-width: 160px;
+}
+
+.career-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+.average-column {
+  width: 130px;
+  min-width: 130px;
+}
+
+/* Academic mode specific columns */
+.professor-column {
+  width: 220px;
+  min-width: 220px;
+}
+
+.class-number-column {
+  width: auto;
+  min-width: 120px;
+}
+
+.subject-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+.grade-column {
+  width: 110px;
+  min-width: 110px;
+}
+
+/* Admin mode specific columns */
+.section-column {
+  width: 200px;
+  min-width: 200px;
+}
+
+/* Shared columns with different widths per mode */
+.academic-mode .hours-column {
+  width: auto;
+  min-width: 150px;
+}
+
+.admin-mode .hours-column {
+  width: auto;
+  min-width: 170px;
+}
+
+.academic-mode .weeks-column {
+  width: auto;
+  min-width: 140px;
+}
+
+.admin-mode .weeks-column {
+  width: auto;
+  min-width: 160px;
+}
+
+.academic-mode .total-column {
+  width: 110px;
+  min-width: 110px;
+}
+
+.admin-mode .total-column {
+  width: 130px;
+  min-width: 130px;
+}
+
+.academic-mode .email-column {
+  width: 280px;
+  min-width: 280px;
+}
+
+.admin-mode .email-column {
+  width: 300px;
+  min-width: 300px;
+}
+
+.email-column {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  text-align: left;
+  padding-left: 12px !important;
+}
+
+.old-column {
+  width: 100px;
+  min-width: 100px;
+}
+
+.admin-monitor-column {
+  width: 130px;
+  min-width: 130px;
+}
+
+.row-approval { display: flex; gap: 8px; justify-content: center; }
+
+.btn-approve,
+.btn-reject {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.btn-approve { color: #1a7f37; border-color: #b7e0c1; background: #eaf7ee; }
+.btn-approve:hover { background: #dcf1e3; }
+
+.btn-reject { color: #b42318; border-color: #f2c6c3; background: #fdecea; }
+.btn-reject:hover { background: #fbd5d2; }
+
+/* Celdas editables */
+.editable-cell {
+  padding: 10px 8px !important;
+  min-width: fit-content;
+}
+
+.table-input {
+  width: 120px;
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s ease;
+  text-align: center;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+  }
+}
+
+/* Specific input sizing for different columns - inputs define column width */
+.class-number-column .table-input {
+  width: 100px;
+  min-width: 100px;
+}
+
+.hours-column .table-input {
+  width: 130px;
+  min-width: 130px;
+}
+
+.weeks-column .table-input {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* Ensure proper spacing in editable cells */
+.academic-mode .editable-cell {
+  padding: 10px 12px !important;
+}
+
+.admin-mode .editable-cell {
+  padding: 10px 15px !important;
+}
+
+/* Prevent cell content from overlapping */
+.monitores-table td {
+  overflow: visible;
+  position: relative;
+}
+
+/* Columna de total horas */
+.total-horas {
+  font-weight: 600;
+  color: var(--brand-azul);
+  text-align: center;
+}
+
+/* Columna de acciones */
+.actions-column {
+  width: 100px;
+  text-align: center;
+}
+
+.expander-row td .expander-inner {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.expander-row td .separator-line.separator-under {
+  margin-top: 8px;
+}
+
+/* ==============================
+   Separador visual
+   ============================== */
+.separator-line {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Estilo cuando la línea va debajo del botón Horarios */
+.separator-line.separator-under {
+  margin-top: 8px;
+}
+
+/* Botón expander con icono y texto */
+.expander {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--brand-azul);
+  font-weight: 600;
+}
+
+/* Icono caret para indicar expansión de sub-horarios */
+.caret {
+  font-size: 12px;
+  margin-right: 8px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  transform: rotate(0deg); /* Estado inicial: flecha hacia la derecha */
+}
+
+.caret.open {
+  transform: rotate(90deg); /* Estado abierto: flecha hacia abajo */
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 1400px) {
+  .monitores-table th,
+  .monitores-table td {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 1024px) {
+  .monitores-table th,
+  .monitores-table td {
+    font-size: 10px; /* Texto aún más pequeño en tablets */
+    padding: 6px 4px;
+  }
+}

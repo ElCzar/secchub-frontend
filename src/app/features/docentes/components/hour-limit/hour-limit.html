@@ -1,0 +1,58 @@
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown.escape)="closeModal()">
+    <!-- Modal header -->
+    <div class="modal-header">
+      <h2 class="modal-title">⚠️ Límite de Horas Contractuales Excedido</h2>
+      <button type="button" class="modal-close" (click)="closeModal()" aria-label="Cerrar modal">
+        ✕
+      </button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="modal-body">
+      <div class="warning-content">
+        <div class="warning-message">
+          <p class="teacher-warning">
+            El profesor <strong>{{ teacherName }}</strong> ya alcanzó el límite de horas contractuales permitido.
+          </p>
+          
+          <div class="hours-breakdown">
+            <div class="hours-item">
+              <span class="hours-label">Horas contractuales:</span>
+              <span class="hours-value contractual">{{ contractualLimit }}h</span>
+            </div>
+            <div class="hours-item">
+              <span class="hours-label">Horas asignadas actualmente:</span>
+              <span class="hours-value current">{{ currentHours }}h</span>
+            </div>
+            <div class="hours-item" *ngIf="excessHours > 0">
+              <span class="hours-label">Horas excedentes:</span>
+              <span class="hours-value excess">{{ excessHours }}h</span>
+            </div>
+          </div>
+
+          <div class="impact-warning">
+            <p class="impact-text">
+              Las horas adicionales que intente asignar se contabilizarán como <strong>cátedra</strong> 
+              y generarán <strong>costos extra</strong>.
+            </p>
+            <p class="confirmation-question">
+              ¿Desea confirmar esta asignación conociendo el impacto?
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn btn-cancel" (click)="onCancel()">
+        Cancelar
+      </button>
+      
+      <button type="button" class="btn btn--primary btn-confirm" (click)="onConfirm()">
+        Aceptar y Asignar
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,166 @@
+<div class="tabla-wrap">
+  <table class="tabla">
+    <colgroup>
+      <col class="c-actions" />
+      <col class="c-id" />
+      <col class="c-name" />
+      <col class="c-section" />
+      <col class="c-seats" />
+      <col class="c-start" />
+      <col class="c-end" />
+      <col class="c-weeks" />
+      <col class="c-comments" />
+    </colgroup>
+
+    <thead>
+        <tr>
+        <th>Acciones</th>
+        <th>ID Materia</th>
+        <th>Nombre Materia</th>
+        <th>Sección</th>
+        <th>Cupos solicitados</th>
+        <th>Fecha inicio</th>
+        <th>Fecha final</th>
+        <th>Semanas</th>
+        <th>Comentarios</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (row of rows; track $index; let rowIndex = $index) {
+        <!-- Fila principal -->
+        <tr [class.is-deleted]="row._state==='deleted'">
+          <td class="acciones">
+            <button type="button" class="btn-icon" (click)="remove.emit(rowIndex)">-</button>
+            <button type="button" class="btn-icon" (click)="add.emit()">+</button>
+          </td>
+
+          <!-- ID -->
+          <td>
+            <input
+              class="input"
+              [class.input--invalid]="!row.courseId.trim()"
+              [ngModel]="row.courseId"
+              readonly
+              placeholder="ID del curso *" />
+          </td>
+
+          <!-- Nombre -->
+          <td class="cell-autocomplete">
+            <input
+              class="input"
+              [class.input--invalid]="!row.courseName.trim()"
+              [ngModel]="row.courseName"
+              (ngModelChange)="patch.emit({index:rowIndex, data:{courseName: $event}}); onSearch(rowIndex, $event)"
+              (focus)="onSearch(rowIndex, row.courseName)"
+              (blur)="closeList(rowIndex)"
+              [attr.data-row-index]="rowIndex"
+              placeholder="Buscar por nombre *" />
+            @if (showList[rowIndex]) {
+              <ul class="suggest suggest--name-only" [attr.data-list-index]="rowIndex">
+                @for (s of suggestions[rowIndex]; track s.id) {
+                  <li (mousedown)="onSelectCourse($event, rowIndex, s)">
+                    <span class="name">{{ s.name }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </td>
+
+          <td>
+            <span class="section-readonly">{{ row.section || '-' }}</span>
+          </td>
+
+          <td>
+            <input
+              class="input"
+              [class.input--invalid]="!row.seats || row.seats <= 0"
+              type="number"
+              min="1"
+              [ngModel]="row.seats"
+              (ngModelChange)="onSeatsInput(rowIndex, $event)"
+              placeholder="Cupos *" />
+          </td>
+
+          <td>
+            <div class="date-field-wrapper">
+              <input
+                class="input"
+                [class.input--invalid]="!row.startDate || getStartDateError(rowIndex)"
+                type="date"
+                [ngModel]="row.startDate"
+                (ngModelChange)="onStartChange(rowIndex, $event)" />
+              @if (getStartDateError(rowIndex)) {
+                <div class="error-icon" 
+                    [title]="getStartDateError(rowIndex)"
+                    [attr.aria-label]="getStartDateError(rowIndex)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                          stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
+            </div>
+          </td>
+
+          <td>
+            <div class="date-field-wrapper">
+              <input
+                class="input"
+                [class.input--invalid]="!row.endDate || getEndDateError(rowIndex)"
+                type="date"
+                [ngModel]="row.endDate"
+                (ngModelChange)="onEndChange(rowIndex, $event)" />
+              @if (getEndDateError(rowIndex)) {
+                <div class="error-icon" 
+                    [title]="getEndDateError(rowIndex)"
+                    [attr.aria-label]="getEndDateError(rowIndex)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                          stroke="#dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
+            </div>
+          </td>
+
+          <td>
+            <span class="weeks-readonly">{{ row.weeks }}</span>
+          </td>
+
+          <!-- Comentarios: textarea que crece según contenido (ahora después de semanas) -->
+          <td>
+            <textarea
+              class="input comments-textarea"
+              rows="1"
+              [ngModel]="row.comments"
+              (ngModelChange)="onCommentChange(rowIndex, $event)"
+              (input)="autoGrow($event.target)"
+              placeholder="Comentarios..."
+            ></textarea>
+          </td>
+        </tr>
+
+        <!-- Expander (siempre visible) -->
+        <tr class="expander-row">
+          <td colspan="9">
+            <button class="expander" type="button" (click)="row._open = !row._open">
+              <span class="caret" [class.open]="row._open">▸</span>
+              Horarios
+              @if (!hasValidSchedules(row)) {
+                <span class="required-indicator">*</span>
+              }
+            </button>
+          </td>
+        </tr>
+
+        <!-- Bloque de horarios (solo si _open) -->
+        <tr *ngIf="row._open">
+          <td colspan="9">
+            <app-schedules-table [(rows)]="row.schedules"></app-schedules-table>
+          </td>
+        </tr>
+              }
+    </tbody>
+  </table>
+</div>

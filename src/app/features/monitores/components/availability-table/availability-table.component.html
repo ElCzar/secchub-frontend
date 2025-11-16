@@ -1,0 +1,45 @@
+<div class="availability-card">
+
+
+  <div class="head-grid">
+    <div>Acciones</div>
+    <div>Día</div>
+    <div>Inicio</div>
+    <div>Final</div>
+    <div>Horas</div>
+  </div>
+
+  <div class="rows">
+    <div class="row" *ngFor="let r of rows; let i = index">
+      <div class="actions">
+        <button type="button" class="btn-icon btn-blue" (click)="remove(i)">−</button>
+        <button type="button" class="btn-icon btn-blue" (click)="add()">+</button>
+      </div>
+
+      <div>
+        <select class="input" [ngModel]="r.day" (ngModelChange)="patch(i,{day:$event})" required>
+          <option value="">Seleccione…</option>
+          <option *ngFor="let d of days" [value]="d.v">{{ d.t }}</option>
+        </select>
+      </div>
+
+      <div>
+        <select class="input" [ngModel]="r.start" (ngModelChange)="patch(i,{start:$event})" required>
+          <option value="">Seleccione...</option>
+          <option *ngFor="let hour of hours" [value]="hour.value">{{ hour.label }}</option>
+        </select>
+      </div>
+
+      <div>
+        <select class="input" [ngModel]="r.end" (ngModelChange)="patch(i,{end:$event})" required>
+          <option value="">Seleccione...</option>
+          <option *ngFor="let hour of hours" [value]="hour.value">{{ hour.label }}</option>
+        </select>
+      </div>
+
+      <div>
+        <input class="input" [value]="r.total" readonly>
+      </div>
+    </div>
+  </div>
+</div>

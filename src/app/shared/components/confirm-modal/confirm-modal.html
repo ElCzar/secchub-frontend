@@ -1,0 +1,14 @@
+<div class="confirm-modal" *ngIf="visible" role="dialog" aria-modal="true" [attr.aria-label]="title" (keydown)="$event.key === 'Escape' && onCancel()" tabindex="-1">
+  <div class="confirm-modal__backdrop" (click)="onCancel()" tabindex="0"></div>
+  <div class="confirm-modal__card" role="document">
+    <h2 class="confirm-modal__title">{{ title }}</h2>
+    <div class="confirm-modal__divider"></div>
+    <div class="confirm-modal__body">
+      <p *ngIf="message" [innerHTML]="formattedMessage"></p>
+    </div>
+    <div class="confirm-modal__actions">
+      <button class="btn" (click)="onCancel()">{{ cancelText }}</button>
+      <button class="btn btn--primary" (click)="onConfirm()">{{ confirmText }}</button>
+    </div>
+  </div>
+</div>

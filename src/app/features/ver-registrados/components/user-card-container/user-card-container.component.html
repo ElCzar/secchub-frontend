@@ -1,0 +1,75 @@
+<!-- 
+  Template para el componente UserCardContainerComponent
+  Contenedor que muestra la información del usuario con la nueva estructura EnhancedUser
+-->
+
+<div class="user-card-container" 
+     [class.loading]="loading"
+     [attr.aria-label]="'Tarjeta para usuario ' + getDisplayName()">
+
+  <!-- Tarjeta genérica para todos los tipos de usuario -->
+  <div class="generic-user-card" 
+       [attr.aria-label]="'Tarjeta de ' + getUserRole()">
+    
+    <div class="user-header">
+      <h3 class="user-name">{{ getDisplayName() }}</h3>
+      <span class="user-role">{{ getUserRole() }}</span>
+    </div>
+
+    <div class="user-details">
+      <div class="detail-item">
+        <span class="label">Usuario:</span>
+        <span class="value">{{ user.username }}</span>
+      </div>
+      
+      <div class="detail-item">
+        <span class="label">Email:</span>
+        <span class="value">{{ user.email }}</span>
+      </div>
+      
+      <div class="detail-item" *ngIf="user.faculty">
+        <span class="label">Facultad:</span>
+        <span class="value">{{ user.faculty }}</span>
+      </div>
+
+      <div class="detail-item" *ngIf="user.statusName">
+        <span class="label">Estado:</span>
+        <span class="value">{{ user.statusName }}</span>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="user-actions" *ngIf="showActions">
+      <button type="button" 
+              class="btn btn-primary"
+              (click)="onUserSelected(user)"
+              [disabled]="loading">
+        Ver Detalles
+      </button>
+      
+      <button type="button" 
+              class="btn btn-secondary"
+              (click)="onEditUser(user)"
+              [disabled]="loading">
+        Editar
+      </button>
+      
+      <button type="button" 
+              class="btn btn-danger"
+              (click)="onDeleteUser(user)"
+              [disabled]="loading">
+        Eliminar
+      </button>
+    </div>
+  </div>
+
+  <!-- Indicador de carga general -->
+  <div class="container-loading" 
+       *ngIf="loading && !user"
+       aria-live="polite"
+       aria-label="Cargando información del usuario">
+    <div class="spinner" aria-hidden="true"></div>
+    <span class="sr-only">Cargando usuario...</span>
+  </div>
+
+</div>

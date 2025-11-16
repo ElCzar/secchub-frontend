@@ -1,0 +1,74 @@
+<!-- Tabla de Log de Auditoría -->
+<div class="table-container">
+  <!-- Mensaje de carga -->
+  @if (loading) {
+    <div class="loading-message">
+      <p>Cargando entradas del log...</p>
+    </div>
+  }
+
+  <!-- Tabla principal -->
+  @if (!loading) {
+    <table class="log-table">
+      <thead>
+        <tr class="table-header">
+          <th>Usuario (Email)</th>
+          <th>Acción</th>
+          <th>Método</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filas del log -->
+        @for (entry of logEntries; track entry.id) {
+          <tr class="table-row">
+            <td class="user-column">{{ entry.email }}</td>
+            <td class="action-column">{{ entry.action }}</td>
+            <td class="description-column">{{ entry.methodName }}</td>
+            <td class="date-column">{{ getFormattedDate(entry.timestamp) }}</td>
+            <td class="time-column">{{ getFormattedTime(entry.timestamp) }}</td>
+          </tr>
+        }
+        
+        <!-- Mensaje cuando no hay datos -->
+        @if (logEntries.length === 0) {
+          <tr class="no-data-row">
+            <td colspan="5" class="no-data-message">
+              No se encontraron entradas en el log de auditoría
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    
+    <!-- Información adicional y paginación -->
+    <div class="table-footer">
+      @if (logEntries.length > 0) {
+        <div class="table-info">
+          <p class="entries-count">
+            Mostrando {{ (currentPage * pageSize) + 1 }} - {{ (currentPage * pageSize) + logEntries.length }} de {{ totalEntries }} entradas
+            (Página {{ currentPage + 1 }} de {{ totalPages }})
+          </p>
+        </div>
+      }
+      
+      <!-- Controles de paginación -->
+      <div class="pagination-controls">
+        <button 
+          class="btn btn--secondary" 
+          (click)="onPreviousPage()" 
+          [disabled]="!canGoPrevious">
+          ← Anterior
+        </button>
+        <span class="page-number">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+        <button 
+          class="btn btn--secondary" 
+          (click)="onNextPage()" 
+          [disabled]="!canGoNext">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  }
+</div>

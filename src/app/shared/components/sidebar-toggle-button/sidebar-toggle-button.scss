@@ -1,0 +1,38 @@
+.sidebar-toggle-btn {
+  position: static; /* Posición normal en el flujo del documento */
+  background: var(--brand-azul, #003366);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  margin: 2px 10px; /* Margen mínimo verticalmente */
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--brand-azul-dark, #002244);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+/* Animación removida para comportamiento de botón normal */
+
+@media (max-width: 720px) {
+  .sidebar-toggle-btn {
+    padding: 6px;
+    min-width: 32px;
+    min-height: 32px;
+    margin: 1px 8px; /* Margen mínimo para móviles */
+  }
+}

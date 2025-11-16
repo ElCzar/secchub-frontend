@@ -1,0 +1,454 @@
+.annual-class-label {
+  font-size: var(--fs-base);
+  color: #e74c3c;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 4px 0 0 0;
+}
+.annual-class {
+  border: 2px solid #e74c3c !important;
+  background: #fff0f0 !important;
+  box-shadow: 0 0 0 2px #e74c3c33;
+}
+.annual-warning-inline {
+  font-size: var(--fs-base);
+  color: #e74c3c;
+  background: #fff0f0;
+  border: 1px solid #e74c3c;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+}
+/* =========================================================
+   POPUP DUPLICACIÓN SEMESTRES
+   Estilos para el modal de duplicación de semestres anteriores
+   ========================================================= */
+
+/* Overlay del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Contenedor del popup */
+.modal-container {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.2s ease-out;
+  
+  /* Evitar que el click en el contenedor cierre el modal */
+  pointer-events: auto;
+}
+
+/* Animación de entrada */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Contenido principal del modal */
+.modal-content {
+  margin: 16px 0 24px 0;
+}
+
+/* Texto de la pregunta */
+.question-text {
+  font-size: var(--fs-base);
+  color: var(--text-700);
+  font-weight: 500;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+/* Contenedor del select */
+.select-container {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+/* Estilo del select de semestres */
+.semester-select {
+  width: 100%;
+  height: 44px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: var(--fs-base);
+  font-family: inherit;
+  background: #fff;
+  color: var(--text-700);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Flecha personalizada */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  appearance: none;
+  padding-right: 40px;
+}
+
+.semester-select:focus {
+  border-color: var(--brand-azul);
+  box-shadow: 0 0 0 3px rgba(44, 86, 151, 0.1);
+}
+
+.semester-select:disabled {
+  background-color: var(--muted);
+  color: var(--text-500);
+  cursor: not-allowed;
+}
+
+/* Opciones del select */
+.semester-select option {
+  padding: 8px 12px;
+  font-size: var(--fs-base);
+}
+
+.semester-select option:disabled {
+  color: var(--text-500);
+  font-style: italic;
+}
+
+/* Contenedor de botones de acción */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Ajustes específicos para botones en el modal */
+.modal-actions .btn {
+  min-width: 100px;
+  font-size: var(--fs-base);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Estado deshabilitado del botón Aplicar */
+.modal-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Efectos hover para botones habilitados */
+.modal-actions .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Botón Cancelar */
+.modal-actions .btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+/* Botón Aplicar */
+.modal-actions .btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+/* =========================================================
+   VISTA PREVIA DEL SEMESTRE
+   ========================================================= */
+
+/* Ajustar tamaño del modal para vista previa */
+.modal-container:has(.semester-preview) {
+  min-width: 600px;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content:has(.semester-preview) {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-right: -8px;
+  padding-right: 8px;
+}
+
+/* Encabezado de la vista previa */
+.preview-header {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--brand-azul);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.preview-summary {
+  margin: 0;
+  color: var(--text-600);
+  font-size: var(--fs-base);
+}
+
+/* Contenedor de clases */
+.preview-classes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Elemento de clase individual */
+.class-item {
+  position: relative;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.class-item:hover {
+  background: #f1f5f9;
+  border-color: var(--brand-azul);
+}
+
+/* Encabezado de la clase */
+.class-header {
+  margin-bottom: 12px;
+}
+
+.course-name {
+  margin: 0 0 8px 0;
+  color: var(--text-800);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.class-details {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.class-details span {
+  color: var(--text-600);
+  font-size: var(--fs-sm);
+  padding: 4px 8px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.capacity {
+  color: var(--brand-azul);
+  font-weight: 500;
+}
+
+.dates {
+  color: var(--text-700);
+}
+
+/* Horarios de la clase */
+.schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 6px;
+  border-left: 3px solid var(--brand-azul);
+  font-size: var(--fs-sm);
+}
+
+.schedule-item .day {
+  font-weight: 600;
+  color: var(--brand-azul);
+  min-width: 80px;
+}
+
+.schedule-item .time {
+  color: var(--text-700);
+  font-family: 'Courier New', monospace;
+  min-width: 120px;
+}
+
+.schedule-item .modality {
+  color: var(--text-600);
+  background: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.schedule-item .room {
+  color: var(--text-600);
+  background: #f0f9ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* Estado sin clases */
+.no-classes {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-500);
+  font-style: italic;
+}
+
+/* Indicador de carga */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: var(--text-600);
+}
+
+/* Mensaje de error */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #dc2626;
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+}
+
+/* Contenedor de botones de acción */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* Botón de contorno */
+.btn--outline {
+  background: transparent;
+  border: 1px solid var(--brand-azul);
+  color: var(--brand-azul);
+}
+
+.btn--outline:hover:not(:disabled) {
+  background: var(--brand-azul);
+  color: white;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+  .modal-container:has(.semester-preview) {
+    min-width: unset;
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .class-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .schedule-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .schedule-item .day,
+  .schedule-item .time {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-container {
+    min-width: unset;
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-actions .btn,
+  .action-buttons {
+    width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Estilos para mensajes de preview */
+.preview-summary {
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin: 12px 0 0 0;
+  
+  &.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  &.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+}
+
+.no-classes {
+  padding: 24px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #dc3545;
+  
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+}

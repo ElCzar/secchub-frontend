@@ -1,0 +1,421 @@
+/* =====================================================
+  Estilos para la tabla de clases del módulo Programas
+  Archivo: classes-table.component.scss
+  Descripción: Define la apariencia y disposición de la
+  tabla de clases, acciones, autocompletado y horarios.
+  ===================================================== */
+
+/* ==============================
+  Anchos de columnas
+  ============================== */
+:host {
+  --col-actions:100px;   /* un poco más ancho para que quepa el toggle */
+  --col-id: 160px;
+  --col-name: 320px;
+  --col-section: 120px;
+  --col-seats: 160px;
+  --col-comments: 360px;
+  --col-start: 200px;
+  --col-end: 200px;
+  --col-weeks: 110px;
+}
+
+/* ==============================
+  Contenedor principal de la tabla
+  ============================== */
+.tabla-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  /* NO barras verticales internas; sólo horizontal si hiciera falta */
+  position: relative;
+  overflow-x: auto;
+  overflow-y: visible;
+  /* ayuda a stacking cuando hay overlays */
+  will-change: transform;
+}
+
+/* Asegurar que las celdas con errores tengan mayor z-index */
+.tabla tbody tr:has(.error-message) {
+  z-index: 100;
+}
+
+/* Cuando hay sugerencias abiertas dentro, permitir que se desborde por encima del bloque */
+.tabla-wrap:has(.suggest) {
+  overflow: visible;
+  z-index: 3000;
+}
+
+/* ==============================
+  Estilos de validación
+  ============================== */
+.input--invalid {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5 !important;
+}
+
+.input--invalid:focus {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.required-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+/* ==============================
+  Contenedor y mensajes de error para campos de fecha
+  ============================== */
+.date-field-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: visible; /* Permitir que los tooltips se desborden */
+  display: block; /* Asegurar que ocupe todo el ancho disponible */
+  
+  input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Ya no es necesario ajustar padding del input porque el ícono está fuera */
+}
+
+.error-icon {
+  position: absolute;
+  top: 50%;
+  right: -24px; /* Mover fuera del input, al lado derecho */
+  transform: translateY(-50%);
+  cursor: help;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Animación sutil para llamar la atención */
+  animation: pulse-warning 2s infinite;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+@keyframes pulse-warning {
+  0% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* Mejorar el tooltip nativo del navegador */
+.error-icon[title] {
+  position: relative;
+}
+
+/* Para navegadores que soportan tooltips personalizados */
+.error-icon:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 5px;
+}
+
+.error-icon:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  border: 4px solid transparent;
+  border-top-color: #333;
+  z-index: 9999;
+}
+
+/* En pantallas pequeñas, permitir que el mensaje se envuelva */
+@media (max-width: 768px) {
+  .error-message {
+    white-space: normal;
+    max-width: 200px;
+  }
+}
+
+/* ==============================
+  Estilos de la tabla principal
+  ============================== */
+.tabla {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  /* Asegura que los elementos posicionados dentro de celdas puedan salir sin ser recortados */
+  overflow: visible;
+
+  tbody {
+    position: relative;
+    overflow: visible;
+  }
+
+  tbody tr {
+    position: relative; /* permite controlar stacking si es necesario */
+  }
+
+  thead th {
+    height: 44px;
+    line-height: 44px;
+    padding: 0 12px;
+    background: var(--muted);
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody td {
+    /* Altura automática para permitir varias líneas en acciones */
+    padding: 8px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+    overflow: visible; /* Permitir overflow para mensajes de error */
+    position: relative; /* Para permitir posicionamiento absoluto de hijos */
+  }
+
+  tbody td.acciones {
+    padding: 10px 12px; /* 2px más arriba y abajo = 4px total */
+  }
+
+  /* Fila marcada como eliminada se muestra atenuada */
+  tbody tr.is-deleted { opacity: .5; }
+}
+
+.tabla col.c-actions { width: var(--col-actions); }
+.tabla col.c-id      { width: var(--col-id); }
+.tabla col.c-name    { width: var(--col-name); }
+.tabla col.c-section { width: var(--col-section); }
+.tabla col.c-seats   { width: var(--col-seats); }
+.tabla col.c-comments{ width: var(--col-comments); }
+.tabla col.c-start   { width: var(--col-start); }
+.tabla col.c-end     { width: var(--col-end); }
+.tabla col.c-weeks   { width: var(--col-weeks); }
+
+/* Textarea de comentarios que se ajusta en altura y mantiene estilo coherente */
+.comments-textarea {
+  width: 100%;
+  min-height: 38px;
+  max-height: 300px;
+  resize: none; /* controlado por JS */
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.comments-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+  border-color: var(--brand-azul);
+}
+
+/* Visualizar semanas como solo lectura (no editable) */
+.weeks-readonly {
+  /* Match section-readonly but centered in the column */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-500);
+  font-style: italic;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ==============================
+  Sección de acciones (botones y toggles)
+  ============================== */
+.acciones {
+  display: flex;
+  flex-direction: row;      /* botones arriba, toggle debajo */
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.acciones .btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botón circular para acciones rápidas */
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background:var(--brand-azul);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #fff;
+  transition: background .15s ease;
+}
+
+.btn-icon:hover { background: var(--muted); }
+
+/* Toggle “Horarios” en estilo link para expandir/cerrar sub-horarios */
+.toggle-sched {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 600;
+  color: #820A1E;              /* rojo de subtítulos */
+  cursor: pointer;
+}
+.toggle-sched .arrow { font-size: 14px; }
+
+/* ==============================
+  Autocompletado de cursos (sugerencias)
+  ============================== */
+.cell-autocomplete {
+  position: relative;
+}
+
+/* Cuando la lista está visible, eleva la celda para que sobreponga filas adyacentes */
+.cell-autocomplete:has(.suggest) {
+  z-index: 2000;
+}
+
+.suggest {
+  position: absolute;
+  left: 0; right: 0; top: calc(100% + 4px);
+  max-height: 220px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  /* z-index alto para sobreponer al bloque grande (expander/horarios) */
+  z-index: 9999;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+
+  /* ayuda a crear nueva capa de composición y evitar artefactos */
+  will-change: transform;
+
+
+/* El bloque del expander no debe tapar los overlays */
+.expander-row,
+.expander-row td {
+  position: relative;
+  z-index: 1;
+}
+
+/* En algunos navegadores, las tablas pueden recortar descendientes posicionados; asegura overflow visible */
+.tabla { overflow: visible; }
+  li {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+
+    &:hover { background: var(--muted); }
+
+    .id   { color: var(--text-700); font-weight: 600; }
+    .name { color: var(--text-700); font-weight: 600; }
+  }
+}
+
+/* Variantes específicas por claridad (ambas con 1 columna) */
+.suggest.suggest--name-only li { grid-template-columns: 1fr; }
+.suggest.suggest--id-only   li { grid-template-columns: 1fr; }
+
+/* ==============================
+  Fila de sub-horarios (desplegable)
+  ============================== */
+
+/* Oculta la fila de sub-horarios cuando no está expandida */
+.sched-row.is-hidden { display: none; }
+
+
+/* Celda de sub-horarios con fondo diferenciado */
+.sched-cell {
+  padding: 12px;
+  background: var(--muted);
+}
+
+/* Mostrar la sección como texto plano cuando no está en edición */
+.section-readonly {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-500);
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* Expander: botón para mostrar/ocultar sub-horarios bajo la fila principal */
+
+.expander-row td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+}
+
+
+/* Botón expander con icono y texto */
+.expander {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-700);
+  font-weight: 600;
+  background:var(--muted);
+  border: 0;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+
+/* Icono caret para indicar expansión de sub-horarios */
+.caret {
+  display: inline-block;
+  transition: transform .15s ease;
+}
+.caret.open {
+  transform: rotate(90deg);
+}

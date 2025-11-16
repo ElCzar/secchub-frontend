@@ -1,0 +1,304 @@
+<div class="tabla-wrap">
+  <table class="tabla">
+    <colgroup>
+      <col class="c-actions" />
+      <col class="c-estado" />
+      <col class="c-id" />
+      <col class="c-name" />
+      <col class="c-section" />
+      <col class="c-class-id" />
+      <col class="c-seats" />
+      <col class="c-start" />
+      <col class="c-end" />
+      <col class="c-weeks" />
+      <col class="c-teacher" />
+      <col class="c-email" />
+      <col class="c-observations" />
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Acciones</th>
+        <th>Estado</th>
+        <th>ID Materia <span class="required">*</span></th>
+        <th>Materia <span class="required">*</span></th>
+        <th>Sección Académica</th>
+        <th>Sección</th>
+        <th>Cupos <span class="required">*</span></th>
+        <th>Fecha Inicio</th>
+        <th>Fecha Final</th>
+        <th>Semanas</th>
+        <th>Docente</th>
+        <th>Enviar Correo</th>
+        <th>Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let row of rows; let i = index">
+        <!-- Fila principal -->
+        <tr class="main-row" [class.is-deleted]="row._state==='deleted'">
+          <td class="acciones">
+            <button type="button" class="btn-icon" (click)="removeRow.emit(i)" title="Eliminar clase">🗑️</button>
+            <button type="button" class="btn-icon btn-edit" *ngIf="!row._editing" (click)="editClass(i)">✏️</button>
+            <button type="button" class="btn-icon btn-save" *ngIf="row._editing" (click)="saveClass(i)">💾</button>
+          </td>
+
+          <!-- Estado -->
+          <td class="estado-cell">
+            <select 
+              class="estado-select"
+              [(ngModel)]="row.classStatusId"
+              (ngModelChange)="onClassStatusChange(i, row.classStatusId)"
+              [ngClass]="{
+                'estado-uploaded': row.classStatusId === 14,
+                'estado-created': row.classStatusId === 11,
+                'estado-change': row.classStatusId === 12,
+                'estado-deleted': row.classStatusId === 13,
+                'estado-completed': row.classStatusId === 10
+              }">
+              <option [ngValue]="14">Cargado</option>
+              <option [ngValue]="11">Crear</option>
+              <option [ngValue]="12">Cambiar</option>
+              <option [ngValue]="13">Eliminar</option>
+              <option [ngValue]="10">Completado</option>
+            </select>
+          </td>
+
+          <!-- ID Materia -->
+          <td class="cell-autocomplete">
+            <ng-container *ngIf="row._editing; else showId">
+              <input
+                class="input"
+                [ngModel]="row.courseId"
+                (ngModelChange)="patchRow.emit({index:i, data:{courseId: $event}})"
+                (input)="onSearch(i, $any($event.target).value)"
+                (focus)="onSearch(i, row.courseId || row.courseName)"
+                (blur)="closeList(i)"
+                placeholder="Buscar id o nombre" />
+              <ul class="suggest" *ngIf="showList[i]">
+                <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keypress)="selectCourse(i, s)">
+                  <span class="id">{{ s.id }}</span>
+                  <span class="name">{{ s.name }}</span>
+                </li>
+              </ul>
+            </ng-container>
+            <ng-template #showId>{{ row.courseId }}</ng-template>
+          </td>
+
+          <!-- Materia -->
+          <td class="cell-autocomplete">
+            <ng-container *ngIf="row._editing; else showName">
+              <input
+                class="input"
+                [ngModel]="row.courseName"
+                (ngModelChange)="patchRow.emit({index:i, data:{courseName: $event}})"
+                (input)="onSearch(i, $any($event.target).value)"
+                (focus)="onSearch(i, row.courseName || row.courseId)"
+                (blur)="closeList(i)"
+                placeholder="Buscar por nombre" />
+              <ul class="suggest" *ngIf="showList[i]">
+                <li *ngFor="let s of suggestions[i]" (click)="selectCourse(i, s)" (keypress)="selectCourse(i, s)">
+                  <span class="id">{{ s.id }}</span>
+                  <span class="name">{{ s.name }}</span>
+                </li>
+              </ul>
+            </ng-container>
+            <ng-template #showName>{{ row.courseName }}</ng-template>
+          </td>
+
+          <!-- Sección -->
+          <td>
+            <span class="section-readonly">{{ row.section || 'Seleccione materia' }}</span>
+          </td>
+
+          <!-- ID Clase -->
+          <td>
+            <ng-container *ngIf="row._editing; else showClassId">
+              <input class="input" [(ngModel)]="row.classId" />
+            </ng-container>
+            <ng-template #showClassId>{{ row.classId }}</ng-template>
+          </td>
+
+          <!-- Cupos -->
+          <td>
+            <ng-container *ngIf="row._editing; else showSeats">
+              <input class="input" type="number" [(ngModel)]="row.seats" />
+            </ng-container>
+            <ng-template #showSeats>{{ row.seats }}</ng-template>
+          </td>
+
+          <!-- Fecha Inicio -->
+          <td>
+            <ng-container *ngIf="row._editing; else showStart">
+              <input class="input" type="date" 
+                     [ngModel]="row.startDate" 
+                     (ngModelChange)="onStartDateChange(i, $event)" />
+            </ng-container>
+            <ng-template #showStart>{{ row.startDate | date: 'shortDate' }}</ng-template>
+          </td>
+
+          <!-- Fecha Final -->
+          <td>
+            <ng-container *ngIf="row._editing; else showEnd">
+              <input class="input" type="date" 
+                     [ngModel]="row.endDate" 
+                     (ngModelChange)="onEndDateChange(i, $event)" />
+            </ng-container>
+            <ng-template #showEnd>{{ row.endDate | date: 'shortDate' }}</ng-template>
+          </td>
+
+          <!-- Semanas (calculadas automáticamente) -->
+          <td>
+            <ng-container *ngIf="row._editing; else showWeeks">
+              <input class="input" type="number" 
+                     [ngModel]="getCalculatedWeeks(row)" 
+                     readonly 
+                     title="Las semanas se calculan automáticamente basándose en las fechas" />
+            </ng-container>
+            <ng-template #showWeeks>{{ getCalculatedWeeks(row) }}</ng-template>
+          </td>
+
+          <!-- Docente -->
+          <td>
+            <ng-container *ngIf="row._editing; else showTeacher">
+              <!-- Si hay profesores válidos, mostrar recuadros + botón agregar otro -->
+              <ng-container *ngIf="hasValidTeachers(row)">
+                <div class="teacher-edit-container">
+                  <div class="teacher-boxes">
+                    <div *ngFor="let teacher of row.teachers; let ti = index" 
+                         class="teacher-box"
+                         [ngClass]="{
+                           'status-pending': teacher.status === 'PENDIENTE',
+                           'status-confirmed': teacher.status === 'CONFIRMADO',
+                           'status-rejected': teacher.status === 'RECHAZADO'
+                         }">
+                      <span class="status-symbol" 
+                            [ngClass]="{
+                              'symbol-pending': teacher.status === 'PENDIENTE',
+                              'symbol-confirmed': teacher.status === 'CONFIRMADO',
+                              'symbol-rejected': teacher.status === 'RECHAZADO'
+                            }"></span>
+                      <span class="teacher-name" 
+                            (mouseenter)="onTeacherMouseEnter($event, teacher.id, teacher.teacherClassId)"
+                            (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
+                      <button type="button" 
+                              class="btn-remove-teacher" 
+                              (click)="removeTeacherFromClass(row, ti)"
+                              title="Eliminar docente">×</button>
+                    </div>
+                  </div>
+                  
+                  <button type="button" 
+                          class="btn--primary btn-add-teacher-main" 
+                          (click)="selectAdditionalTeacher(getRowIndex(row))"
+                          title="Agregar otro docente">
+                    + Agregar otro docente
+                  </button>
+                </div>
+              </ng-container>
+              
+              <!-- Si NO hay profesores válidos, solo mostrar botón seleccionar -->
+              <ng-container *ngIf="!hasValidTeachers(row)">
+                <button type="button" 
+                        class="btn--primary" 
+                        (click)="selectAdditionalTeacher(getRowIndex(row))"
+                        title="Seleccionar docente">
+                  Seleccionar Docente
+                </button>
+              </ng-container>
+            </ng-container>
+            <ng-template #showTeacher>
+              <ng-container *ngIf="hasValidTeachers(row); else noTeacher">
+                <!-- Vista de solo lectura: mostrar profesores en recuadros -->
+                <div class="teacher-boxes">
+                  <div *ngFor="let teacher of row.teachers" 
+                       class="teacher-box"
+                       [ngClass]="{
+                         'status-pending': teacher.status === 'PENDIENTE',
+                         'status-confirmed': teacher.status === 'CONFIRMADO',
+                         'status-rejected': teacher.status === 'RECHAZADO'
+                       }">
+                    <span class="status-symbol" 
+                          [ngClass]="{
+                            'symbol-pending': teacher.status === 'PENDIENTE',
+                            'symbol-confirmed': teacher.status === 'CONFIRMADO',
+                            'symbol-rejected': teacher.status === 'RECHAZADO'
+                          }"></span>
+                    <span class="teacher-name"
+                          (mouseenter)="onTeacherMouseEnter($event, teacher.id, teacher.teacherClassId)"
+                          (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #noTeacher>
+                <button type="button" class="btn--primary" (click)="selectTeacher(getRowIndex(row))" [disabled]="!row._editing">Seleccionar Docente</button>
+              </ng-template>
+            </ng-template>
+          </td>
+
+          <!-- Estado del docente eliminado como columna; el estilo se aplica directamente al nombre del docente -->
+
+          <!-- Enviar Correo -->
+          <td>
+            <button type="button" class="btn-icon btn-email" (click)="sendEmail(i)" title="Enviar correo">📧</button>
+          </td>
+
+          <!-- Observaciones -->
+          <td>
+            <button type="button" class="btn--primary" (click)="viewObservations(i)">Ver Más</button>
+          </td>
+        </tr>
+
+        <!-- Expander para horarios -->
+        <tr class="expander-row">
+          <td colspan="13">
+            <div class="expander-inner">
+              <button class="expander" type="button" (click)="row._open = !row._open">
+                <span class="caret" [class.open]="row._open">▸</span> Horarios
+              </button>
+            </div>
+            <div class="separator-line separator-under"></div>
+          </td>
+        </tr>
+
+        <!-- Bloque de horarios (solo si _open) -->
+        <tr *ngIf="row._open">
+          <td colspan="13">
+            <app-schedules-table-room
+              [(rows)]="row.schedules"
+              [editable]="row._editing || false"
+              (rowsChange)="onSchedulesChange(i, $event)"
+              (scheduleDeleted)="onScheduleDeleted(i, $event)">
+            </app-schedules-table-room>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</div>
+
+<app-observaciones-modal
+  [show]="showObservationsModal"
+  [title]="'Observaciones de la clase'"
+  [observaciones]="currentObservations"
+  (save)="onSaveObservations($event)"
+  (close)="onCloseObservationsModal()">
+</app-observaciones-modal>
+
+<!-- Tooltip de fechas de docente -->
+<app-teacher-dates-tooltip
+  *ngIf="showTeacherTooltip && tooltipTeacherData"
+  [teacherClass]="tooltipTeacherData"
+  [isVisible]="showTeacherTooltip"
+  [position]="tooltipPosition"
+  (mouseenter)="onTooltipMouseEnter()"
+  (mouseleave)="onTooltipMouseLeave()"
+  (editDatesClicked)="onEditTeacherDates()">
+</app-teacher-dates-tooltip>
+
+<!-- Modal de selección de fechas para el profesor -->
+<app-teacher-dates-modal
+  [isVisible]="showDatesModal"
+  [data]="datePopupData"
+  (datesSelected)="onTeacherDatesSelected($event)"
+  (modalClosed)="closeDatesModal()">
+</app-teacher-dates-modal>

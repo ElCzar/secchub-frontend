@@ -1,0 +1,119 @@
+<div class="table-container">
+  <table class="monitores-table" [class.admin-mode]="adminMode" [class.academic-mode]="!adminMode">
+    <thead>
+      <tr>
+        <th class="approval-column">Acciones</th>
+        <th class="id-column">ID del<br>estudiante</th>
+        <th class="name-column">Nombre</th>
+        <th class="lastname-column">Apellido</th>
+        <th class="career-column">Carrera</th>
+        <th class="average-column">Promedio<br>Acumulado</th>
+        @if (!adminMode) {
+          <th class="professor-column">Nombre del profesor<br>con quien tomó<br>la asignatura</th>
+        }
+        @if (!adminMode) {
+          <th class="class-number-column">No.<br>Clase</th>
+        }
+        @if (!adminMode) {
+          <th class="subject-column">Nombre<br>Asignatura</th>
+        }
+        @if (!adminMode) {
+          <th class="grade-column">Nota<br>Obtenida</th>
+        }
+        @if (adminMode) {
+          <th class="section-column">Sección<br>Académica</th>
+        }
+        <th class="hours-column">Horas<br>Semanales</th>
+        <th class="weeks-column">Semanas</th>
+        <th class="total-column">Total<br>Horas</th>
+        <th class="email-column">Correo<br>Institucional</th>
+        <th class="old-column">ANTIGUO</th>
+        @if (showMonitorAdministrativo) {
+          <th class="admin-monitor-column">Monitor<br>Administrativo</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (m of monitores; track m.id; let i = $index) {
+        <tr class="monitor-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+          <td class="approval-column">
+            <div class="row-approval">
+              <button type="button" class="btn-approve" (click)="aceptarMonitor(m)" title="Aceptar">✓</button>
+              <button type="button" class="btn-reject" (click)="rechazarMonitor(m)" title="Rechazar">✕</button>
+            </div>
+          </td>
+          <td>{{ m.userId }}</td>
+          <td>{{ m.nombre }}</td>
+          <td>{{ m.apellido }}</td>
+          <td>{{ m.carrera }}</td>
+          <td>{{ m.promedio }}</td>
+          @if (!adminMode) {
+            <td>{{ m.profesor }}</td>
+          }
+          @if (!adminMode) {
+            <td class="editable-cell">
+              <select 
+                class="table-input" 
+                [(ngModel)]="m.noClase"
+              >
+                <option [ngValue]="undefined">-</option>
+                @for (classOption of getClassesByCourse(m.courseId); track classOption.id) {
+                  <option [ngValue]="classOption.id">{{ classOption.id }}</option>
+                }
+              </select>
+            </td>
+          }
+          @if (!adminMode) {
+            <td>{{ m.asignatura }}</td>
+          }
+          @if (!adminMode) {
+            <td>{{ m.nota }}</td>
+          }
+          @if (adminMode) {
+            <td>{{ m.seccionAcademica || '-' }}</td>
+          }
+          <td class="total-horas">{{ m.horasSemanales || 0 }}</td>
+          <td class="editable-cell">
+            <input 
+              type="number" 
+              class="table-input" 
+              [(ngModel)]="m.semanas" 
+              (change)="calcularTotal(m)" 
+              placeholder=""
+            />
+          </td>
+          <td class="total-horas">{{ m.totalHoras }}</td>
+          <td>{{ m.correo }}</td>
+          <td>{{ m.antiguo ? 'Sí' : 'No' }}</td>
+          @if (showMonitorAdministrativo) {
+            <td>{{ m.administrativo ? 'Sí' : 'No' }}</td>
+          }
+          
+        </tr>
+
+        <!-- Expander para horarios -->
+        <tr class="expander-row" [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+          <td [attr.colspan]="getColspan()">
+            <div class="expander-inner">
+              <button class="expander" type="button" (click)="m.showHorarios = !m.showHorarios">
+                <span class="caret" [class.open]="m.showHorarios">▸</span> Horarios
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Bloque de horarios (solo si showHorarios) -->
+        @if (m.showHorarios) {
+          <tr [ngClass]="{ 'row-accepted': m.estado === 'aceptado', 'row-rejected': m.estado === 'rechazado' }">
+            <td [attr.colspan]="getColspan()">
+              <app-horarios-monitores 
+                [horarios]="m.horarios || []"
+                (horariosChange)="onHorariosChange(m)">
+              </app-horarios-monitores>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

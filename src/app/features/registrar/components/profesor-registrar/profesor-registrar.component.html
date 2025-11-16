@@ -1,0 +1,38 @@
+<div class="form-section">
+  <h2 class="section-title">Información Específica del Docente</h2>
+  
+  <div class="form-row">
+    <div class="form-field">
+      <label for="employmentTypeId" class="field-label">Tipo de Vinculación *</label>
+      <select 
+        id="employmentTypeId"
+        class="form-select"
+        [(ngModel)]="data.employmentTypeId"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()">
+        <option value="" disabled>Seleccione el tipo de vinculación</option>
+        <option *ngFor="let empType of employmentTypes" [value]="empType.id">
+          {{ empType.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label for="maxHours" class="field-label">Horas Máximas Semanales *</label>
+      <input 
+        id="maxHours"
+        type="number" 
+        class="form-input"
+        [(ngModel)]="data.maxHours"
+        [ngModelOptions]="{standalone: true}"
+        (ngModelChange)="onFieldChange()"
+        placeholder="Ej: 40"
+        min="1"
+        max="48"
+        autocomplete="off">
+      <small class="field-note">
+        Máximo 48 horas semanales permitidas
+      </small>
+    </div>
+  </div>
+</div>

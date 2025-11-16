@@ -1,0 +1,118 @@
+/* Reusa el look de tarjetas y grid que ya definimos */
+.availability-card {
+  padding: 10px 2px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: unset;
+  box-sizing: border-box;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  .title {
+    font-weight: 700;
+    color: var(--text-700);
+  }
+  .title-actions { display: inline-flex; gap: 6px; }
+}
+
+
+// Encabezado de la tabla
+.head-grid {
+  display: grid;
+  grid-template-columns: 60px 80px 90px 90px 60px;
+  gap: 18px;
+  align-items: center;
+  color: var(--text-700);
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+
+.rows {
+  display: grid;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 80px 90px 90px 60px;
+  gap: 18px;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 2px 2px;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.input {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #fff;
+  outline: none;
+  font: inherit;
+  box-sizing: border-box;
+  font-size: 14px;
+
+  &:focus {
+    border-color: var(--brand-azul);
+    box-shadow: 0 0 0 2px rgba(44,86,151,.15);
+  }
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-blue {
+  border-color: var(--brand-azul);
+  color: var(--brand-azul);
+}
+
+@media (max-width: 900px) {
+  .head-grid,
+  .row {
+    grid-template-columns: 70px 1fr 1fr 1fr 70px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .availability-card {
+    padding: 8px 2px;
+  }
+  .head-grid,
+  .row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 0;
+  }
+  .row {
+    padding: 2px 0;
+  }
+}

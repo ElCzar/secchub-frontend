@@ -1,0 +1,98 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-container">
+  <div class="loading-spinner"></div>
+  <p>Cargando usuarios registrados...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && users.length === 0" class="empty-state">
+  <div class="empty-icon">👥</div>
+  <h3>No hay usuarios registrados</h3>
+  <p>No se encontraron usuarios que coincidan con los filtros aplicados.</p>
+</div>
+
+<!-- Users Grid -->
+<div *ngIf="!loading && users.length > 0" class="users-grid">
+  <button 
+    *ngFor="let user of users" 
+    type="button"
+    class="user-card"
+    (click)="onUserClick(user)"
+    [attr.aria-label]="'Ver detalles de ' + user.userInfo.name + ' ' + user.userInfo.lastName">
+    
+    <!-- User Avatar with Role Icon -->
+    <div class="user-avatar" [class]="'avatar-' + user.role">
+      <span class="role-icon">{{ getRoleIcon(user.role) }}</span>
+    </div>
+
+    <!-- User Basic Info -->
+    <div class="user-info">
+      <h3 class="user-name">
+        {{ user.userInfo.name }} {{ user.userInfo.lastName }}
+      </h3>
+      <p class="user-role">{{ getRoleLabel(user.role) }}</p>
+      <p class="user-email">{{ user.userInfo.email }}</p>
+    </div>
+
+    <!-- User Details -->
+    <div class="user-details">
+      <div class="detail-item">
+        <span class="detail-label">Usuario:</span>
+        <span class="detail-value">{{ user.userInfo.username }}</span>
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Documento:</span>
+        <span class="detail-value">{{ user.userInfo.documentNumber }}</span>
+      </div>
+      
+      <div class="detail-item">
+        <span class="detail-label">Facultad:</span>
+        <span class="detail-value">{{ user.userInfo.faculty }}</span>
+      </div>
+
+      <!-- Teacher specific info -->
+      <div *ngIf="asTeacher(user) as teacher" class="detail-item">
+        <span class="detail-label">Horas máx:</span>
+        <span class="detail-value">{{ teacher.teacherInfo.maxHours }}h</span>
+      </div>
+
+      <!-- Section Head specific info -->
+      <div *ngIf="asSectionHead(user) as sectionHead" class="detail-item">
+        <span class="detail-label">Sección:</span>
+        <span class="detail-value">{{ sectionHead.sectionInfo.name }}</span>
+      </div>
+
+      
+    </div>
+
+    <!-- Status Badge -->
+    <div class="user-status">
+      <span class="status-badge" [class]="getStatusClass(user.status)">
+        {{ user.status }}
+      </span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="user-actions">
+      <button 
+        class="btn-action btn-edit"
+        (click)="onEditUser($event, user)"
+        title="Editar usuario">
+        ✏️
+      </button>
+      
+      <button 
+        class="btn-action btn-delete"
+        (click)="onDeleteUser($event, user)"
+        title="Eliminar usuario">
+        🗑️
+      </button>
+    </div>
+
+    <!-- View Details Indicator -->
+    <div class="btn-view">
+      Ver Detalles
+    </div>
+  </button>
+</div>

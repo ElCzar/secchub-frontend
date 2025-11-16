@@ -1,0 +1,13 @@
+.sidebar-container {
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0);
+}
+
+.sidebar-hidden {
+  transform: translateX(-100%);
+}
+
+/* Asegurar que el contenido principal se ajuste cuando el sidebar esté oculto */
+:host {
+  display: block;
+}
