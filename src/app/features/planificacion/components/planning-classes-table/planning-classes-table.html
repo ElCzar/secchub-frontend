@@ -178,7 +178,7 @@
                               'symbol-rejected': teacher.status === 'RECHAZADO'
                             }"></span>
                       <span class="teacher-name" 
-                            (mouseenter)="onTeacherMouseEnter($event, teacher.id)"
+                            (mouseenter)="onTeacherMouseEnter($event, teacher.id, teacher.teacherClassId)"
                             (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
                       <button type="button" 
                               class="btn-remove-teacher" 
@@ -224,7 +224,7 @@
                             'symbol-rejected': teacher.status === 'RECHAZADO'
                           }"></span>
                     <span class="teacher-name"
-                          (mouseenter)="onTeacherMouseEnter($event, teacher.id)"
+                          (mouseenter)="onTeacherMouseEnter($event, teacher.id, teacher.teacherClassId)"
                           (mouseleave)="onTeacherMouseLeave()">{{ teacher.name }}</span>
                   </div>
                 </div>

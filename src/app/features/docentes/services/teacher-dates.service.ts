@@ -82,14 +82,27 @@ export class TeacherDatesService {
 
   /**
    * Formatea una fecha para mostrar en la interfaz
-   * @param dateString Fecha en formato ISO
+   * @param dateString Fecha en formato ISO (YYYY-MM-DD)
    * @returns Fecha formateada
    */
   formatDate(dateString: string): string {
     if (!dateString) return '';
     
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
+    // Verificar formato YYYY-MM-DD
+    const regex = /^(\d{4})-(\d{2})-(\d{2})/;
+    const match = regex.exec(dateString);
+    if (!match) return dateString; // Si no es formato esperado, devolver tal cual
+    
+    // Extraer año, mes, día sin crear objeto Date (evita problemas de timezone)
+    const year = Number.parseInt(match[1], 10);
+    const month = Number.parseInt(match[2], 10);
+    const day = Number.parseInt(match[3], 10);
+    
+    // Crear Date usando componentes locales (año, mes-1, día)
+    // Esto evita la conversión UTC que causa el desplazamiento de un día
+    const date = new Date(year, month - 1, day);
+    
+    if (Number.isNaN(date.getTime())) return '';
 
     return date.toLocaleDateString('es-ES', {
       year: 'numeric',

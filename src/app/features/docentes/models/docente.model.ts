@@ -10,6 +10,7 @@ export interface Docente {
   availableHours?: number;
   extraHours?: number;
   contractType?: string;
+  employmentTypeId?: number;  // 1 = Planta, 2 = Cátedra/Adjunto
   
   // Campos adicionales para la interfaz
   subjects?: string[];        // Materias que ha dictado el docente
@@ -44,6 +45,7 @@ export function convertTeacherDTOToDocente(teacher: any): Docente {
     availableHours: teacher.availableHours,
     extraHours: teacher.extraHours,
     contractType: teacher.contractType || 'No especificado',
+    employmentTypeId: teacher.employmentTypeId,
     subjects: teacher.subjects || [],
     selected: false,
     semesters: teacher.semesters || [],

@@ -276,26 +276,41 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
               })
             )
             .subscribe((teachers: any[]) => {
-              console.log(`👨‍🏫 Docentes recibidos para clase ${row.backendId} (${row.courseName}):`, teachers);
+              console.log(`👨‍🏫 Asignaciones teacher-class recibidas para clase ${row.backendId} (${row.courseName}):`, teachers);
+              console.log(`   📋 Número de asignaciones recibidas: ${teachers.length}`);
+              teachers.forEach((tc, idx) => {
+                console.log(`   [${idx}] teacherId: ${tc.id}, teacherClassId: ${tc.teacherClassId}, startDate: ${tc.startDate}, endDate: ${tc.endDate}`);
+              });
               
               if (teachers.length > 0) {
-                  // Map backend teachers into the new teachers[] array and keep legacy teacher as first
-                  this.originalRows[index].teachers = teachers.map((t: any) => ({
-                    id: t.id,
-                    name: t.name,
-                    lastName: t.lastName,
-                    email: t.email,
-                    maxHours: t.maxHours,
-                    assignedHours: (t as any).totalHours ?? t.assignedHours,
-                    availableHours: (t as any).availableHours ?? (t.maxHours - ((t as any).totalHours ?? t.assignedHours))
+                  // Map backend teacher-class assignments preserving individual records
+                  // Each teacher-class has unique teacherClassId, startDate, endDate
+                  // Autocomplete missing dates with class dates
+                  this.originalRows[index].teachers = teachers.map((tc: any) => ({
+                    id: tc.id,
+                    name: tc.name,
+                    lastName: tc.lastName,
+                    email: tc.email,
+                    maxHours: tc.maxHours,
+                    assignedHours: (tc as any).totalHours ?? tc.assignedHours,
+                    availableHours: (tc as any).availableHours ?? (tc.maxHours - ((tc as any).totalHours ?? tc.assignedHours)),
+                    // CRITICAL: Preserve teacher-class assignment identity and dates
+                    teacherClassId: tc.teacherClassId, // Unique ID for this teacher-class assignment
+                    // Autocomplete dates: use teacher-class dates if present, otherwise use class dates
+                    startDate: tc.startDate || row.startDate,
+                    endDate: tc.endDate || row.endDate
                   }));
                   // Backwards compatibility: set legacy `teacher` to first
                   const primary = this.originalRows[index].teachers[0];
                   this.originalRows[index].teacher = primary ? { ...primary } : undefined;
                   
-                  console.log(`✅ Docentes asignados a originalRows[${index}]:`, this.originalRows[index].teachers);
+                  console.log(`✅ Asignaciones teacher-class mapeadas a originalRows[${index}]:`, this.originalRows[index].teachers);
+                  console.log(`   📋 Después del mapeo:`);
+                  this.originalRows[index].teachers.forEach((t, idx) => {
+                    console.log(`   [${idx}] teacherId: ${t.id}, teacherClassId: ${t.teacherClassId}, startDate: ${t.startDate}, endDate: ${t.endDate}`);
+                  });
                 } else {
-                  console.log(`⚠️ No hay docentes para clase ${row.backendId} (${row.courseName})`);
+                  console.log(`⚠️ No hay asignaciones teacher-class para clase ${row.backendId} (${row.courseName})`);
                 }
             })
         );
@@ -562,7 +577,8 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
           const computedHours = this.computeWorkHoursFromSchedules(this.rows[index]);
           for (const t of teachersToAssign) {
             if (t && t.id) {
-              await this.assignTeacherToClass(enrichedClass.id!, Number(t.id), computedHours);
+              // Pass the row to autocomplete dates for each teacher-class assignment
+              await this.assignTeacherToClass(enrichedClass.id!, Number(t.id), computedHours, this.rows[index]);
             }
           }
           // mark assigned time to avoid duplicates
@@ -603,18 +619,47 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
     }
   }
 
-  private async assignTeacherToClass(classId: number, teacherId: number, workHours: number) {
+  private async assignTeacherToClass(classId: number, teacherId: number, workHours: number, row?: PlanningRow) {
     try {
-      await this.teacherAssignmentService.assignTeacherToClass(
+      const result = await this.teacherAssignmentService.assignTeacherToClass(
         teacherId, 
         classId, 
         workHours, 
         'Asignación automática desde planificación'
       ).toPromise();
       
-      console.log(`Docente ${teacherId} asignado a clase ${classId}`);
+      console.log(`✅ Docente ${teacherId} asignado a clase ${classId}:`, result);
+      
+      // Si tenemos fechas de la clase y el resultado incluye teacherClassId, actualizar fechas
+      if (row && row.startDate && row.endDate && result) {
+        // El backend debe retornar el teacher-class creado con su ID
+        // Buscar el teacherClassId en el resultado (puede variar según estructura del backend)
+        const teacherClassId = (result as any).id || (result as any).teacherClassId;
+        
+        if (teacherClassId) {
+          console.log(`📅 Autoconfigurando fechas para teacher-class ${teacherClassId}:`, {
+            startDate: row.startDate,
+            endDate: row.endDate
+          });
+          
+          try {
+            await this.teacherAssignmentService.updateTeacherClassDates(
+              teacherClassId,
+              {
+                startDate: row.startDate,
+                endDate: row.endDate
+              }
+            ).toPromise();
+            console.log(`✅ Fechas autoconfiguradas para teacher-class ${teacherClassId}`);
+          } catch (dateError) {
+            console.warn(`⚠️ No se pudieron autoconfigurar fechas para teacher-class ${teacherClassId}:`, dateError);
+            // No fallar la asignación si las fechas no se pueden configurar
+          }
+        }
+      }
     } catch (error) {
-      console.error('Error al asignar docente:', error);
+      console.error('❌ Error al asignar docente:', error);
+      throw error;
     }
   }
 
@@ -724,14 +769,41 @@ export class PlanificacionClasesPage implements OnInit, OnDestroy {
 
   // Método para aplicar filtros
   applyFilters() {
+    console.log('🔄 applyFilters - ANTES del deep copy:');
+    this.originalRows.forEach((row, idx) => {
+      if (row.teachers && row.teachers.length > 0) {
+        console.log(`  originalRows[${idx}] - ${row.courseName}:`, row.teachers.map(t => ({
+          id: t.id,
+          name: t.name,
+          teacherClassId: t.teacherClassId,
+          startDate: t.startDate,
+          endDate: t.endDate
+        })));
+      }
+    });
+    
     // Hacer una copia profunda de las filas para preservar teachers[]
+    // CRITICAL: Deep copy teacher objects to avoid sharing references between classes
     let filtered = this.originalRows.map(row => ({
       ...row,
-      teachers: row.teachers ? [...row.teachers] : [],
+      teachers: row.teachers ? row.teachers.map(t => ({ ...t })) : [],
       teacher: row.teacher ? { ...row.teacher } : undefined,
       schedules: row.schedules ? [...row.schedules] : [],
       notes: row.notes ? [...row.notes] : []
     }));
+    
+    console.log('🔄 applyFilters - DESPUÉS del deep copy:');
+    filtered.forEach((row, idx) => {
+      if (row.teachers && row.teachers.length > 0) {
+        console.log(`  filtered[${idx}] - ${row.courseName}:`, row.teachers.map(t => ({
+          id: t.id,
+          name: t.name,
+          teacherClassId: t.teacherClassId,
+          startDate: t.startDate,
+          endDate: t.endDate
+        })));
+      }
+    });
 
     // Filtro por búsqueda de texto
     if (this.searchText.trim()) {

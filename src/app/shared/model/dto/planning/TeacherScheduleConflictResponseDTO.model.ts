@@ -1,6 +1,6 @@
 export interface TeacherScheduleConflictResponseDTO {
-    teacherId: number;
-    teacherName: string;
+    userId: number;
+    userName: string;
     conflictDay: string;
     conflictStartTime: string; // ISO time string
     conflictEndTime: string;   // ISO time string

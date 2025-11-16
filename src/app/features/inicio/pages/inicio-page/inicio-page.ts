@@ -191,7 +191,7 @@ export class InicioPage implements OnInit {
         this.actionSummary.rows.push(...data.map(item => ({
           type: 'TEACHER_SCHEDULE' as const,
           isConflict: true,
-          resourceName: 'Profesor(a) ' + item.teacherName,
+          resourceName: 'Profesor(a) ' + item.userName,
           details: 'Múltiples asignaciones de profesor(a) en el horario de ' + item.conflictStartTime + ' a ' + item.conflictEndTime + ' los días ' + item.conflictDay
         })));
       },

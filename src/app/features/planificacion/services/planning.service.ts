@@ -407,17 +407,39 @@ export class PlanningService {
     const preparedData = { ...classData };
 
     // Asegurar formato de fechas (YYYY-MM-DD)
+    // IMPORTANTE: No usar new Date() + toISOString() porque causa problemas de timezone
+    // Si la fecha ya está en formato YYYY-MM-DD, mantenerla tal cual
     if (preparedData.startDate && typeof preparedData.startDate === 'string') {
-      const date = new Date(preparedData.startDate);
-      if (!isNaN(date.getTime())) {
-        preparedData.startDate = date.toISOString().split('T')[0];
+      // Verificar si ya está en formato correcto YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(preparedData.startDate)) {
+        // Ya está en formato correcto, no hacer nada
+      } else {
+        // Intentar convertir al formato correcto
+        const date = new Date(preparedData.startDate);
+        if (!isNaN(date.getTime())) {
+          // Usar getFullYear, getMonth, getDate para evitar problemas de timezone
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          preparedData.startDate = `${year}-${month}-${day}`;
+        }
       }
     }
 
     if (preparedData.endDate && typeof preparedData.endDate === 'string') {
-      const date = new Date(preparedData.endDate);
-      if (!isNaN(date.getTime())) {
-        preparedData.endDate = date.toISOString().split('T')[0];
+      // Verificar si ya está en formato correcto YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(preparedData.endDate)) {
+        // Ya está en formato correcto, no hacer nada
+      } else {
+        // Intentar convertir al formato correcto
+        const date = new Date(preparedData.endDate);
+        if (!isNaN(date.getTime())) {
+          // Usar getFullYear, getMonth, getDate para evitar problemas de timezone
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          preparedData.endDate = `${year}-${month}-${day}`;
+        }
       }
     }
 
@@ -992,9 +1014,12 @@ export class PlanningService {
         return '';
       }
       
-      // Si es un objeto Date, convertir a YYYY-MM-DD
+      // Si es un objeto Date, convertir a YYYY-MM-DD usando métodos locales para evitar timezone issues
       if (dateValue instanceof Date) {
-        const formatted = dateValue.toISOString().split('T')[0];
+        const year = dateValue.getFullYear();
+        const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+        const day = String(dateValue.getDate()).padStart(2, '0');
+        const formatted = `${year}-${month}-${day}`;
         console.log(`Fecha Date convertida: ${dateValue} -> ${formatted}`);
         return formatted;
       }
@@ -1016,10 +1041,13 @@ export class PlanningService {
         return dateValue.trim();
       }
       
-      // Si es timestamp numérico, convertir
+      // Si es timestamp numérico, convertir usando métodos locales
       if (typeof dateValue === 'number') {
         const date = new Date(dateValue);
-        const formatted = date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const formatted = `${year}-${month}-${day}`;
         console.log(`Timestamp convertido: ${dateValue} -> ${formatted}`);
         return formatted;
       }

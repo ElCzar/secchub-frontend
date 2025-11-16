@@ -36,6 +36,9 @@ export interface TeacherRef {
   assignedHours?: number;
   availableHours?: number;
   status?: PlanningStatus;  // Estado individual del profesor para esta clase
+  teacherClassId?: number;  // ID único de la asignación teacher-class
+  startDate?: string;       // Fecha de inicio individual para esta asignación
+  endDate?: string;         // Fecha de fin individual para esta asignación
 }
 
 // Fila principal de planificación (tabla grande)

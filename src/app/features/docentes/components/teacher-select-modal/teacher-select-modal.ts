@@ -65,96 +65,89 @@ export class TeacherSelectModal {
   }
 
   selectDocente() {
-    if (!this.docente) return;
+    if (!this.docente || !this.docente.id) return;
+    
     const teacherId = this.docente.id;
     const toAssign = typeof this.workHoursToAssign === 'number' ? this.workHoursToAssign : 0;
     
-    this.http.get<any>(`http://localhost:8080/planning/teachers/${teacherId}/max-hours`).subscribe({
+    console.log(`📊 Consultando advertencia de horas para docente ${teacherId}, horas a asignar: ${toAssign}`);
+    
+    // Usar el nuevo endpoint de advertencia de horas extra
+    this.teacherAssignmentService.getTeacherExtraHoursWarning(teacherId, toAssign).subscribe({
       next: (data) => {
-        const {
-          maxHours,
-          assignedHours,
-          employmentTypeId,
-          exceedsMaxHours,
-          name
-        } = data;
-        const sumaTotal = assignedHours + toAssign;
+        console.log('✅ Respuesta de advertencia de horas:', data);
         
-        // PROFESORES DE PLANTA (employmentTypeId === 1)
+        const {
+          teacherName,
+          maxHours,
+          totalAssignedHours,
+          workHoursToAssign,
+          exceedsMaxHours
+        } = data;
+        
+        const sumaTotal = totalAssignedHours + workHoursToAssign;
+        
+        // Si no excede el límite de horas, proceder directamente
+        if (exceedsMaxHours === 0) {
+          console.log('✅ El docente tiene capacidad suficiente, procediendo con la selección');
+          this.proceedWithSelection();
+          return;
+        }
+        
+        // Si excede, mostrar advertencia
+        console.log('⚠️ El docente excede el límite de horas, mostrando advertencia');
+        
+        // Calcular distribución de horas según el tipo de contrato del docente
+        const employmentTypeId = this.docente?.employmentTypeId || 1; // Default a planta
+        let horasPlanta = 0;
+        let horasCatedra = 0;
+        let horasAdjuntNormales = 0;
+        let horasAdjuntExtra = 0;
+        
         if (employmentTypeId === 1) {
-          // Caso 2.1: No excede y la suma total no supera el límite
-          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
-            this.proceedWithSelection();
+          // PROFESORES DE PLANTA
+          const horasDisponiblesPlanta = Math.max(0, maxHours - totalAssignedHours);
+          
+          if (horasDisponiblesPlanta > 0) {
+            // Caso: aún tiene horas de planta disponibles
+            horasPlanta = Math.min(workHoursToAssign, horasDisponiblesPlanta);
+            horasCatedra = Math.max(0, workHoursToAssign - horasPlanta);
           } else {
-            // Modal de advertencia para planta
-            let horasPlanta = 0;
-            let horasCatedra = 0;
-            
-            // Caso 2.2: No excede aún, pero la suma total superaría el límite
-            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
-              horasPlanta = Math.max(0, maxHours - assignedHours);
-              horasCatedra = toAssign - horasPlanta;
-            } 
-            // Caso 2.3: Ya excede el límite de horas
-            else if (exceedsMaxHours === 1) {
-              horasPlanta = 0;
-              horasCatedra = toAssign;
-            }
-            
-            this.extraWarningData = {
-              maxHours,
-              assignedHours,
-              toAssign,
-              name,
-              horasPlanta,
-              horasCatedra,
-              horasAdjuntNormales: 0,
-              horasAdjuntExtra: 0,
-              excessHours: sumaTotal - maxHours,
-              employmentTypeId
-            };
-            this.showExtraWarningModal = true;
+            // Caso: ya no tiene horas de planta, todas serán cátedra
+            horasCatedra = workHoursToAssign;
           }
-        } 
-        // PROFESORES DE CÁTEDRA (employmentTypeId === 2)
-        else if (employmentTypeId === 2) {
-          // Caso 2.1: No excede y la suma total no supera el límite
-          if (exceedsMaxHours === 0 && sumaTotal <= maxHours) {
-            this.proceedWithSelection();
+        } else if (employmentTypeId === 2) {
+          // PROFESORES DE CÁTEDRA/ADJUNTOS
+          const horasDisponiblesAdjunt = Math.max(0, maxHours - totalAssignedHours);
+          
+          if (horasDisponiblesAdjunt > 0) {
+            // Caso: aún tiene horas normales disponibles
+            horasAdjuntNormales = Math.min(workHoursToAssign, horasDisponiblesAdjunt);
+            horasAdjuntExtra = Math.max(0, workHoursToAssign - horasAdjuntNormales);
           } else {
-            // Modal de advertencia para cátedra
-            let horasAdjuntNormales = 0;
-            let horasAdjuntExtra = 0;
-            
-            // Caso 2.2: No excede aún, pero la suma total superaría el límite
-            if (exceedsMaxHours === 0 && sumaTotal > maxHours) {
-              horasAdjuntNormales = Math.max(0, maxHours - assignedHours);
-              horasAdjuntExtra = toAssign - horasAdjuntNormales;
-            } 
-            // Caso 2.3: Ya excede el límite de horas
-            else if (exceedsMaxHours === 1) {
-              horasAdjuntNormales = 0;
-              horasAdjuntExtra = toAssign;
-            }
-            
-            this.extraWarningData = {
-              maxHours,
-              assignedHours,
-              toAssign,
-              name,
-              horasPlanta: 0,
-              horasCatedra: 0,
-              horasAdjuntNormales,
-              horasAdjuntExtra,
-              excessHours: sumaTotal - maxHours,
-              employmentTypeId
-            };
-            this.showExtraWarningModal = true;
+            // Caso: ya no tiene horas normales, todas serán extra
+            horasAdjuntExtra = workHoursToAssign;
           }
         }
+        
+        this.extraWarningData = {
+          maxHours,
+          assignedHours: totalAssignedHours,
+          toAssign: workHoursToAssign,
+          name: teacherName,
+          horasPlanta,
+          horasCatedra,
+          horasAdjuntNormales,
+          horasAdjuntExtra,
+          excessHours: sumaTotal - maxHours,
+          employmentTypeId
+        };
+        
+        this.showExtraWarningModal = true;
       },
       error: (err) => {
-        console.error('Error consultando max-hours:', err);
+        console.error('❌ Error consultando advertencia de horas extra:', err);
+        alert('Error al consultar la disponibilidad del docente. Por favor, intente nuevamente.');
       }
     });
   }
@@ -238,60 +231,32 @@ export class TeacherSelectModal {
 
   onContinueToPlanning(teachers?: Docente[]) {
     this.showConfirmationModal = false;
-    // Aquí se realiza la asignación final
-    if (this.docente && this.classInfo?.semesterId && this.classInfo?.id) {
-      const token = localStorage.getItem('accessToken');
-      
-      // Guardar selección y navegar (SIN hacer POST aquí, se hará en planificacion-page)
-      const docentesToSave = teachers || this.selectedDocentes;
-      
-      if (docentesToSave.length > 0) {
-        // Agregar datos de horas extra al primer docente si hay advertencia
-        if (docentesToSave[0] && this.extraWarningData) {
-          (docentesToSave[0] as any).extraHoursData = {
-            horasPlanta: this.extraWarningData.horasPlanta,
-            horasCatedra: this.extraWarningData.horasCatedra,
-            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
-            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
-            employmentTypeId: this.extraWarningData.employmentTypeId
-          };
-        }
-        
-        const key = this.classKey || `temp-class-${Date.now()}`;
-        const classInfoWithIndex = {
-          ...this.classInfo,
-          rowIndex: this.classInfo?.rowIndex
+    
+    // Guardar selección y navegar (SIN hacer POST aquí, se hará en planificacion-page)
+    const docentesToSave = teachers || this.selectedDocentes;
+    
+    if (docentesToSave.length > 0) {
+      // Agregar datos de horas extra al primer docente si hay advertencia
+      if (docentesToSave[0] && this.extraWarningData) {
+        (docentesToSave[0] as any).extraHoursData = {
+          horasPlanta: this.extraWarningData.horasPlanta,
+          horasCatedra: this.extraWarningData.horasCatedra,
+          horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
+          horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
+          employmentTypeId: this.extraWarningData.employmentTypeId
         };
-        this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
-        this.router.navigate(['/planificacion']);
       }
-      this.closeModal();
-    } else {
-      // Guardamos los docentes seleccionados en el servicio y navegamos
-      const docentesToSave = teachers || this.selectedDocentes;
       
-      if (docentesToSave.length > 0) {
-        // Agregar datos de horas extra al primer docente si hay advertencia
-        if (docentesToSave[0] && this.extraWarningData) {
-          (docentesToSave[0] as any).extraHoursData = {
-            horasPlanta: this.extraWarningData.horasPlanta,
-            horasCatedra: this.extraWarningData.horasCatedra,
-            horasAdjuntNormales: this.extraWarningData.horasAdjuntNormales,
-            horasAdjuntExtra: this.extraWarningData.horasAdjuntExtra,
-            employmentTypeId: this.extraWarningData.employmentTypeId
-          };
-        }
-        
-        const key = this.classKey || `temp-class-${Date.now()}`;
-        const classInfoWithIndex = {
-          ...this.classInfo,
-          rowIndex: this.classInfo?.rowIndex
-        };
-        this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
-        this.router.navigate(['/planificacion']);
-      }
-      this.closeModal();
+      const key = this.classKey || `temp-class-${Date.now()}`;
+      const classInfoWithIndex = {
+        ...this.classInfo,
+        rowIndex: this.classInfo?.rowIndex
+      };
+      this.selectedTeachersService.addSelectedTeachers(key, docentesToSave, classInfoWithIndex);
+      this.router.navigate(['/planificacion']);
     }
+    
+    this.closeModal();
   }
 
   agregarObservacion() {

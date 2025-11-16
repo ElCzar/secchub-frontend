@@ -16,6 +16,23 @@ export interface TeacherAssignmentDTO {
   extraHours?: number;
 }
 
+export interface TeacherClassAssignHoursRequestDTO {
+  workHoursToAssign: number;
+}
+
+export interface TeacherClassAssignHoursResponseDTO {
+  teacherName: string;
+  maxHours: number;
+  totalAssignedHours: number;
+  workHoursToAssign: number;
+  exceedsMaxHours: number;
+}
+
+export interface TeacherClassDatesRequestDTO {
+  startDate: string; // ISO format YYYY-MM-DD
+  endDate: string;   // ISO format YYYY-MM-DD
+}
+
 export interface TeacherDTO {
   id: number;
   name: string;
@@ -27,6 +44,10 @@ export interface TeacherDTO {
   extraHours?: number;
   contractType?: string;
   assignments?: TeacherAssignmentDTO[];
+  // Teacher-Class specific fields
+  teacherClassId?: number; // ID of the teacher-class assignment
+  startDate?: string; // Individual teaching start date for this assignment
+  endDate?: string;   // Individual teaching end date for this assignment
 }
 
 export interface ClassDTO {
@@ -97,6 +118,27 @@ export class TeacherAssignmentService {
   }
 
   /**
+   * Actualizar las fechas de inicio y fin de una asignación teacher-class específica
+   */
+  updateTeacherClassDates(
+    teacherClassId: number,
+    dates: TeacherClassDatesRequestDTO
+  ): Observable<any> {
+    const url = `${environment.apiUrl}/teachers/classes/${teacherClassId}/dates`;
+    console.log(`📅 Actualizando fechas para teacher-class ${teacherClassId}:`, dates);
+    
+    return this.http.patch(url, dates).pipe(
+      tap(response => {
+        console.log(`✅ Fechas actualizadas para teacher-class ${teacherClassId}:`, response);
+      }),
+      catchError(error => {
+        console.error(`❌ Error actualizando fechas para teacher-class ${teacherClassId}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  /**
    * Eliminar una asignación de profesor a clase específica
    */
   removeTeacherFromClass(teacherId: number, classId: number): Observable<void> {
@@ -116,28 +158,134 @@ export class TeacherAssignmentService {
   // ==========================================
 
   /**
+   * Obtener advertencia sobre horas extra al asignar trabajo a un profesor
+   */
+  getTeacherExtraHoursWarning(
+    teacherId: number,
+    workHoursToAssign: number
+  ): Observable<TeacherClassAssignHoursResponseDTO> {
+    const requestBody: TeacherClassAssignHoursRequestDTO = {
+      workHoursToAssign
+    };
+    
+    return this.http.post<TeacherClassAssignHoursResponseDTO>(
+      `${environment.apiUrl}/teachers/${teacherId}/extra-hours-warning`,
+      requestBody
+    ).pipe(
+      tap(response => console.log('📊 Respuesta de horas extra:', response)),
+      catchError(error => {
+        console.error('❌ Error obteniendo advertencia de horas extra:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
    * Obtener profesores asignados a una clase
+   * IMPORTANTE: Retorna UN registro por cada asignación teacher-class (no agrupa por teacherId)
+   * Cada registro tiene su propio teacherClassId, startDate y endDate
    */
   getTeachersAssignedToClass(classId: number): Observable<TeacherDTO[]> {
-    // Usar el endpoint real del módulo de integración que ya incluye datos del teacher
     const integrationUrl = `${environment.apiUrl}/teachers/classes/class/${classId}`;
+    console.log(`📡 Obteniendo asignaciones teacher-class para clase ${classId} desde: ${integrationUrl}`);
+    
     return this.http.get<any[]>(integrationUrl).pipe(
-      map((teacherClassList: any[]) => {
-        return teacherClassList.map(tc => ({
-          id: tc.teacherId,
-          name: tc.teacherName || 'Docente',
-          lastName: tc.teacherLastName || '',
-          email: tc.teacherEmail || '',
-          maxHours: tc.teacherMaxHours || 40,
-          assignedHours: tc.workHours || 0,
-          availableHours: (tc.teacherMaxHours || 40) - (tc.workHours || 0),
-          extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
-          contractType: tc.teacherContractType || 'N/A'
-        }));
+      tap(rawResponse => {
+        console.log(`📥 Respuesta teacher-class para clase ${classId}:`, rawResponse);
+        console.log(`📊 Número de asignaciones teacher-class:`, rawResponse?.length || 0);
       }),
-      tap(teachers => console.log(`👨‍🏫 Docentes asignados desde backend (con nombres):`, teachers)),
+      switchMap((teacherClassList: any[]) => {
+        if (!teacherClassList || teacherClassList.length === 0) {
+          console.log(`⚠️ No hay asignaciones teacher-class para la clase ${classId}`);
+          return of([]);
+        }
+        
+        // Para cada asignación teacher-class (NO agrupar, mantener registros individuales)
+        // 1. Obtener información del teacher desde /teachers/{teacherId}
+        // 2. Luego obtener información del user desde /users/{userId}
+        // 3. Preservar teacherClassId, startDate, endDate de cada registro
+        const teacherClassRequests = teacherClassList.map(tc => 
+          this.http.get<any>(`${environment.apiUrl}/teachers/${tc.teacherId}`).pipe(
+            tap(teacherInfo => {
+              console.log(`👤 Teacher info para teacherId ${tc.teacherId}:`, teacherInfo);
+            }),
+            switchMap(teacherInfo => 
+              this.http.get<any>(`${environment.apiUrl}/user/id/${teacherInfo.userId}`).pipe(
+                tap(userInfo => {
+                  console.log(`👤 User info para userId ${teacherInfo.userId}:`, userInfo);
+                }),
+                map(userInfo => ({
+                  // Teacher identification
+                  id: tc.teacherId,
+                  name: userInfo.name || 'Docente',
+                  lastName: userInfo.lastName || '',
+                  email: userInfo.email || '',
+                  
+                  // Teacher capacity
+                  maxHours: teacherInfo.maxHours || 40,
+                  assignedHours: tc.workHours || 0,
+                  availableHours: (teacherInfo.maxHours || 40) - (tc.workHours || 0),
+                  extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                  contractType: teacherInfo.employmentTypeId === 1 ? 'Planta' : 'Cátedra',
+                  
+                  // CRITICAL: Individual teacher-class assignment data
+                  teacherClassId: tc.id, // ID de la asignación teacher-class (único por registro)
+                  startDate: tc.startDate || undefined, // Fecha inicio individual (puede ser null)
+                  endDate: tc.endDate || undefined      // Fecha fin individual (puede ser null)
+                })),
+                catchError(userError => {
+                  console.error(`❌ Error obteniendo user info para userId ${teacherInfo.userId}:`, userError);
+                  // Si falla el usuario, usar datos del teacher
+                  return of({
+                    id: tc.teacherId,
+                    name: 'Docente',
+                    lastName: '',
+                    email: '',
+                    maxHours: teacherInfo.maxHours || 40,
+                    assignedHours: tc.workHours || 0,
+                    availableHours: (teacherInfo.maxHours || 40) - (tc.workHours || 0),
+                    extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                    contractType: teacherInfo.employmentTypeId === 1 ? 'Planta' : 'Cátedra',
+                    teacherClassId: tc.id,
+                    startDate: tc.startDate || undefined,
+                    endDate: tc.endDate || undefined
+                  });
+                })
+              )
+            ),
+            catchError(teacherError => {
+              console.error(`❌ Error obteniendo teacher info para teacherId ${tc.teacherId}:`, teacherError);
+              // Si falla el teacher, retornar datos básicos
+              return of({
+                id: tc.teacherId,
+                name: 'Docente',
+                lastName: '',
+                email: '',
+                maxHours: 40,
+                assignedHours: tc.workHours || 0,
+                availableHours: 40 - (tc.workHours || 0),
+                extraHours: tc.fullTimeExtraHours || tc.adjunctExtraHours || 0,
+                contractType: 'N/A',
+                teacherClassId: tc.id,
+                startDate: tc.startDate || undefined,
+                endDate: tc.endDate || undefined
+              });
+            })
+          )
+        );
+        
+        // Ejecutar todas las peticiones en paralelo
+        // NO AGRUPAR - cada registro mantiene su identidad única (teacherClassId)
+        return forkJoin(teacherClassRequests);
+      }),
+      tap(teacherClassAssignments => {
+        console.log(`✅ Asignaciones teacher-class con info completa para clase ${classId}:`, teacherClassAssignments);
+        console.log(`📋 Total de registros (sin agrupar):`, teacherClassAssignments.length);
+      }),
       catchError(error => {
-        console.error(`❌ Error obteniendo docentes de clase ${classId}:`, error);
+        console.error(`❌ Error obteniendo asignaciones teacher-class de clase ${classId}:`, error);
+        console.error(`❌ Status: ${error.status}`);
+        console.error(`❌ URL intentada: ${integrationUrl}`);
         return of([]); // Retornar array vacío en caso de error
       })
     );

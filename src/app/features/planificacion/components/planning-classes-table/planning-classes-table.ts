@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output, ChangeDetectorRef, OnInit } fro
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PlanningRow } from '../../models/planificacion.models';
+import { PlanningRow, TeacherRef } from '../../models/planificacion.models';
 import { SchedulesTableRoom } from "../schedules-table-room/schedules-table-room";
 import { SelectedTeachers } from '../../services/selected-teachers';
 import { ObservacionesModal } from '../observaciones-modal/observaciones-modal';
@@ -1853,7 +1853,7 @@ export class PlanningClassesTable implements OnInit {
   }
 
   // Métodos para el tooltip de fechas de docentes
-  async onTeacherMouseEnter(event: MouseEvent, teacherId: number) {
+  async onTeacherMouseEnter(event: MouseEvent, teacherId: number, teacherClassId?: number) {
     // Cancelar cualquier timeout pendiente
     if (this.tooltipTimeout) {
       clearTimeout(this.tooltipTimeout);
@@ -1866,6 +1866,39 @@ export class PlanningClassesTable implements OnInit {
       y: rect.top - 10
     };
     
+    console.log(`🖱️ Mouse enter en docente ${teacherId}, teacherClassId: ${teacherClassId}`);
+    
+    // Si tenemos teacherClassId, usarlo directamente (más preciso para teachers duplicados)
+    if (teacherClassId) {
+      // Buscar en los datos locales primero
+      const row = this.findRowByTeacherIdAndTeacherClassId(teacherId, teacherClassId);
+      if (row?.teachers) {
+        const teacherData = row.teachers.find(t => t.teacherClassId === teacherClassId);
+        
+        if (teacherData) {
+          // Tenemos los datos completos localmente
+          const teacherClass: TeacherClassWithDates = {
+            id: teacherClassId,
+            semesterId: 0, // Not needed for display
+            teacherId: teacherId,
+            classId: row.backendId || 0,
+            workHours: teacherData.assignedHours || 0,
+            statusId: 0,
+            teacherName: teacherData.name,
+            teacherLastName: teacherData.lastName || '',
+            startDate: teacherData.startDate,
+            endDate: teacherData.endDate
+          };
+          
+          this.tooltipTeacherData = teacherClass;
+          this.showTeacherTooltip = true;
+          console.log(`✅ Datos locales usados para teacherClassId ${teacherClassId}:`, teacherClass);
+          return;
+        }
+      }
+    }
+    
+    // Fallback: buscar por teacherId + classId (menos preciso si hay duplicados)
     // Buscar la fila que contiene este docente para obtener el classId (backendId)
     const row = this.findRowByTeacherId(teacherId);
     
@@ -2006,7 +2039,18 @@ export class PlanningClassesTable implements OnInit {
       this.teacherDatesService.updateTeachingDates(this.datePopupData.teacherClassId, dates)
         .subscribe({
           next: (updatedTeacherClass) => {
-            console.log('✅ Fechas actualizadas:', updatedTeacherClass);
+            console.log('✅ Fechas actualizadas desde backend:', updatedTeacherClass);
+            
+            // Backend returns TeacherClassResponseDTO where 'id' is the teacherClassId
+            const teacherClassId = updatedTeacherClass.id || this.datePopupData!.teacherClassId;
+            
+            // Actualizar SOLO la asignación específica en los datos locales
+            this.updateLocalTeacherDates(
+              teacherClassId, 
+              updatedTeacherClass.startDate, 
+              updatedTeacherClass.endDate
+            );
+            
             this.closeDatesModal();
           },
           error: (error) => {
@@ -2017,6 +2061,26 @@ export class PlanningClassesTable implements OnInit {
     } else {
       console.warn('⚠️ No se puede actualizar: teacherClassId no válido');
       this.closeDatesModal();
+    }
+  }
+
+  /**
+   * Actualiza las fechas de una asignación específica profesor-clase en los datos locales
+   * Solo actualiza la asignación con el teacherClassId especificado, sin afectar otras asignaciones del mismo profesor
+   */
+  private updateLocalTeacherDates(teacherClassId: number, startDate: string | undefined, endDate: string | undefined) {
+    console.log(`🔄 Actualizando datos locales para teacherClassId: ${teacherClassId}`);
+    
+    // Buscar y actualizar en this.rows
+    for (const row of this.rows) {
+      if (row.teachers) {
+        const teacherToUpdate = row.teachers.find((t: TeacherRef) => t.teacherClassId === teacherClassId);
+        if (teacherToUpdate) {
+          teacherToUpdate.startDate = startDate;
+          teacherToUpdate.endDate = endDate;
+          console.log(`✅ Actualizado en this.rows - Clase: ${row.classId}, Docente: ${teacherToUpdate.name}`);
+        }
+      }
     }
   }
 
@@ -2048,6 +2112,22 @@ export class PlanningClassesTable implements OnInit {
     for (const row of this.rows) {
       if (row.teachers && row.teachers.some(t => t.id === teacherId)) {
         return row;
+      }
+    }
+    return null;
+  }
+
+  private findRowByTeacherIdAndTeacherClassId(teacherId: number, teacherClassId?: number): PlanningRow | null {
+    // Buscar la fila que contiene el docente y opcionalmente el teacherClassId
+    for (const row of this.rows) {
+      if (row.teachers) {
+        const found = row.teachers.find(t => 
+          t.id === teacherId && 
+          (teacherClassId ? t.teacherClassId === teacherClassId : true)
+        );
+        if (found) {
+          return row;
+        }
       }
     }
     return null;

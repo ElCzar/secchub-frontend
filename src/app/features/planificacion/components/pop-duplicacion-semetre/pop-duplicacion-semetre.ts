@@ -53,7 +53,15 @@ export class PopDuplicacionSemetre implements OnInit {
         console.log('Duplicación exitosa. Clases duplicadas:', response.length);
         alert(`✅ Se duplicaron ${response.length} clases seleccionadas al semestre actual.`);
         this.loading = false;
+        // Cerrar modal y recargar la página para reflejar los cambios
         this.closeModal.emit();
+        // Recargar la página para que la vista principal se actualice con las clases duplicadas
+        try {
+          globalThis.location.reload();
+        } catch (e) {
+          // Fallback: si por alguna razón no se puede recargar, loguear el error
+          console.warn('No se pudo recargar la página automáticamente:', e);
+        }
       },
       error: (err) => {
         console.error('Error duplicando clases:', err);
