@@ -14,6 +14,8 @@ import { TeacherDatesModalComponent } from '../../../docentes/components/teacher
 import { TeacherClassWithDates, TeacherDatePopupData, TeacherDatesRequest } from '../../../docentes/models/teacher-dates.model';
 import { SemesterInformationService } from '../../../../shared/services/semester-information.service';
 import { SemesterResponseDTO } from '../../../../shared/model/dto/admin/SemesterResponseDTO.model';
+import { UserInformationService } from '../../../../shared/services/user-information.service';
+import { SectionInformationService } from '../../../../shared/services/section-information.service';
 import { firstValueFrom } from 'rxjs';
 
 // Interfaz para las opciones de curso en el autocompletado
@@ -38,6 +40,10 @@ export class PlanningClassesTable implements OnInit {
   @Output() removeRow = new EventEmitter<number>();
   @Output() saveRow = new EventEmitter<{ index: number; data: PlanningRow }>();
 
+  // Propiedades para filtrado de cursos por sección
+  private userSectionId: number | null = null;
+  private isAdmin: boolean = false;
+
   constructor(
     private readonly router: Router, 
     private readonly datePipe: DatePipe, 
@@ -46,7 +52,9 @@ export class PlanningClassesTable implements OnInit {
     private readonly teacherAssignmentService: TeacherAssignmentService,
     private readonly cdr: ChangeDetectorRef,
     private readonly teacherDatesService: TeacherDatesService,
-    private readonly semesterInformationService: SemesterInformationService
+    private readonly semesterInformationService: SemesterInformationService,
+    private readonly userInformationService: UserInformationService,
+    private readonly sectionInformationService: SectionInformationService
   ) {
     console.log('🚨🚨🚨 PLANNING-CLASSES-TABLE CONSTRUCTOR - VERSION UPDATE LOADED 🚨🚨🚨');
     
@@ -184,6 +192,49 @@ export class PlanningClassesTable implements OnInit {
 
   ngOnInit() {
     this.loadCurrentSemester();
+    this.loadUserSection();
+  }
+
+  private async loadUserSection() {
+    try {
+      // Check if user is admin
+      this.isAdmin = this.isAdministrator();
+      
+      if (this.isAdmin) {
+        console.log('👑 Usuario es administrador, puede buscar todos los cursos');
+        this.userSectionId = null;
+        return;
+      }
+
+      console.log('👤 Usuario no es administrador, cargando su sección...');
+      
+      // Get current user information
+      const userInfo = await firstValueFrom(this.userInformationService.getUserInformation());
+      
+      if (!userInfo || !userInfo.id) {
+        console.error('❌ No se pudo obtener información del usuario');
+        return;
+      }
+      
+      console.log('✅ Usuario obtenido:', userInfo);
+      
+      // Get user's section
+      const userSection = await firstValueFrom(this.sectionInformationService.findSectionByUserId(userInfo.id));
+      
+      if (!userSection || !userSection.id) {
+        console.error('❌ Usuario no tiene sección asignada');
+        return;
+      }
+      
+      console.log('✅ Sección del usuario obtenida:', userSection);
+      this.userSectionId = userSection.id;
+    } catch (error) {
+      console.error('❌ Error cargando sección del usuario:', error);
+    }
+  }
+
+  private isAdministrator(): boolean {
+    return localStorage.getItem('userRole') === 'ROLE_ADMIN';
   }
 
   private loadCurrentSemester() {
@@ -361,13 +412,43 @@ export class PlanningClassesTable implements OnInit {
     }
     
     console.log(`🔍 Buscando cursos con término: "${q}"`);
+    if (!this.isAdmin && this.userSectionId) {
+      console.log(`🔒 Filtrando por sección ID: ${this.userSectionId}`);
+    }
     
     // Conectar con el servicio backend real
     this.planningService.searchCourses(q).subscribe({
       next: (courses: CourseOption[]) => {
-        console.log('✅ Cursos encontrados desde backend:', courses);
-        this.suggestions[i] = courses;
-        this.showList[i] = courses.length > 0;
+        console.log('✅ Cursos encontrados desde backend (antes de filtrar):', courses);
+        
+        // Filter courses by section if user is not admin
+        let filteredCourses = courses;
+        if (!this.isAdmin && this.userSectionId !== null) {
+          // Need to filter by sectionId - we need to get full course data with sectionId
+          // Since CourseOption only has id and name, we need to filter using the course service
+          this.planningService.getCoursesBySection(this.userSectionId).subscribe({
+            next: (sectionCourses) => {
+              console.log('✅ Cursos de la sección:', sectionCourses);
+              // Filter suggestions to only include courses from user's section
+              const sectionCourseIds = sectionCourses.map(c => c.id.toString());
+              filteredCourses = courses.filter(course => sectionCourseIds.includes(course.id));
+              console.log('✅ Cursos filtrados por sección:', filteredCourses);
+              
+              this.suggestions[i] = filteredCourses;
+              this.showList[i] = filteredCourses.length > 0;
+            },
+            error: (error) => {
+              console.error('❌ Error al obtener cursos de la sección:', error);
+              // If error, show all courses as fallback
+              this.suggestions[i] = courses;
+              this.showList[i] = courses.length > 0;
+            }
+          });
+        } else {
+          // Admin or no section - show all courses
+          this.suggestions[i] = filteredCourses;
+          this.showList[i] = filteredCourses.length > 0;
+        }
       },
       error: (error) => {
         console.error('❌ Error al buscar cursos:', error);

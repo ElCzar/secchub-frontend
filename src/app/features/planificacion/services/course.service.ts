@@ -104,6 +104,16 @@ export class CourseService {
     return this.http.get<CourseDTO[]>(this.coursesUrl, { params });
   }
 
+  /**
+   * Obtener cursos por ID de sección
+   * Filtra todos los cursos para obtener solo los de una sección específica
+   */
+  getCoursesBySection(sectionId: number): Observable<CourseDTO[]> {
+    return this.getAllCourses().pipe(
+      map(courses => courses.filter(course => course.sectionId === sectionId))
+    );
+  }
+
   // ==========================================
   // GESTIÓN DE SECCIONES
   // ==========================================

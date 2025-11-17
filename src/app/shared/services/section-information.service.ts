@@ -43,4 +43,18 @@ export class SectionInformationService {
         })
     );
     }
+
+    /**
+     * Get section by user ID.
+     * @param userId User ID
+     * @returns Observable<SectionResponseDTO | null> with the section data
+     */
+    findSectionByUserId(userId: number): Observable<SectionResponseDTO | null> {
+    return this.http.get<SectionResponseDTO>(`${this.baseUrl}/user/${userId}`).pipe(
+        catchError((error) => {
+        console.error(`Error loading section for user ${userId}:`, error);
+        return of(null);
+        })
+    );
+    }
 }

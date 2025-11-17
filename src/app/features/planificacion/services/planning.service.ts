@@ -1215,6 +1215,28 @@ export class PlanningService {
   }
 
   /**
+   * Obtener cursos por ID de sección
+   */
+  getCoursesBySection(sectionId: number): Observable<CourseOption[]> {
+    return new Observable(observer => {
+      this.courseService.getCoursesBySection(sectionId).subscribe(
+        courses => {
+          const courseOptions = this.courseService.convertCoursesToOptions(
+            this.courseService.filterValidCourses(courses)
+          );
+          observer.next(courseOptions);
+          observer.complete();
+        },
+        error => {
+          console.error('Error al obtener cursos por sección:', error);
+          observer.next([]);
+          observer.complete();
+        }
+      );
+    });
+  }
+
+  /**
    * Obtener nombre de la sección para un curso específico
    */
   getSectionByCourseId(courseId: string): Observable<string> {
