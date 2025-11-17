@@ -43,13 +43,15 @@
       </div>
       
       <!-- Filtro de sección solo visible para administradores -->
-      <div class="filter-group" *ngIf="role === 'admin'">
-        <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
-        <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
-          <option value="">Todas las secciones</option>
-          <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
-        </select>
-      </div>
+      @if (isAdministrator()) {
+        <div class="filter-group">
+          <label class="filter-label" for="seccion-select">Filtrar por Sección:</label>
+          <select id="seccion-select" [(ngModel)]="seccionFilter" (ngModelChange)="applyFilters()" class="filter-select">
+            <option value="">Todas las secciones</option>
+            <option *ngFor="let seccion of availableSecciones" [value]="seccion">{{seccion}}</option>
+          </select>
+        </div>
+      }
     </div>
 
     <div class="toolbar">
